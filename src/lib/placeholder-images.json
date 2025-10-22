@@ -1,3 +1,64 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "profile-picture",
+      "description": "A professional portrait of the user",
+      "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjEwNTc1NjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "professional portrait"
+    },
+    {
+      "id": "web-development-service",
+      "description": "Icon for web development service",
+      "imageUrl": "https://images.unsplash.com/photo-1610466896927-699424f3c86d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb2RlJTIwYWJzdHJhY3R8ZW58MHx8fHwxNzYxMTExODU5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "code abstract"
+    },
+    {
+      "id": "custom-software-service",
+      "description": "Icon for custom software solutions",
+      "imageUrl": "https://images.unsplash.com/photo-1713244433542-4c6205d09d97?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxnZWFycyUyMG1lY2hhbmlzbXxlbnwwfHx8fDE3NjExMDgxMjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "gears mechanism"
+    },
+    {
+      "id": "logo-design-service",
+      "description": "Icon for logo design service",
+      "imageUrl": "https://images.unsplash.com/photo-1644358687953-b406b9ca9dda?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxkZXNpZ24lMjB0b29sc3xlbnwwfHx8fDE3NjEwODA5MTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "design tools"
+    },
+    {
+      "id": "marketplace-product-1",
+      "description": "A modern smartwatch",
+      "imageUrl": "https://images.unsplash.com/photo-1434494343833-76b479733705?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzbWFydHdhdGNofGVufDB8fHx8MTc2MTA3ODQzNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smartwatch"
+    },
+    {
+      "id": "marketplace-product-2",
+      "description": "High-quality wireless headphones",
+      "imageUrl": "https://images.unsplash.com/photo-1583394838336-acd977736f90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoZWFkcGhvbmVzfGVufDB8fHx8MTc2MTEwNDg0NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "headphones"
+    },
+    {
+      "id": "marketplace-product-3",
+      "description": "A sleek ergonomic keyboard",
+      "imageUrl": "https://images.unsplash.com/photo-1541140532154-b024d705b90a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxrZXlib2FyZHxlbnwwfHx8fDE3NjEwNzQxNjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "keyboard"
+    },
+    {
+      "id": "marketplace-product-4",
+      "description": "A powerful graphics tablet",
+      "imageUrl": "https://images.unsplash.com/photo-1680123586261-b9ea69f1c070?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxncmFwaGljcyUyMHRhYmxldHxlbnwwfHx8fDE3NjExMzQwNzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "graphics tablet"
+    },
+    {
+      "id": "marketplace-product-5",
+      "description": "A portable SSD drive",
+      "imageUrl": "https://images.unsplash.com/photo-1602525664253-c68233a93fb9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxTU0QlMjBkcml2ZXxlbnwwfHx8fDE3NjExMzQwNzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "SSD drive"
+    },
+    {
+      "id": "marketplace-product-6",
+      "description": "A professional condenser microphone",
+      "imageUrl": "https://images.unsplash.com/photo-1527261834078-9b37d35a4a32?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtaWNyb3Bob25lfGVufDB8fHx8MTc2MTEwNzE5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "microphone"
+    }
+  ]
 }
