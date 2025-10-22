@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -27,9 +28,13 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group">
-            <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center font-bold text-primary-foreground text-xl shadow-medium group-hover:shadow-glow transition-all">
-              VV
-            </div>
+            <Image
+              src="/lg.png"
+              alt="Vishwa Vidarshana Logo"
+              width={40}
+              height={40}
+              className="rounded-lg group-hover:shadow-glow transition-all"
+            />
             <div className="hidden md:block">
               <span className="text-lg font-bold bg-gradient-hero bg-clip-text text-transparent">
                 Vishwa Vidarshana
