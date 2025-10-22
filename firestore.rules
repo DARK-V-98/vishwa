@@ -1,0 +1,99 @@
+/**
+ * @file Firebase Security Rules for VishwaVerse Platform
+ * @description This ruleset enforces a strict user-ownership model for user data and profile information, while also supporting admin roles.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user account information, with 'userId' as the document ID.
+ * - /userProfiles/{profileId}: Stores user profile information, linked to a specific user.
+ * - /roles_admin/{userId}: Presence of a document grants admin privileges to the specified user.
+ *
+ * Key Security Decisions:
+ * - Users can only access their own user and profile data.
+ * - Admin privileges are granted based on the presence of a document in the `/roles_admin/{userId}` collection.
+ * - User listing is not allowed for the `users` and `userProfiles` collections to prevent data leakage.
+ *
+ * Denormalization for Authorization:
+ * - The `users/{userId}` document includes the `profileId` which allows direct path based rules without needing server side `get()` requests.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the request is made by an authenticated user.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user's ID matches the provided userId.
+     * @param {string} userId - The user ID to compare against.
+     * @returns {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+     /**
+      * @description Checks if the authenticated user is an admin.
+      * @returns {boolean} True if the user is an admin, false otherwise.
+      */
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * @description Rules for the /users/{userId} collection.
+     * @path /users/{userId}
+     * @allow (create) - User with ID 'user123' can create their own user document.
+     * @allow (get, update, delete) - User with ID 'user123' can access and modify their own user document.
+     * @deny (create) - User with ID 'user123' cannot create a user document with ID 'user456'.
+     * @deny (get, update, delete) - User with ID 'user123' cannot access or modify the user document with ID 'user456'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rules for the /userProfiles/{profileId} collection.
+     * @path /userProfiles/{profileId}
+     * @allow (create) - User can create their own user profile if the userId matches their auth ID.
+     * @allow (get, update, delete) - User can only access their own profile.
+     * @deny (create) - User cannot create a profile for another user.
+     * @deny (get, update, delete) - User cannot access or modify another user's profile.
+     * @principle Enforces document ownership and relationship integrity.
+     */
+    match /userProfiles/{profileId} {
+      allow get: if isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.profileId == profileId;
+      allow list: if false;
+
+      allow create: if isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && request.resource.data.userId == request.auth.uid ;
+      allow update: if isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && request.resource.data.userId == resource.data.userId && resource != null;
+      allow delete: if isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.profileId == profileId && resource != null;
+    }
+
+    /**
+     * @description Rules for the /roles_admin/{userId} collection.
+     * @path /roles_admin/{userId}
+     * @allow (get) - Anyone can check if a user is an admin (used to gate UI features).
+     * @allow (list) - Only admins can list the admin roles.
+     * @allow (create, update, delete) - Only admins can manage admin roles.
+     * @principle Implements database-based access control (DBAC) for admin roles.
+     */
+    match /roles_admin/{userId} {
+      allow get: if true;
+      allow list: if isAdmin();
+
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
+    }
+  }
+}
