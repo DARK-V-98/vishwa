@@ -3,13 +3,17 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { useUser } from "@/firebase";
+import { getAuth, signOut } from "firebase/auth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -20,7 +24,19 @@ const Navbar = () => {
     { name: "Contact", path: "/contact" },
   ];
 
+  if (user) {
+    navLinks.push({ name: "Dashboard", path: "/dashboard" });
+  }
+
   const isActive = (path: string) => pathname === path;
+
+  const handleSignOut = () => {
+    const auth = getAuth();
+    signOut(auth).then(() => {
+      router.push("/");
+    });
+    setIsOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-soft">
@@ -62,11 +78,18 @@ const Navbar = () => {
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Link href="/contact">
-              <Button variant="hero" size="sm">
-                Get Started
-              </Button>
-            </Link>
+            {!isUserLoading &&
+              (user ? (
+                <Button variant="hero" size="sm" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              ) : (
+                <Link href="/signin">
+                  <Button variant="hero" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+              ))}
           </div>
 
           {/* Mobile Menu Button */}
@@ -96,11 +119,18 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
-            <Link href="/contact" onClick={() => setIsOpen(false)}>
-              <Button variant="hero" size="sm" className="w-full mt-4">
-                Get Started
-              </Button>
-            </Link>
+            {!isUserLoading &&
+              (user ? (
+                <Button variant="hero" size="sm" className="w-full mt-4" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              ) : (
+                <Link href="/signin" onClick={() => setIsOpen(false)}>
+                  <Button variant="hero" size="sm" className="w-full mt-4">
+                    Sign In
+                  </Button>
+                </Link>
+              ))}
           </div>
         )}
       </div>

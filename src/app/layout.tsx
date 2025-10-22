@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import "./globals.css";
+import { FirebaseClientProvider } from "@/firebase/client-provider";
 
 export const metadata: Metadata = {
   title: "R.M.T Vishwa Vidarshana | Web Developer & Designer",
@@ -19,11 +20,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased")}>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <Toaster />
-        <SonnerToaster />
+        <FirebaseClientProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+          <Toaster />
+          <SonnerToaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );
