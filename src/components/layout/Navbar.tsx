@@ -40,7 +40,7 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
             {navLinks.map((link) => (
-              <Link key={link.path} href={link.path} legacyBehavior passHref>
+              <Link key={link.path} href={link.path}>
                 <Button
                   variant="ghost"
                   className={`${
@@ -57,7 +57,7 @@ const Navbar = () => {
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Link href="/contact" legacyBehavior passHref>
+            <Link href="/contact">
               <Button variant="hero" size="sm">
                 Get Started
               </Button>
@@ -78,7 +78,7 @@ const Navbar = () => {
         {isOpen && (
           <div className="lg:hidden py-4 space-y-2 border-t border-border animate-in slide-in-from-top">
             {navLinks.map((link) => (
-              <Link key={link.path} href={link.path} onClick={() => setIsOpen(false)} legacyBehavior passHref>
+              <Link key={link.path} href={link.path} onClick={() => setIsOpen(false)}>
                 <Button
                   variant="ghost"
                   className={`w-full justify-start ${
@@ -91,7 +91,7 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
-            <Link href="/contact" onClick={() => setIsOpen(false)} legacyBehavior passHref>
+            <Link href="/contact" onClick={() => setIsOpen(false)}>
               <Button variant="hero" size="sm" className="w-full mt-4">
                 Get Started
               </Button>
