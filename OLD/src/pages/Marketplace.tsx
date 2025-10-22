@@ -1,4 +1,3 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,9 @@ import {
   Truck,
   MessageCircle,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -49,6 +50,7 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Navbar />
       
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-20">
@@ -211,12 +213,12 @@ const Marketplace = () => {
               While the marketplace is in development, explore our other services
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/esystemlk">
+              <Link to="/esystemlk">
                 <Button variant="hero" size="lg">
                   ESystemLK Solutions
                 </Button>
               </Link>
-              <Link href="/contact">
+              <Link to="/contact">
                 <Button variant="outline" size="lg">
                   Contact Us
                 </Button>
@@ -225,6 +227,8 @@ const Marketplace = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

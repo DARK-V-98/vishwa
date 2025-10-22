@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
+import { Toaster as SonnerToaster } from "sonner";
 import { Toaster } from "@/components/ui/toaster";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VishwaVerse - Digital Solutions",
-  description: "Your one-stop solution for web development, design, and marketplace needs.",
-  icons: {
-    icon: "/favicon.ico",
-  },
+  title: "R.M.T Vishwa Vidarshana | Web Developer & Designer",
+  description: "Professional web development, logo design, and business solutions by Vishwa Vidarshana. 6+ years experience delivering top-tier digital services in Sri Lanka.",
 };
 
 export default function RootLayout({
@@ -20,18 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        <div className="relative flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </div>
+      <body className={cn("min-h-screen bg-background font-sans antialiased")}>
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
         <Toaster />
+        <SonnerToaster />
       </body>
     </html>
   );

@@ -1,5 +1,4 @@
-import Link from "next/link";
-import Image from "next/image";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -13,6 +12,9 @@ import {
   Shield,
   Users,
 } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import heroImage from "@/assets/hero-bg.jpg";
 
 const Home = () => {
   const services = [
@@ -50,16 +52,15 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <Navbar />
       
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
-          <Image
-            src="https://picsum.photos/seed/hero/1920/1080"
+          <img
+            src={heroImage}
             alt="Hero background"
-            layout="fill"
-            objectFit="cover"
-            data-ai-hint="abstract background"
+            className="w-full h-full object-cover"
           />
         </div>
         <div className="container mx-auto px-4 relative z-10">
@@ -84,18 +85,18 @@ const Home = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/about">
+              <Link to="/about">
                 <Button variant="hero" size="lg" className="w-full sm:w-auto">
                   View My Profile
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/esystemlk">
+              <Link to="/esystemlk">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">
                   Visit ESystemLK
                 </Button>
               </Link>
-              <Link href="/contact">
+              <Link to="/contact">
                 <Button variant="accent" size="lg" className="w-full sm:w-auto">
                   Book Appointment
                 </Button>
@@ -129,7 +130,7 @@ const Home = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {services.map((service, idx) => (
-              <Link key={idx} href={service.link}>
+              <Link key={idx} to={service.link}>
                 <Card className="h-full hover:shadow-strong transition-all duration-300 hover:-translate-y-1 border-border/50 bg-card/50 backdrop-blur-sm group">
                   <CardContent className="p-6 space-y-4">
                     <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center shadow-medium group-hover:shadow-glow transition-all">
@@ -204,7 +205,7 @@ const Home = () => {
                 development and design services.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/contact">
+                <Link to="/contact">
                   <Button
                     variant="secondary"
                     size="lg"
@@ -213,7 +214,7 @@ const Home = () => {
                     Get in Touch
                   </Button>
                 </Link>
-                <Link href="/about">
+                <Link to="/about">
                   <Button
                     variant="outline"
                     size="lg"
@@ -227,6 +228,8 @@ const Home = () => {
           </Card>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
