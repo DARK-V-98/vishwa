@@ -159,7 +159,7 @@ function QuotationGeneratorContent() {
       });
 
       toast.success("Quotation generated and project saved!");
-      router.push('/projects'); // Redirect to the projects list
+      router.push('/dashboard'); // Redirect to the dashboard
 
       return {
         message: 'AI quotation generated successfully!',

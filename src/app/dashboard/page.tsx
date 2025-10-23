@@ -9,7 +9,6 @@ import { getAuth, signOut } from "firebase/auth";
 import { Badge } from "@/components/ui/badge";
 import {
   User as UserIcon,
-  FolderKanban,
   MessageSquare,
   Calendar,
   Sparkles,
@@ -40,7 +39,6 @@ export default function DashboardPage() {
   
   const menuItems = useMemo(() => {
     const items = [
-      { id: 'projects', label: 'My Projects', icon: FolderKanban, href: '/projects', description: 'Track your ongoing projects' },
       { id: 'appointments', label: 'Appointments', icon: Calendar, href: '/appointments', description: 'Manage your meetings' },
       { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'View your conversations' },
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
