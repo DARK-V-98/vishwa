@@ -7,17 +7,21 @@ import { ListingManagement } from "@/components/admin/listing-management";
 import { OrderManagement } from "@/components/admin/order-management";
 import ProjectManagement from "@/components/admin/project-management";
 import PricingManagement from "@/components/admin/pricing-management";
-import { useUser } from "@/firebase";
+import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { useMemo } from "react";
 import { collection, doc } from "firebase/firestore";
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const adminRoleQuery = useMemoFirebase(() => user ? doc(firestore, 'roles_admin', user.uid) : null, [user, firestore]);
+  const devRoleQuery = useMemoFirebase(() => user ? doc(firestore, 'roles_developer', user.uid) : null, [user, firestore]);
 
   // A simple way to check roles based on the presence of role documents.
   // In a real app, you might get this from custom claims for efficiency.
-  const { data: adminRole } = useDoc(useMemo(() => user ? doc(collection(getFirestore(), 'roles_admin'), user.uid) : null, [user]));
-  const { data: devRole } = useDoc(useMemo(() => user ? doc(collection(getFirestore(), 'roles_developer'), user.uid) : null, [user]));
+  const { data: adminRole } = useDoc(adminRoleQuery);
+  const { data: devRole } = useDoc(devRoleQuery);
 
   const canManagePricing = useMemo(() => !!(adminRole || devRole), [adminRole, devRole]);
 
