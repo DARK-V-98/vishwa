@@ -27,7 +27,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 interface UserProfile {
-    roles: string[];
+    roles?: string[];
 }
 
 
@@ -62,7 +62,7 @@ export default function DashboardPage() {
     );
   }
   
-  const hasAdminAccess = userProfile?.roles.includes('admin') || userProfile?.roles.includes('developer');
+  const hasAdminAccess = userProfile?.roles?.includes('admin') || userProfile?.roles?.includes('developer');
 
   const menuItems = [
       { id: 'projects', label: 'My Projects', icon: FolderKanban, href: '/projects', description: 'Track your ongoing projects' },
@@ -89,7 +89,7 @@ export default function DashboardPage() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 justify-center">
                     <Badge variant="secondary"><UserIcon className="h-4 w-4 mr-1" /> User</Badge>
-                    {userProfile?.roles.map(role => {
+                    {userProfile?.roles?.map(role => {
                         const Icon = roleIcons[role];
                         return (
                             <Badge key={role}>
@@ -131,5 +131,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
