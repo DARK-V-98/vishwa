@@ -230,7 +230,7 @@ const ESystemLK = () => {
               
               {/* Company Info */}
               <div className="pt-8 border-t border-primary-foreground/20 text-primary-foreground/80 text-sm">
-                <p>Email: esystemlk@gmail.com | Phone: +94 XX XXX XXXX</p>
+                <p>Email: esystemlk@gmail.com | Phone: +94 76 571 1396</p>
               </div>
             </CardContent>
           </Card>
