@@ -1,3 +1,4 @@
+
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,50 +15,47 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface Tier {
+  name: string;
+  price: string;
+  features: string[];
+}
+
+interface Service {
+  name: string;
+  tiers: Tier[];
+}
 
 const DesignServices = () => {
   const [email, setEmail] = useState("");
+  const firestore = useFirestore();
+
+  const pricingQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    // Assuming 'Design Services' is the ID of the document in 'pricing' collection
+    return query(collection(firestore, "pricing"));
+  }, [firestore]);
+
+  const { data: pricingData, isLoading, error } = useCollection(pricingQuery);
+  
+  const services = useMemo(() => {
+    if (!pricingData) return [];
+    const designCategory = pricingData.find(cat => cat.id === 'design-services');
+    return designCategory ? designCategory.services : [];
+  }, [pricingData]);
+
 
   const handleInterest = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success("Thanks! We'll contact you soon about design services.");
     setEmail("");
   };
-
-  const services = [
-    {
-      title: "Logo Design",
-      price: "Starting from $99",
-      features: [
-        "3 Initial concepts",
-        "Unlimited revisions",
-        "All file formats",
-        "Commercial rights",
-      ],
-    },
-    {
-      title: "Social Media Posts",
-      price: "Starting from $49",
-      features: [
-        "Custom designs",
-        "Platform-optimized",
-        "Source files included",
-        "Fast turnaround",
-      ],
-    },
-    {
-      title: "Brand Identity",
-      price: "Starting from $299",
-      features: [
-        "Complete brand package",
-        "Logo + style guide",
-        "Business cards",
-        "Social media kit",
-      ],
-    },
-  ];
 
   const process = [
     {
@@ -91,7 +89,7 @@ const DesignServices = () => {
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-block">
               <span className="px-4 py-2 bg-secondary/20 text-secondary rounded-full text-sm font-semibold border border-secondary/30">
-                Coming Soon
+                Creative Solutions
               </span>
             </div>
             
@@ -143,35 +141,41 @@ const DesignServices = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {services.map((service, idx) => (
-              <Card
-                key={idx}
-                className={`border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-strong transition-all ${
-                  idx === 1 ? "md:scale-105 shadow-medium" : ""
-                }`}
-              >
-                <CardContent className="p-8 space-y-6">
-                  {idx === 1 && (
-                    <div className="inline-block px-3 py-1 bg-secondary/20 text-secondary rounded-full text-xs font-semibold border border-secondary/30">
-                      Most Popular
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">{service.title}</h3>
-                    <p className="text-3xl font-bold text-primary">{service.price}</p>
-                  </div>
-                  <ul className="space-y-3">
-                    {service.features.map((feature, fIdx) => (
-                      <li key={fIdx} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+            {isLoading && [...Array(3)].map((_, idx) => (
+              <Card key={idx}><CardContent className="p-8 space-y-6"><Skeleton className="h-4 w-1/2" /><Skeleton className="h-8 w-1/3" /><Skeleton className="h-20 w-full" /></CardContent></Card>
+            ))}
+            {!isLoading && services.map((service, serviceIdx) => (
+              service.tiers.map((tier, tierIdx) => (
+                 <Card
+                    key={`${serviceIdx}-${tierIdx}`}
+                    className={`border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-strong transition-all ${
+                      tier.name === "Social Media Posts" ? "md:scale-105 shadow-medium" : ""
+                    }`}
+                  >
+                    <CardContent className="p-8 space-y-6">
+                      {tier.name === "Social Media Posts" && (
+                        <div className="inline-block px-3 py-1 bg-secondary/20 text-secondary rounded-full text-xs font-semibold border border-secondary/30">
+                          Most Popular
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">{service.name}: {tier.name}</h3>
+                        <p className="text-3xl font-bold text-primary">{tier.price}</p>
+                      </div>
+                      <ul className="space-y-3">
+                        {(tier.features || []).map((feature: string, fIdx: number) => (
+                          <li key={fIdx} className="flex items-center gap-2 text-sm">
+                            <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
+                            <span className="text-muted-foreground">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+              ))
             ))}
           </div>
+          {error && <p className="text-center text-destructive mt-4">Error loading pricing: {error.message}</p>}
         </div>
       </section>
 
@@ -253,34 +257,18 @@ const DesignServices = () => {
                 Ready to Create Something Amazing?
               </h2>
               <p className="text-accent-foreground/90">
-                Register your interest and we'll contact you when design services launch
+                This service is fully operational. Start an order today!
               </p>
               
-              <form onSubmit={handleInterest} className="max-w-md mx-auto space-y-4">
-                <div className="space-y-2 text-left">
-                  <Label htmlFor="email" className="text-accent-foreground">
-                    Email Address
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                    className="bg-accent-foreground/10 border-accent-foreground/20 text-accent-foreground placeholder:text-accent-foreground/50"
-                  />
-                </div>
-                
+              <Link href="/design-studio">
                 <Button
-                  type="submit"
                   variant="secondary"
                   size="lg"
-                  className="w-full"
+                  className="w-full max-w-md mx-auto"
                 >
-                  Get Notified
+                  Go to Design Studio
                 </Button>
-              </form>
+              </Link>
             </CardContent>
           </Card>
         </div>
@@ -291,10 +279,10 @@ const DesignServices = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <h3 className="text-2xl font-bold">
-              Need Something Right Now?
+              Need Something Else?
             </h3>
             <p className="text-muted-foreground">
-              Get in touch to discuss your design needs
+              Get in touch to discuss your custom project needs.
             </p>
             <Link href="/contact">
               <Button variant="hero" size="lg">
