@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/firebase";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
@@ -50,8 +50,40 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success("Signed in successfully!");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Check if user document exists
+      const userDocRef = doc(firestore, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        // New user, create documents
+        const batch = writeBatch(firestore);
+        
+        batch.set(userDocRef, {
+          id: user.uid,
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          username: user.email, // Use email as a placeholder username
+          firstName: '',
+          lastName: ''
+        });
+
+        // Assign default customer role
+        const customerRoleRef = doc(firestore, "roles_customer", user.uid);
+        batch.set(customerRoleRef, {
+            id: user.uid,
+            firstPurchaseAt: new Date().toISOString(),
+        });
+
+        await batch.commit();
+        toast.success("Welcome back! Your profile has been initialized.");
+      } else {
+        toast.success("Signed in successfully!");
+      }
+
       router.push("/dashboard");
     } catch (error: any) {
       toast.error(error.message);
@@ -69,14 +101,27 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
+        const batch = writeBatch(firestore);
         // New user, create document and redirect to complete profile
-        await setDoc(userDocRef, {
+        batch.set(userDocRef, {
           id: user.uid,
           email: user.email,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           username: null,
+          firstName: user.displayName?.split(' ')[0] || '',
+          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
         });
+        
+        // Assign default customer role
+        const customerRoleRef = doc(firestore, "roles_customer", user.uid);
+        batch.set(customerRoleRef, {
+            id: user.uid,
+            firstPurchaseAt: new Date().toISOString(),
+        });
+        
+        await batch.commit();
+
         toast.success("Welcome! Please complete your profile.");
         router.push("/auth/complete-profile");
       } else {
