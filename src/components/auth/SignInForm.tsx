@@ -68,7 +68,8 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
           updatedAt: new Date().toISOString(),
           username: user.email, // Use email as a placeholder username
           firstName: '',
-          lastName: ''
+          lastName: '',
+          roles: ['customer']
         });
 
         // Assign default customer role
@@ -111,6 +112,7 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
           username: null,
           firstName: user.displayName?.split(' ')[0] || '',
           lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+          roles: ['customer']
         });
         
         // Assign default customer role
@@ -200,3 +202,5 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
     </div>
   );
 }
+
+    

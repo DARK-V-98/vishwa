@@ -76,6 +76,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         email: user.email,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        roles: ['customer']
       });
 
       // Assign default customer role
@@ -114,6 +115,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
           username: null,
           firstName: user.displayName?.split(' ')[0] || '',
           lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+          roles: ['customer']
         });
 
         // Assign default customer role
@@ -238,3 +240,5 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
     </div>
   );
 }
+
+    

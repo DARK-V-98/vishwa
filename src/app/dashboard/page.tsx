@@ -26,25 +26,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
+interface UserProfile {
+    roles: string[];
+}
+
+
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
 
-  const { data: adminRole, isLoading: adminLoading } = useDoc(useMemoFirebase(() => user ? doc(firestore, 'roles_admin', user.uid) : null, [user, firestore]));
-  const { data: devRole, isLoading: devLoading } = useDoc(useMemoFirebase(() => user ? doc(firestore, 'roles_developer', user.uid) : null, [user, firestore]));
-  const { data: customerRole, isLoading: customerLoading } = useDoc(useMemoFirebase(() => user ? doc(firestore, 'roles_customer', user.uid) : null, [user, firestore]));
-  
-  const isLoading = isUserLoading || adminLoading || devLoading || customerLoading;
-  
-  const roles = useMemo(() => {
-    const userRoles = [];
-    if (adminRole) userRoles.push({ name: 'Admin', icon: Crown });
-    if (devRole) userRoles.push({ name: 'Developer', icon: Code });
-    if (customerRole) userRoles.push({ name: 'Customer', icon: ShoppingCart });
-    return userRoles;
-  }, [adminRole, devRole, customerRole]);
-
+  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -58,6 +51,8 @@ export default function DashboardPage() {
       router.push("/");
     });
   };
+  
+  const isLoading = isUserLoading || isProfileLoading;
 
   if (isLoading || !user) {
     return (
@@ -67,7 +62,7 @@ export default function DashboardPage() {
     );
   }
   
-  const hasAdminAccess = !!(adminRole || devRole);
+  const hasAdminAccess = userProfile?.roles.includes('admin') || userProfile?.roles.includes('developer');
 
   const menuItems = [
       { id: 'projects', label: 'My Projects', icon: FolderKanban, href: '/projects', description: 'Track your ongoing projects' },
@@ -76,6 +71,13 @@ export default function DashboardPage() {
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
       ...(hasAdminAccess ? [{ id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' }] : []),
   ];
+  
+  const roleIcons: { [key: string]: React.ElementType } = {
+    admin: Crown,
+    developer: Code,
+    customer: ShoppingCart,
+  };
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] pt-24 pb-12">
@@ -87,11 +89,14 @@ export default function DashboardPage() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 justify-center">
                     <Badge variant="secondary"><UserIcon className="h-4 w-4 mr-1" /> User</Badge>
-                    {roles.map(role => (
-                        <Badge key={role.name}>
-                            <role.icon className="h-4 w-4 mr-1" /> {role.name}
-                        </Badge>
-                    ))}
+                    {userProfile?.roles.map(role => {
+                        const Icon = roleIcons[role];
+                        return (
+                            <Badge key={role}>
+                                {Icon && <Icon className="h-4 w-4 mr-1" />} {role.charAt(0).toUpperCase() + role.slice(1)}
+                            </Badge>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -126,3 +131,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
