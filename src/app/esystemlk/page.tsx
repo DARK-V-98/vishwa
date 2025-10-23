@@ -86,8 +86,7 @@ const ESystemLK = () => {
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              A premier software development company powered by Sri Lanka's top developers,
-              delivering world-class digital solutions for businesses of all sizes.
+              A premier software development business delivering world-class digital solutions, handled by a top developer.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
