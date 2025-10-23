@@ -1,16 +1,23 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 
 export default function AuthPage() {
-  const [isSignIn, setIsSignIn] = useState(true);
+  const searchParams = useSearchParams();
+  const formParam = searchParams.get('form');
+  const [isSignIn, setIsSignIn] = useState(formParam !== 'signup');
+
+  useEffect(() => {
+    setIsSignIn(formParam !== 'signup');
+  }, [formParam]);
 
   const toggleForm = () => {
     setIsSignIn(!isSignIn);

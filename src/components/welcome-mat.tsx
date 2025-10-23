@@ -60,7 +60,7 @@ export default function WelcomeMat() {
 
   const handleRegister = () => {
     handleDismiss();
-    router.push("/auth");
+    router.push("/auth?form=signup");
   };
 
   if (isUserLoading) {
