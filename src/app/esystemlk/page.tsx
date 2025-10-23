@@ -80,9 +80,11 @@ const ESystemLK = () => {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold">
-              <span className="bg-gradient-hero bg-clip-text text-transparent">
-                ESystemLK
-              </span>
+              <a href="https://www.esystemlk.xyz" target="_blank" rel="noopener noreferrer">
+                <span className="bg-gradient-hero bg-clip-text text-transparent">
+                  ESystemLK
+                </span>
+              </a>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
