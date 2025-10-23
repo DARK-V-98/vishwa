@@ -30,7 +30,7 @@ import {
 import { adminListings } from "@/lib/data";
 
 export function ListingManagement() {
-    const getStatusVariant = (status: string) => {
+    const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
         switch (status) {
             case 'Active': return 'default';
             case 'Pending': return 'secondary';
@@ -65,7 +65,7 @@ export function ListingManagement() {
                 <TableCell>{listing.seller}</TableCell>
                 <TableCell>Rs.{listing.price.toFixed(2)}</TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(listing.status) as any}>{listing.status}</Badge>
+                  <Badge variant={getStatusVariant(listing.status)}>{listing.status}</Badge>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

@@ -20,6 +20,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
 import { useRouter } from 'next/navigation';
+import { getPricingFirestore } from '@/firebase/pricing-service';
 
 
 // Type definitions based on the guide
@@ -92,7 +93,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 
 
 export default function QuotationGeneratorPage() {
-  const firestore = useFirestore();
+  const mainFirestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
@@ -138,8 +139,8 @@ export default function QuotationGeneratorPage() {
       const result = await generateQuotation(quotationInput);
       const quotationMarkdown = result.quotation;
 
-      // 2. Save the project to Firestore
-      const projectsCollection = collection(firestore, 'projects');
+      // 2. Save the project to Firestore (using the main firestore instance)
+      const projectsCollection = collection(mainFirestore, 'projects');
       await addDoc(projectsCollection, {
         clientId: user.uid,
         clientName: user.displayName || user.email,
@@ -210,10 +211,15 @@ export default function QuotationGeneratorPage() {
 
   useEffect(() => {
     async function getPricingData() {
-      if (!firestore) return;
+      const pricingFirestore = getPricingFirestore();
+      if (!pricingFirestore) {
+          setError("Pricing database is not configured. Please check environment variables.");
+          setLoading(false);
+          return;
+      };
       setLoading(true);
       try {
-        const pricingCollection = collection(firestore, 'pricing');
+        const pricingCollection = collection(pricingFirestore, 'pricing');
         const q = query(pricingCollection, orderBy('order'));
         const snapshot = await getDocs(q);
 
@@ -248,7 +254,7 @@ export default function QuotationGeneratorPage() {
     }
 
     getPricingData();
-  }, [firestore]);
+  }, []);
 
   const currentService = useMemo(() => {
     return pricingData
@@ -506,4 +512,3 @@ export default function QuotationGeneratorPage() {
     </div>
   );
 }
-

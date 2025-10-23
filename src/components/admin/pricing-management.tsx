@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc, getDocs } from 'firebase/firestore';
 import { MoreHorizontal, PlusCircle, Edit, Save, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
+import { getPricingFirestore } from '@/firebase/pricing-service';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase'; // Keep for main firestore if needed elsewhere
 
 interface Tier {
     name: string;
@@ -39,17 +40,38 @@ interface PricingCategory {
 }
 
 export default function PricingManagement() {
-  const firestore = useFirestore();
+  const [pricingData, setPricingData] = useState<PricingCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<PricingCategory | null>(null);
   const [editedServices, setEditedServices] = useState<Service[]>([]);
+  const pricingFirestore = getPricingFirestore();
 
-  const pricingQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'pricing'), orderBy('order'));
-  }, [firestore]);
 
-  const { data: pricingData, isLoading, error } = useCollection<PricingCategory>(pricingQuery);
+  useEffect(() => {
+    async function fetchPricing() {
+        if (!pricingFirestore) {
+            setError("Pricing database not configured.");
+            setIsLoading(false);
+            return;
+        }
+        try {
+            const pricingCollection = collection(pricingFirestore, 'pricing');
+            const q = query(pricingCollection, orderBy('order'));
+            const snapshot = await getDocs(q);
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PricingCategory[];
+            setPricingData(data);
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    fetchPricing();
+  }, [pricingFirestore]);
+
 
   const openEditDialog = (category: PricingCategory) => {
     setSelectedCategory(category);
@@ -64,15 +86,19 @@ export default function PricingManagement() {
   };
 
   const handleSaveChanges = async () => {
-    if (!selectedCategory || !firestore) return;
+    if (!selectedCategory || !pricingFirestore) return;
 
-    const categoryRef = doc(firestore, 'pricing', selectedCategory.id);
+    const categoryRef = doc(pricingFirestore, 'pricing', selectedCategory.id);
 
     try {
         await updateDoc(categoryRef, {
             services: editedServices
         });
         toast.success("Pricing updated successfully!");
+        // Manually update local state to reflect changes instantly
+        setPricingData(currentData => currentData.map(cat => 
+            cat.id === selectedCategory.id ? { ...cat, services: editedServices } : cat
+        ));
         setIsDialogOpen(false);
         setSelectedCategory(null);
     } catch (err: any) {
@@ -93,7 +119,7 @@ export default function PricingManagement() {
       );
   }
 
-  if (error) return <p>Error loading pricing data: {error.message}</p>;
+  if (error) return <p>Error loading pricing data: {error}</p>;
 
   return (
     <>

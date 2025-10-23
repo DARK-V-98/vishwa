@@ -17,9 +17,9 @@ import {
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query } from "firebase/firestore";
+import { collection, query, getDocs } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getPricingFirestore } from "@/firebase/pricing-service";
 
 interface Tier {
   name: string;
@@ -34,21 +34,34 @@ interface Service {
 
 const DesignServices = () => {
   const [email, setEmail] = useState("");
-  const firestore = useFirestore();
-
-  const pricingQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    // Assuming 'Design Services' is the ID of the document in 'pricing' collection
-    return query(collection(firestore, "pricing"));
-  }, [firestore]);
-
-  const { data: pricingData, isLoading, error } = useCollection(pricingQuery);
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  const services = useMemo(() => {
-    if (!pricingData) return [];
-    const designCategory = pricingData.find(cat => cat.id === 'design-services');
-    return designCategory ? designCategory.services : [];
-  }, [pricingData]);
+  useEffect(() => {
+    async function fetchPricing() {
+      const pricingFirestore = getPricingFirestore();
+      if (!pricingFirestore) {
+        setError("Pricing service not available.");
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const pricingCollection = collection(pricingFirestore, "pricing");
+        const snapshot = await getDocs(query(collection(pricingFirestore, "pricing")));
+        const pricingData = snapshot.docs.map(doc => doc.data());
+        const designCategory = pricingData.find(cat => cat.id === 'design-services');
+        if (designCategory && designCategory.services) {
+          setServices(designCategory.services);
+        }
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchPricing();
+  }, []);
 
 
   const handleInterest = (e: React.FormEvent) => {
@@ -175,7 +188,7 @@ const DesignServices = () => {
               ))
             ))}
           </div>
-          {error && <p className="text-center text-destructive mt-4">Error loading pricing: {error.message}</p>}
+          {error && <p className="text-center text-destructive mt-4">Error loading pricing: {error}</p>}
         </div>
       </section>
 
