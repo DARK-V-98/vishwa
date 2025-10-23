@@ -7,23 +7,15 @@ import { ListingManagement } from "@/components/admin/listing-management";
 import { OrderManagement } from "@/components/admin/order-management";
 import ProjectManagement from "@/components/admin/project-management";
 import PricingManagement from "@/components/admin/pricing-management";
-import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import DesignPricingManagement from "@/components/admin/design-pricing-management";
+import { useUser } from "@/firebase";
 import { useMemo } from "react";
-import { collection, doc } from "firebase/firestore";
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const userRoles = user?.roles || [];
 
-  const adminRoleQuery = useMemoFirebase(() => user ? doc(firestore, 'roles_admin', user.uid) : null, [user, firestore]);
-  const devRoleQuery = useMemoFirebase(() => user ? doc(firestore, 'roles_developer', user.uid) : null, [user, firestore]);
-
-  // A simple way to check roles based on the presence of role documents.
-  // In a real app, you might get this from custom claims for efficiency.
-  const { data: adminRole } = useDoc(adminRoleQuery);
-  const { data: devRole } = useDoc(devRoleQuery);
-
-  const canManagePricing = useMemo(() => !!(adminRole || devRole), [adminRole, devRole]);
+  const canManagePricing = useMemo(() => userRoles.includes('admin') || userRoles.includes('developer'), [userRoles]);
 
 
   if (isUserLoading) {
@@ -45,12 +37,13 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="projects" className="w-full">
-        <TabsList className={`grid w-full ${canManagePricing ? 'grid-cols-5' : 'grid-cols-4'}`}>
+        <TabsList className={`grid w-full ${canManagePricing ? 'grid-cols-6' : 'grid-cols-4'}`}>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
           <TabsTrigger value="orders">Design Orders</TabsTrigger>
-          {canManagePricing && <TabsTrigger value="pricing">Pricing</TabsTrigger>}
+          {canManagePricing && <TabsTrigger value="pricing">Web Pricing</TabsTrigger>}
+          {canManagePricing && <TabsTrigger value="design-pricing">Design Pricing</TabsTrigger>}
         </TabsList>
         <TabsContent value="projects">
             <ProjectManagement />
@@ -69,7 +62,14 @@ export default function AdminPage() {
               <PricingManagement />
           </TabsContent>
         )}
+         {canManagePricing && (
+          <TabsContent value="design-pricing">
+              <DesignPricingManagement />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
 }
+
+    

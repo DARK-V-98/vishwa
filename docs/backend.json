@@ -291,6 +291,34 @@
         }
       },
       "required": ["id", "clientId", "clientName", "clientEmail", "serviceType", "projectBrief", "status", "createdAt", "updatedAt"]
+    },
+    "DesignService": {
+      "title": "DesignService",
+      "type": "object",
+      "description": "Represents a design service with multiple pricing tiers.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the design service (e.g., 'Logo Design')."
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Name of the tier (e.g., 'Basic')." },
+              "price": { "type": "string", "description": "Price of the tier (e.g., 'Rs. 5,000')." },
+              "features": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of features included in this tier."
+              }
+            },
+            "required": ["name", "price", "features"]
+          }
+        }
+      },
+      "required": ["name", "tiers"]
     }
   },
   "auth": {
