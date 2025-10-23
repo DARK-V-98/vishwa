@@ -11,8 +11,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, FileText } from 'lucide-react';
+import { AlertCircle, FileText, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { generateQuotation } from '@/ai/flows/automated-quotation-generation';
+import { useFormState } from 'react-dom';
+import { toast } from 'sonner';
 
 // Type definitions based on the guide
 interface Tier {
@@ -52,6 +55,37 @@ const parsePrice = (priceString: string): number => {
   return parseFloat(numberString) || 0;
 };
 
+
+interface FormState {
+    message: string;
+    quotation?: string;
+    isError: boolean;
+}
+  
+const initialState: FormState = {
+    message: "",
+    isError: false,
+};
+
+function SubmitButton({ disabled }: { disabled: boolean }) {
+    // Directly use `pending` from `useFormStatus`, which is now correct.
+    // const { pending } = useFormStatus(); 
+    const [pending, setPending] = useState(false);
+
+    // This is a bit of a hack to get the pending state since useFormStatus is not working
+    const handleClick = () => {
+        setPending(true);
+    }
+  
+    return (
+      <Button type="submit" className="w-full" disabled={disabled || pending} onClick={handleClick}>
+        <Sparkles className="mr-2 h-4 w-4" />
+        {pending ? 'Generating...' : 'Generate AI Quotation'}
+      </Button>
+    );
+}
+
+
 export default function QuotationGeneratorPage() {
   const firestore = useFirestore();
   const [pricingData, setPricingData] = useState<PricingCategory[]>([]);
@@ -64,6 +98,49 @@ export default function QuotationGeneratorPage() {
   const [selectedTier, setSelectedTier] = useState<Tier | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
   const [selectedCommonAddons, setSelectedCommonAddons] = useState<Addon[]>([]);
+  
+  const [state, formAction] = useFormState(handleAIQuotation, initialState);
+
+  useEffect(() => {
+    if (state.message) {
+      toast(state.isError ? "Error" : "Success", {
+        description: state.message,
+        action: state.isError ? { label: "Dismiss", onClick: () => {} } : undefined,
+      });
+    }
+  }, [state]);
+
+
+  async function handleAIQuotation(prevState: FormState, formData: FormData): Promise<FormState> {
+    if (!selectedTier) {
+      return { message: 'Please select a pricing tier before generating a quotation.', isError: true };
+    }
+  
+    const input = {
+      category: selectedCategory,
+      service: selectedService,
+      tier: selectedTier,
+      addons: selectedAddons,
+      commonAddons: selectedCommonAddons,
+      total: total,
+    };
+  
+    try {
+      const result = await generateQuotation(input);
+      return {
+        message: 'AI quotation generated successfully!',
+        quotation: result.quotation,
+        isError: false,
+      };
+    } catch (error) {
+      console.error('AI Quotation Error:', error);
+      return {
+        message: 'There was an error generating the AI quotation. Please try again.',
+        isError: true,
+      };
+    }
+  }
+
 
   useEffect(() => {
     async function getPricingData() {
@@ -314,6 +391,7 @@ export default function QuotationGeneratorPage() {
 
         {/* Summary Card */}
         <div className="lg:col-span-1 sticky top-24">
+          <form action={formAction}>
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle>Quotation Summary</CardTitle>
@@ -351,12 +429,21 @@ export default function QuotationGeneratorPage() {
                         <span>Total:</span>
                         <span>Rs. {total.toLocaleString()}</span>
                     </div>
-                     <Button className="w-full">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Finalize & Get PDF
-                    </Button>
+                     <SubmitButton disabled={!selectedTier} />
                 </CardFooter>
             </Card>
+            </form>
+            {state.quotation && (
+              <Alert className="mt-8">
+                <Sparkles className="h-4 w-4" />
+                <AlertTitle>Generated AI Quotation</AlertTitle>
+                <AlertDescription>
+                  <pre className="mt-2 w-full rounded-md bg-slate-950 p-4 font-mono text-sm text-white whitespace-pre-wrap">
+                    <code>{state.quotation}</code>
+                  </pre>
+                </AlertDescription>
+              </Alert>
+            )}
         </div>
       </div>
     </div>

@@ -11,26 +11,26 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateQuotationInputSchema = z.object({
-  projectType: z
-    .string()
-    .describe('The type of project, e.g., web development, mobile app, etc.'),
-  projectDescription: z
-    .string()
-    .describe('A detailed description of the project requirements.'),
-  budget: z
-    .string()
-    .describe('The client estimated budget for the project, e.g., $5000 - $10000'),
-  timeline: z
-    .string()
-    .describe('The expected timeline for project completion, e.g., 2-3 months.'),
-  features: z
-    .string()
-    .describe('The list of must-have features for the project.'),
+  category: z.string().describe('The selected service category.'),
+  service: z.string().describe('The selected service.'),
+  tier: z.object({
+    name: z.string(),
+    price: z.string(),
+  }).optional().describe('The selected pricing tier.'),
+  addons: z.array(z.object({
+    name: z.string(),
+    price: z.string(),
+  })).optional().describe('A list of selected add-ons.'),
+  commonAddons: z.array(z.object({
+    name: z.string(),
+    price: z.string(),
+  })).optional().describe('A list of selected common add-ons.'),
+  total: z.number().describe('The calculated total price.'),
 });
 export type GenerateQuotationInput = z.infer<typeof GenerateQuotationInputSchema>;
 
 const GenerateQuotationOutputSchema = z.object({
-  quotation: z.string().describe('The generated project quotation.'),
+  quotation: z.string().describe('The generated project quotation in Markdown format.'),
 });
 export type GenerateQuotationOutput = z.infer<typeof GenerateQuotationOutputSchema>;
 
@@ -46,14 +46,32 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateQuotationOutputSchema},
   prompt: `You are an expert in generating project quotations for ESystemLK, a company that offers web development and custom software solutions.
 
-  Based on the client's requirements below, generate a detailed and professional quotation. Include a breakdown of costs, a timeline, and any assumptions made.
-  Use a professional tone, and be specific about the services included.
+  Based on the client's selections below, generate a detailed and professional quotation in Markdown format.
+  
+  The quotation should include:
+  1. A professional greeting.
+  2. A summary of the selected services.
+  3. A breakdown of the costs for the selected tier and each addon.
+  4. The total estimated cost.
+  5. A concluding statement with next steps.
 
-  Project Type: {{{projectType}}}
-  Project Description: {{{projectDescription}}}
-  Budget: {{{budget}}}
-  Timeline: {{{timeline}}}
-  Features: {{{features}}}
+  Selections:
+  - Category: {{{category}}}
+  - Service: {{{service}}}
+  {{#if tier}}- Tier: {{{tier.name}}} ({{{tier.price}}}){{/if}}
+  {{#if addons}}
+  - Add-ons:
+    {{#each addons}}
+    - {{{this.name}}} ({{{this.price}}})
+    {{/each}}
+  {{/if}}
+  {{#if commonAddons}}
+  - Common Add-ons:
+    {{#each commonAddons}}
+    - {{{this.name}}} ({{{this.price}}})
+    {{/each}}
+  {{/if}}
+  - Total: Rs. {{{total}}}
   `,
 });
 
