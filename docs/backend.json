@@ -1,19 +1,14 @@
-
 {
   "entities": {
-    "User": {
+    "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+      "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user account within the VishwaVerse platform.",
+      "description": "Represents a user's profile information.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user account."
-        },
-        "username": {
-          "type": "string",
-          "description": "The user's unique username."
+          "description": "Unique identifier for the user profile."
         },
         "firstName": {
           "type": "string",
@@ -28,397 +23,317 @@
           "description": "The user's email address.",
           "format": "email"
         },
-        "phone": {
-          "type": "string",
-          "description": "The user's phone number."
-        },
-        "roles": {
-          "type": "array",
-          "description": "A list of roles assigned to the user.",
-          "items": {
-            "type": "string",
-            "enum": ["admin", "developer", "customer"]
-          }
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "The date and time the user account was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "The date and time the user account was last updated.",
-          "format": "date-time"
-        },
-        "profileId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: User 1:1 UserProfile)"
-        }
-      },
-      "required": [
-        "id",
-        "email",
-        "roles",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "UserProfile": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserProfile",
-      "type": "object",
-      "description": "Represents the profile information for a user.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the user profile."
-        },
         "bio": {
           "type": "string",
-          "description": "A short biography of the user."
+          "description": "A short biography or description of the user."
         },
         "skills": {
           "type": "array",
-          "description": "A list of the user's skills.",
+          "description": "An array of skills possessed by the user.",
           "items": {
             "type": "string"
           }
-        },
-        "experience": {
-          "type": "string",
-          "description": "A description of the user's experience."
-        },
-        "achievements": {
-          "type": "array",
-          "description": "A list of the user's achievements.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: UserProfile 1:1 User)"
-        }
-      },
-      "required": [
-        "id"
-      ]
-    },
-    "Admin": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Admin",
-      "type": "object",
-      "description": "Represents an administrator account within the VishwaVerse platform. Granted via the roles_admin collection.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the admin account (should match the user's UID)."
-        },
-        "grantedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp when the admin role was granted."
         }
       },
       "required": [
         "id",
-        "grantedAt"
+        "firstName",
+        "lastName",
+        "email"
       ]
     },
-    "Developer": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Developer",
-        "type": "object",
-        "description": "Represents a developer account. Granted via the roles_developer collection.",
-        "properties": {
-            "id": {
-                "type": "string",
-                "description": "Unique identifier for the developer account (should match the user's UID)."
-            },
-            "grantedAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "Timestamp when the developer role was granted."
-            }
-        },
-        "required": ["id", "grantedAt"]
-    },
-    "Customer": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Customer",
-        "type": "object",
-        "description": "Represents a customer account. Granted via the roles_customer collection, typically after a purchase or project creation.",
-        "properties": {
-            "id": {
-                "type": "string",
-                "description": "Unique identifier for the customer account (should match the user's UID)."
-            },
-            "firstPurchaseAt": {
-                "type": "string",
-                "format": "date-time",
-                "description": "Timestamp of the first purchase or project creation."
-            }
-        },
-        "required": ["id", "firstPurchaseAt"]
-    },
-    "Project": {
-      "title": "Project",
+    "Service": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Service",
       "type": "object",
-      "description": "Represents a client project, such as a website build, initiated through the quotation generator.",
+      "description": "Represents a service offered by the company.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the project."
+          "description": "Unique identifier for the service."
         },
-        "clientId": {
+        "name": {
           "type": "string",
-          "description": "The ID of the user who owns this project."
+          "description": "The name of the service."
         },
-        "clientName": {
+        "description": {
           "type": "string",
-          "description": "The name of the client."
-        },
-        "clientEmail": {
-          "type": "string",
-          "description": "The email of the client."
-        },
-        "serviceCategory": {
-          "type": "string",
-          "description": "The category of the service requested (e.g., 'Web Development')."
-        },
-        "serviceName": {
-          "type": "string",
-          "description": "The specific service requested (e.g., 'Corporate Website')."
-        },
-        "tier": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "price": { "type": "string" }
-          }
-        },
-        "addons": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string" },
-              "price": { "type": "string" }
-            }
-          }
-        },
-        "total": {
-          "type": "number",
-          "description": "The total calculated price of the quotation."
-        },
-        "quotationMarkdown": {
-          "type": "string",
-          "description": "The AI-generated quotation in Markdown format."
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the project.",
-          "enum": ["In Review", "In Progress", "Completed", "Cancelled"]
-        },
-        "progress": {
-          "type": "number",
-          "description": "The completion percentage of the project (0-100)."
-        },
-        "updates": {
-          "type": "array",
-          "description": "A list of progress updates for the project.",
-          "items": {
-            "type": "object",
-            "properties": {
-              "message": { "type": "string" },
-              "timestamp": { "type": "string", "format": "date-time" }
-            }
-          }
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
+          "description": "A detailed description of the service."
         }
       },
-      "required": ["id", "clientId", "serviceCategory", "serviceName", "total", "status", "progress", "createdAt", "updatedAt"]
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
     },
     "DesignOrder": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "DesignOrder",
       "type": "object",
-      "description": "Represents a design service order placed by a client.",
+      "description": "Represents a design order placed by a user.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the design order."
         },
-        "clientId": {
+        "userId": {
           "type": "string",
-          "description": "The ID of the user who placed this order."
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N DesignOrder)"
         },
-        "clientName": {
+        "description": {
           "type": "string",
-          "description": "The name of the client."
+          "description": "A description of the design order requirements."
         },
-        "clientEmail": {
+        "dueDate": {
           "type": "string",
-          "description": "The email of the client."
-        },
-        "serviceType": {
-          "type": "string",
-          "description": "The type of design service requested (e.g., 'Logo Design').",
-          "enum": ["logo", "post"]
-        },
-        "projectBrief": {
-          "type": "string",
-          "description": "A detailed brief of the design project."
+          "description": "The due date for the design order.",
+          "format": "date-time"
         },
         "status": {
           "type": "string",
-          "description": "The current status of the design order.",
-          "enum": ["Pending", "In Progress", "Completed", "Cancelled"]
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
+          "description": "The current status of the design order (e.g., pending, in progress, completed)."
         }
       },
-      "required": ["id", "clientId", "clientName", "clientEmail", "serviceType", "projectBrief", "status", "createdAt", "updatedAt"]
+      "required": [
+        "id",
+        "userId",
+        "description",
+        "dueDate",
+        "status"
+      ]
     },
-    "DesignService": {
-      "title": "DesignService",
+    "Appointment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Appointment",
       "type": "object",
-      "description": "Represents a design service with multiple pricing tiers.",
+      "description": "Represents an appointment booked by a user.",
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the appointment."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Appointment)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "The start time of the appointment.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "The end time of the appointment.",
+          "format": "date-time"
+        },
+        "location": {
+          "type": "string",
+          "description": "The location of the appointment (online or physical)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "startTime",
+        "endTime",
+        "location"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a product listed on the online marketplace.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the product."
+        },
+        "sellerId": {
+          "type": "string",
+          "description": "Reference to UserProfile representing the seller. (Relationship: UserProfile 1:N Product)"
+        },
         "name": {
           "type": "string",
-          "description": "The name of the design service (e.g., 'Logo Design')."
+          "description": "The name of the product."
         },
-        "tiers": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": { "type": "string", "description": "Name of the tier (e.g., 'Basic')." },
-              "price": { "type": "string", "description": "Price of the tier (e.g., 'Rs. 5,000')." },
-              "features": {
-                "type": "array",
-                "items": { "type": "string" },
-                "description": "List of features included in this tier."
-              }
-            },
-            "required": ["name", "price", "features"]
-          }
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the product."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the product."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the product."
         }
       },
-      "required": ["name", "tiers"]
+      "required": [
+        "id",
+        "sellerId",
+        "name",
+        "description",
+        "price",
+        "category"
+      ]
+    },
+    "QuotationRequest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuotationRequest",
+      "type": "object",
+      "description": "Represents a quotation request submitted by a client.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the quotation request."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N QuotationRequest)"
+        },
+        "requirements": {
+          "type": "string",
+          "description": "A detailed description of the client's requirements for the project."
+        },
+        "quotation": {
+          "type": "string",
+          "description": "The generated quotation based on the client's requirements."
+        },
+        "dateRequested": {
+          "type": "string",
+          "description": "The date the quotation was requested.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "requirements",
+        "quotation",
+        "dateRequested"
+      ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous",
-      "email",
-      "google.com"
+      "anonymous"
     ]
   },
   "firestore": {
     "structure": [
       {
-        "path": "users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user account information. Includes 'profileId' which will be used to link to the user profile. This enables path-based ownership for user profiles.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "userProfiles/{profileId}",
+        "path": "/users/{userId}",
         "definition": {
           "entityName": "UserProfile",
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores user profile information. The 'userId' field links back to the user document, enforcing a 1:1 relationship.",
-          "params": [
-            {
-              "name": "profileId",
-              "description": "The unique identifier of the user profile."
-            }
-          ]
-        }
-      },
-      {
-        "path": "roles_admin/{userId}",
-        "definition": {
-          "entityName": "Admin",
-          "schema": {
-            "$ref": "#/backend/entities/Admin"
-          },
-          "description": "Collection to store admin roles. The existence of a document with a user's ID in this collection grants admin privileges. This relies on Existence over Content for authorization.",
+          "description": "Stores user profile information. Top-level collection enables easy querying of all users.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the admin user."
+              "description": "The unique identifier for the user."
             }
           ]
         }
       },
       {
-        "path": "roles_developer/{userId}",
-        "definition": {
-          "entityName": "Developer",
-          "schema": { "$ref": "#/backend/entities/Developer" },
-          "description": "Collection to grant developer roles. The existence of a document with a user's ID here grants developer privileges."
-        }
-      },
-      {
-        "path": "roles_customer/{userId}",
-        "definition": {
-          "entityName": "Customer",
-          "schema": { "$ref": "#/backend/entities/Customer" },
-          "description": "Collection to grant customer roles. A user becomes a customer after their first project or order. The existence of a document with a user's ID here grants customer privileges."
-        }
-      },
-      {
-        "path": "projects/{projectId}",
-        "definition": {
-          "entityName": "Project",
-          "schema": { "$ref": "#/backend/entities/Project" },
-          "description": "Stores all client projects initiated from the quotation generator."
-        }
-      },
-      {
-        "path": "designOrders/{orderId}",
+        "path": "/users/{userId}/designOrders/{designOrderId}",
         "definition": {
           "entityName": "DesignOrder",
-          "schema": { "$ref": "#/backend/entities/DesignOrder" },
-          "description": "Stores all client design orders initiated from the design studio."
+          "schema": {
+            "$ref": "#/backend/entities/DesignOrder"
+          },
+          "description": "Stores design orders placed by a user. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "designOrderId",
+              "description": "The unique identifier for the design order."
+            }
+          ]
         }
       },
       {
-        "path": "pricing/{pricingId}",
+        "path": "/users/{userId}/appointments/{appointmentId}",
         "definition": {
-          "schema": { "type": "object" },
-          "description": "Stores pricing information, such as for design services. This collection can be managed by admins."
+          "entityName": "Appointment",
+          "schema": {
+            "$ref": "#/backend/entities/Appointment"
+          },
+          "description": "Stores appointments booked by a user. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "appointmentId",
+              "description": "The unique identifier for the appointment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/quotationRequests/{quotationRequestId}",
+        "definition": {
+          "entityName": "QuotationRequest",
+          "schema": {
+            "$ref": "#/backend/entities/QuotationRequest"
+          },
+          "description": "Stores quotation requests submitted by a user. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "quotationRequestId",
+              "description": "The unique identifier for the quotation request."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": {
+            "$ref": "#/backend/entities/Service"
+          },
+          "description": "Stores services offered by the company. Top-level collection enables easy querying of all services.",
+          "params": [
+            {
+              "name": "serviceId",
+              "description": "The unique identifier for the service."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores products listed on the online marketplace. Has 'sellerId' for identifying the product owner.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier for the product."
+            }
+          ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support user authentication, profile management, and administrative roles, focusing on security, scalability, and debuggability. It incorporates key principles such as Authorization Independence, DBAC (Database-Based Access Control), and Structural Segregation to streamline security rules and maintain data integrity.\n\n*   **Authorization Independence:** The `users/{userId}` collection includes the `profileId` field. While seemingly creating a `get()` dependency, the intended use-case is to simply store the ID. Access to `/users/{userId}/profile` is granted via path-based ownership, eliminating the need for `get()` calls in security rules.\n*   **Structural Segregation:** User profiles and roles (admin, developer, customer) are stored in separate collections (`userProfiles`, `roles_admin`, `roles_developer`, `roles_customer`), ensuring different security postures for each. This segregation simplifies rules and avoids mixing data with varying access requirements.\n*   **DBAC:** Roles are managed through their respective `roles_*` collections. The existence of a document for a user in any of these collections grants the corresponding privileges, enabling simple existence-based security rules.\n*   **QAPs:** `list` operations are secured by enforcing ownership and role-based access controls. Path-based ownership (`users/{userId}`) allows listing only resources owned by the authenticated user. Role checks in the `roles_*` collections authorize administrative `list` operations.\n\nThis structure facilitates secure and efficient data access while adhering to core design principles, minimizing complexity and maximizing debuggability."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, and products are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user."
   }
 }
