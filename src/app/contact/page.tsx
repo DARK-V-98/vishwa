@@ -106,7 +106,7 @@ const Contact = () => {
                       </div>
                       <div className="space-y-1">
                         <p className="font-medium text-sm">Location</p>
-                        <p className="text-sm text-muted-foreground">No. 123, Main Street, Colombo, Sri Lanka</p>
+                        <p className="text-sm text-muted-foreground">Colombo, Sri Lanka</p>
                       </div>
                     </div>
                   </div>
@@ -215,7 +215,7 @@ const Contact = () => {
               <div className="text-center text-primary-foreground">
                 <MapPin className="h-16 w-16 mx-auto mb-4 opacity-50" />
                 <p className="text-lg font-semibold">Office Location Map</p>
-                <p className="text-sm opacity-80 mt-2">No. 123, Main Street, Colombo, Sri Lanka</p>
+                <p className="text-sm opacity-80 mt-2">Colombo, Sri Lanka</p>
               </div>
             </div>
           </Card>
