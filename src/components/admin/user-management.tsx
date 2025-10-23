@@ -58,27 +58,12 @@ export function UserManagement() {
   const handleRoleChange = async (userId: string, role: 'admin' | 'developer' | 'customer', grant: boolean) => {
     if (!firestore) return;
     const userDocRef = doc(firestore, "users", userId);
-    const roleCollectionName = `roles_${role}`;
-    const userRoleRef = doc(firestore, roleCollectionName, userId);
     
     try {
-        const batch = writeBatch(firestore);
-        
-        // Update the roles array on the user document
-        batch.update(userDocRef, {
+        await updateDoc(userDocRef, {
             roles: grant ? arrayUnion(role) : arrayRemove(role)
         });
 
-        // Update the separate roles collection for backward compatibility or other checks
-        if(grant) {
-            const roleData:any = { grantedAt: new Date().toISOString() };
-            if(role === 'customer') roleData.firstPurchaseAt = new Date().toISOString();
-            batch.set(userRoleRef, roleData);
-        } else {
-            batch.delete(userRoleRef);
-        }
-
-        await batch.commit();
         toast.success(`Role ${grant ? 'granted' : 'revoked'} successfully.`);
     } catch(e: any) {
         toast.error(`Failed to update role: ${e.message}`);
