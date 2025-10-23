@@ -99,44 +99,58 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Admin",
       "type": "object",
-      "description": "Represents an administrator account within the VishwaVerse platform.",
+      "description": "Represents an administrator account within the VishwaVerse platform. Granted via the roles_admin collection.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the admin account."
+          "description": "Unique identifier for the admin account (should match the user's UID)."
         },
-        "email": {
-          "type": "string",
-          "description": "The admin's email address.",
-          "format": "email"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The admin's first name."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The admin's last name."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "The date and time the admin account was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "The date and time the admin account was last updated.",
-          "format": "date-time"
+        "grantedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the admin role was granted."
         }
       },
       "required": [
         "id",
-        "email",
-        "firstName",
-        "lastName",
-        "createdAt",
-        "updatedAt"
+        "grantedAt"
       ]
+    },
+    "Developer": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Developer",
+        "type": "object",
+        "description": "Represents a developer account. Granted via the roles_developer collection.",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "Unique identifier for the developer account (should match the user's UID)."
+            },
+            "grantedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Timestamp when the developer role was granted."
+            }
+        },
+        "required": ["id", "grantedAt"]
+    },
+    "Customer": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Customer",
+        "type": "object",
+        "description": "Represents a customer account. Granted via the roles_customer collection, typically after a purchase or project creation.",
+        "properties": {
+            "id": {
+                "type": "string",
+                "description": "Unique identifier for the customer account (should match the user's UID)."
+            },
+            "firstPurchaseAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Timestamp of the first purchase or project creation."
+            }
+        },
+        "required": ["id", "firstPurchaseAt"]
     },
     "Project": {
       "title": "Project",
@@ -319,13 +333,29 @@
           "schema": {
             "$ref": "#/backend/entities/Admin"
           },
-          "description": "Collection to store admin roles. The existence of a document with a user's ID in this collection grants admin privileges.  This relies on Existence over Content for authorization.",
+          "description": "Collection to store admin roles. The existence of a document with a user's ID in this collection grants admin privileges. This relies on Existence over Content for authorization.",
           "params": [
             {
               "name": "userId",
               "description": "The unique identifier of the admin user."
             }
           ]
+        }
+      },
+      {
+        "path": "roles_developer/{userId}",
+        "definition": {
+          "entityName": "Developer",
+          "schema": { "$ref": "#/backend/entities/Developer" },
+          "description": "Collection to grant developer roles. The existence of a document with a user's ID here grants developer privileges."
+        }
+      },
+      {
+        "path": "roles_customer/{userId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": { "$ref": "#/backend/entities/Customer" },
+          "description": "Collection to grant customer roles. A user becomes a customer after their first project or order. The existence of a document with a user's ID here grants customer privileges."
         }
       },
       {
@@ -345,8 +375,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support user authentication, profile management, and administrative roles, focusing on security, scalability, and debuggability. It incorporates key principles such as Authorization Independence, DBAC (Database-Based Access Control), and Structural Segregation to streamline security rules and maintain data integrity.\n\n*   **Authorization Independence:** The `users/{userId}` collection includes the `profileId` field. While seemingly creating a `get()` dependency, the intended use-case is to simply store the ID. Access to `/users/{userId}/profile` is granted via path-based ownership, eliminating the need for `get()` calls in security rules.\n*   **Structural Segregation:** User profiles and admin roles are stored in separate collections (`userProfiles` and `roles_admin`), ensuring different security postures for each. This segregation simplifies rules and avoids mixing data with varying access requirements.\n*   **DBAC:** Admin roles are managed through the `roles_admin/{uid}` collection. The existence of a document for a user in this collection grants admin privileges, enabling simple existence-based security rules.\n*   **QAPs:** `list` operations are secured by enforcing ownership and role-based access controls. Path-based ownership (`users/{userId}`) allows listing only resources owned by the authenticated user. Admin role checks in the `roles_admin` collection authorize administrative `list` operations.\n\nThis structure facilitates secure and efficient data access while adhering to core design principles, minimizing complexity and maximizing debuggability."
+    "reasoning": "The Firestore structure is designed to support user authentication, profile management, and administrative roles, focusing on security, scalability, and debuggability. It incorporates key principles such as Authorization Independence, DBAC (Database-Based Access Control), and Structural Segregation to streamline security rules and maintain data integrity.\n\n*   **Authorization Independence:** The `users/{userId}` collection includes the `profileId` field. While seemingly creating a `get()` dependency, the intended use-case is to simply store the ID. Access to `/users/{userId}/profile` is granted via path-based ownership, eliminating the need for `get()` calls in security rules.\n*   **Structural Segregation:** User profiles and roles (admin, developer, customer) are stored in separate collections (`userProfiles`, `roles_admin`, `roles_developer`, `roles_customer`), ensuring different security postures for each. This segregation simplifies rules and avoids mixing data with varying access requirements.\n*   **DBAC:** Roles are managed through their respective `roles_*` collections. The existence of a document for a user in any of these collections grants the corresponding privileges, enabling simple existence-based security rules.\n*   **QAPs:** `list` operations are secured by enforcing ownership and role-based access controls. Path-based ownership (`users/{userId}`) allows listing only resources owned by the authenticated user. Role checks in the `roles_*` collections authorize administrative `list` operations.\n\nThis structure facilitates secure and efficient data access while adhering to core design principles, minimizing complexity and maximizing debuggability."
   }
 }
-
-    
