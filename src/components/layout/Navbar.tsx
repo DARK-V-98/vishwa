@@ -85,7 +85,7 @@ const Navbar = () => {
                   Sign Out
                 </Button>
               ) : (
-                <Link href="/signin">
+                <Link href="/auth">
                   <Button variant="hero" size="sm">
                     Sign In
                   </Button>
@@ -126,7 +126,7 @@ const Navbar = () => {
                   Sign Out
                 </Button>
               ) : (
-                <Link href="/signin" onClick={() => setIsOpen(false)}>
+                <Link href="/auth" onClick={() => setIsOpen(false)}>
                   <Button variant="hero" size="sm" className="w-full mt-4">
                     Sign In
                   </Button>

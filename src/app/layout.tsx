@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={cn("min-h-screen bg-background font-sans antialiased")}>
         <FirebaseClientProvider>
           <Navbar />
-          <main>{children}</main>
+          <main className="min-h-screen">{children}</main>
           <Footer />
           <Toaster />
           <SonnerToaster />
