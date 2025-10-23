@@ -12,10 +12,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, FileText, Sparkles } from 'lucide-react';
+import { AlertCircle, Download, FileText, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { generateQuotation } from '@/ai/flows/automated-quotation-generation';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import ReactMarkdown from 'react-markdown';
+
 
 // Type definitions based on the guide
 interface Tier {
@@ -135,13 +139,41 @@ export default function QuotationGeneratorPage() {
   const [state, formAction] = useActionState(handleAIQuotation, initialState);
 
   useEffect(() => {
-    if (state.message) {
-      toast(state.isError ? "Error" : "Success", {
-        description: state.message,
-        action: state.isError ? { label: "Dismiss", onClick: () => {} } : undefined,
+    if (state.message && !state.quotation) { // Only toast for form-level messages, not on success with quotation
+        toast(state.isError ? "Error" : "Info", {
+          description: state.message,
+        });
+      }
+      if (state.message && state.quotation) {
+        toast.success("AI quotation generated successfully!");
+      }
+  }, [state]);
+
+  const handleDownloadPdf = () => {
+    const input = document.getElementById('quotation-content');
+    if (input) {
+      html2canvas(input, { scale: 2 }).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'px', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const ratio = canvasWidth / canvasHeight;
+        const width = pdfWidth;
+        const height = width / ratio;
+
+        if (height > pdfHeight) {
+            // This is a simplistic way to handle overflow.
+            // For multi-page, you'd need more complex logic.
+            console.warn("Content might be too long for a single PDF page.");
+        }
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+        pdf.save('quotation.pdf');
       });
     }
-  }, [state]);
+  };
 
   useEffect(() => {
     async function getPricingData() {
@@ -438,11 +470,17 @@ export default function QuotationGeneratorPage() {
             {state.quotation && (
               <Alert className="mt-8">
                 <Sparkles className="h-4 w-4" />
-                <AlertTitle>Generated AI Quotation</AlertTitle>
+                <AlertTitle className='flex justify-between items-center'>
+                  Generated AI Quotation
+                  <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
+                  </Button>
+                </AlertTitle>
                 <AlertDescription>
-                  <pre className="mt-2 w-full rounded-md bg-slate-950 p-4 font-mono text-sm text-white whitespace-pre-wrap">
-                    <code>{state.quotation}</code>
-                  </pre>
+                    <div id="quotation-content" className="prose prose-sm dark:prose-invert max-w-none bg-slate-950 p-4 rounded-md mt-2 text-white">
+                        <ReactMarkdown>{state.quotation}</ReactMarkdown>
+                    </div>
                 </AlertDescription>
               </Alert>
             )}
