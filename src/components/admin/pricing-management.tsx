@@ -13,8 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getPricingFirestore } from '@/firebase/pricing-service';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase'; // Keep for main firestore if needed elsewhere
+import { useFirestore } from '@/firebase';
 
 interface Tier {
     name: string;
@@ -47,18 +46,18 @@ export default function PricingManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<PricingCategory | null>(null);
   const [editedServices, setEditedServices] = useState<Service[]>([]);
-  const pricingFirestore = getPricingFirestore();
+  const firestore = useFirestore();
 
 
   useEffect(() => {
     async function fetchPricing() {
-        if (!pricingFirestore) {
+        if (!firestore) {
             setError("Pricing database not configured.");
             setIsLoading(false);
             return;
         }
         try {
-            const pricingCollection = collection(pricingFirestore, 'pricing');
+            const pricingCollection = collection(firestore, 'pricing');
             const q = query(pricingCollection, orderBy('order'));
             const snapshot = await getDocs(q);
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PricingCategory[];
@@ -69,8 +68,10 @@ export default function PricingManagement() {
             setIsLoading(false);
         }
     }
-    fetchPricing();
-  }, [pricingFirestore]);
+    if (firestore) {
+      fetchPricing();
+    }
+  }, [firestore]);
 
 
   const openEditDialog = (category: PricingCategory) => {
@@ -86,9 +87,9 @@ export default function PricingManagement() {
   };
 
   const handleSaveChanges = async () => {
-    if (!selectedCategory || !pricingFirestore) return;
+    if (!selectedCategory || !firestore) return;
 
-    const categoryRef = doc(pricingFirestore, 'pricing', selectedCategory.id);
+    const categoryRef = doc(firestore, 'pricing', selectedCategory.id);
 
     try {
         await updateDoc(categoryRef, {

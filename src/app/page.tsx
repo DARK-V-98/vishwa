@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -57,8 +58,8 @@ const Home = () => {
           <Image
             src="https://picsum.photos/seed/hero/1920/1080"
             alt="Hero background"
-            layout="fill"
-            objectFit="cover"
+            fill
+            className="object-cover"
             data-ai-hint="abstract background"
           />
         </div>

@@ -74,8 +74,8 @@ export default function WelcomeMat() {
             <Image 
                 src="https://picsum.photos/seed/welcome/600/200"
                 alt="Welcome Banner"
-                layout="fill"
-                objectFit="cover"
+                fill
+                className="object-cover"
                 data-ai-hint="abstract texture vibrant"
             />
              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>

@@ -20,7 +20,6 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
 import { useRouter } from 'next/navigation';
-import { getPricingFirestore } from '@/firebase/pricing-service';
 
 
 // Type definitions based on the guide
@@ -211,15 +210,14 @@ export default function QuotationGeneratorPage() {
 
   useEffect(() => {
     async function getPricingData() {
-      const pricingFirestore = getPricingFirestore();
-      if (!pricingFirestore) {
-          setError("Pricing database is not configured. Please check environment variables.");
+      if (!mainFirestore) {
+          setError("Main database is not configured.");
           setLoading(false);
           return;
       };
       setLoading(true);
       try {
-        const pricingCollection = collection(pricingFirestore, 'pricing');
+        const pricingCollection = collection(mainFirestore, 'pricing');
         const q = query(pricingCollection, orderBy('order'));
         const snapshot = await getDocs(q);
 
@@ -253,8 +251,10 @@ export default function QuotationGeneratorPage() {
       }
     }
 
-    getPricingData();
-  }, []);
+    if (mainFirestore) {
+      getPricingData();
+    }
+  }, [mainFirestore]);
 
   const currentService = useMemo(() => {
     return pricingData
