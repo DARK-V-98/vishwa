@@ -70,12 +70,6 @@ export const products = [
   { id: '6', name: 'Condenser Microphone', price: 180.75, imageId: 'marketplace-product-6', category: 'audio' },
 ];
 
-export const adminUsers = [
-  { id: 'usr_001', name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin', joined: '2023-01-15' },
-  { id: 'usr_002', name: 'Bob Williams', email: 'bob@example.com', role: 'User', joined: '2023-03-22' },
-  { id: 'usr_003', name: 'Charlie Brown', email: 'charlie@example.com', role: 'User', joined: '2023-05-30' },
-];
-
 export const adminListings = [
   { id: 'prod_001', name: 'Modern Smartwatch', seller: 'Alice Johnson', price: 299.99, status: 'Active' },
   { id: 'prod_002', name: 'Wireless Headphones', seller: 'Bob Williams', price: 149.50, status: 'Pending' },
