@@ -54,7 +54,7 @@ const TermsPage = () => {
 
         <h2>10. Contact Us</h2>
         <p>
-          If you have any questions about these Terms, please contact us at <a href="mailto:info@vishwavidarshana.com">info@vishwavidarshana.com</a>.
+          If you have any questions about these Terms, please contact us at <a href="mailto:esystemlk@gmail.com">esystemlk@gmail.com</a>.
         </p>
       </div>
     </div>
