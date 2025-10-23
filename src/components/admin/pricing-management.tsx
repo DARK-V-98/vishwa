@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { usePricingDb } from '@/firebase/pricing-provider';
+import { usePricingDb } from '@/firebase/pricing-provider'; // Use the separate pricing DB hook
 
 interface Tier {
     name: string;
@@ -47,7 +47,7 @@ export default function PricingManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<PricingCategory | null>(null);
   const [editedServices, setEditedServices] = useState<Service[]>([]);
-  const firestore = usePricingDb();
+  const firestore = usePricingDb(); // Correctly using the pricing DB hook
 
 
   useEffect(() => {
@@ -129,7 +129,7 @@ export default function PricingManagement() {
         <CardHeader>
           <CardTitle>Service Pricing</CardTitle>
           <CardDescription>
-            Manage prices for all services offered.
+            Manage prices for all services offered in the quotation generator.
           </CardDescription>
         </CardHeader>
         <CardContent>

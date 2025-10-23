@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useFirestore } from '@/firebase';
+import { useFirestore } from '@/firebase'; // Use the main Firestore instance
 
 interface Tier {
     name: string;
@@ -39,7 +39,7 @@ export default function DesignPricingManagement() {
 
   const [newTier, setNewTier] = useState({name: '', price: '', features: ''});
 
-  const firestore = useFirestore();
+  const firestore = useFirestore(); // Correctly using the main database hook
 
   async function fetchDesignPricing() {
     if (!firestore) {
@@ -54,6 +54,7 @@ export default function DesignPricingManagement() {
         if (docSnap.exists()) {
             const data = docSnap.data();
             setServices(data.services || []);
+            setError(null);
         } else {
             setError("'design-services' document not found in the main pricing collection.");
         }
