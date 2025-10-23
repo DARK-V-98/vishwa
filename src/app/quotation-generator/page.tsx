@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useActionState } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, FileText, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { generateQuotation } from '@/ai/flows/automated-quotation-generation';
-import { useFormState } from 'react-dom';
 import { toast } from 'sonner';
 
 // Type definitions based on the guide
@@ -101,18 +100,6 @@ export default function QuotationGeneratorPage() {
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
   const [selectedCommonAddons, setSelectedCommonAddons] = useState<Addon[]>([]);
   
-  const [state, formAction] = useFormState(handleAIQuotation, initialState);
-
-  useEffect(() => {
-    if (state.message) {
-      toast(state.isError ? "Error" : "Success", {
-        description: state.message,
-        action: state.isError ? { label: "Dismiss", onClick: () => {} } : undefined,
-      });
-    }
-  }, [state]);
-
-
   async function handleAIQuotation(prevState: FormState, formData: FormData): Promise<FormState> {
     if (!selectedTier) {
       return { message: 'Please select a pricing tier before generating a quotation.', isError: true };
@@ -143,6 +130,16 @@ export default function QuotationGeneratorPage() {
     }
   }
 
+  const [state, formAction] = useActionState(handleAIQuotation, initialState);
+
+  useEffect(() => {
+    if (state.message) {
+      toast(state.isError ? "Error" : "Success", {
+        description: state.message,
+        action: state.isError ? { label: "Dismiss", onClick: () => {} } : undefined,
+      });
+    }
+  }, [state]);
 
   useEffect(() => {
     async function getPricingData() {
