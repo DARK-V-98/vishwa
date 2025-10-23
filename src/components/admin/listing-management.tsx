@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { MoreHorizontal } from "lucide-react";
@@ -64,7 +65,7 @@ export function ListingManagement() {
                 <TableCell>{listing.seller}</TableCell>
                 <TableCell>Rs.{listing.price.toFixed(2)}</TableCell>
                 <TableCell>
-                  <Badge variant={getStatusVariant(listing.status)}>{listing.status}</Badge>
+                  <Badge variant={getStatusVariant(listing.status) as any}>{listing.status}</Badge>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

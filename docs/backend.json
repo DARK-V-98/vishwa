@@ -137,6 +137,91 @@
         "createdAt",
         "updatedAt"
       ]
+    },
+    "Project": {
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a client project, such as a website build, initiated through the quotation generator.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the project."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "The ID of the user who owns this project."
+        },
+        "clientName": {
+          "type": "string",
+          "description": "The name of the client."
+        },
+        "clientEmail": {
+          "type": "string",
+          "description": "The email of the client."
+        },
+        "serviceCategory": {
+          "type": "string",
+          "description": "The category of the service requested (e.g., 'Web Development')."
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "The specific service requested (e.g., 'Corporate Website')."
+        },
+        "tier": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "price": { "type": "string" }
+          }
+        },
+        "addons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "price": { "type": "string" }
+            }
+          }
+        },
+        "total": {
+          "type": "number",
+          "description": "The total calculated price of the quotation."
+        },
+        "quotationMarkdown": {
+          "type": "string",
+          "description": "The AI-generated quotation in Markdown format."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the project.",
+          "enum": ["In Review", "In Progress", "Completed", "Cancelled"]
+        },
+        "progress": {
+          "type": "number",
+          "description": "The completion percentage of the project (0-100)."
+        },
+        "updates": {
+          "type": "array",
+          "description": "A list of progress updates for the project.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "clientId", "serviceCategory", "serviceName", "total", "status", "progress", "createdAt", "updatedAt"]
     }
   },
   "auth": {
@@ -195,6 +280,14 @@
               "description": "The unique identifier of the admin user."
             }
           ]
+        }
+      },
+      {
+        "path": "projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": { "$ref": "#/backend/entities/Project" },
+          "description": "Stores all client projects initiated from the quotation generator."
         }
       }
     ],

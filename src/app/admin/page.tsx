@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserManagement } from "@/components/admin/user-management";
 import { ListingManagement } from "@/components/admin/listing-management";
 import { OrderManagement } from "@/components/admin/order-management";
+import ProjectManagement from "@/components/admin/project-management";
 
 export default function AdminPage() {
   return (
@@ -10,16 +11,20 @@ export default function AdminPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Manage users, marketplace listings, and design orders from this central hub.
+          Manage users, projects, marketplace listings, and design orders from this central hub.
         </p>
       </div>
 
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="projects" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
           <TabsTrigger value="orders">Design Orders</TabsTrigger>
         </TabsList>
+        <TabsContent value="projects">
+            <ProjectManagement />
+        </TabsContent>
         <TabsContent value="users">
             <UserManagement />
         </TabsContent>

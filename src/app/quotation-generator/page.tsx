@@ -3,8 +3,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, useActionState } from 'react';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { collection, getDocs, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
+import { useRouter } from 'next/navigation';
 
 
 // Type definitions based on the guide
@@ -73,11 +74,8 @@ const initialState: FormState = {
 };
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
-    // Directly use `pending` from `useFormStatus`, which is now correct.
-    // const { pending } = useFormStatus(); 
     const [pending, setPending] = useState(false);
 
-    // This is a bit of a hack to get the pending state since useFormStatus is not working
     const handleClick = () => {
         if (!disabled) {
             setPending(true);
@@ -87,7 +85,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
     return (
       <Button type="submit" className="w-full" disabled={disabled || pending} onClick={handleClick}>
         <Sparkles className="mr-2 h-4 w-4" />
-        {pending ? 'Generating...' : 'Generate AI Quotation'}
+        {pending ? 'Generating...' : 'Generate & Save Quotation'}
       </Button>
     );
 }
@@ -95,6 +93,9 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 
 export default function QuotationGeneratorPage() {
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
   const [pricingData, setPricingData] = useState<PricingCategory[]>([]);
   const [commonAddons, setCommonAddons] = useState<CommonAddons | null>(null);
   const [loading, setLoading] = useState(true);
@@ -107,11 +108,23 @@ export default function QuotationGeneratorPage() {
   const [selectedCommonAddons, setSelectedCommonAddons] = useState<Addon[]>([]);
   
   async function handleAIQuotation(prevState: FormState, formData: FormData): Promise<FormState> {
+    if (isUserLoading) {
+      return { message: "Please wait while we verify your session.", isError: true };
+    }
+    if (!user) {
+        toast.error("You must be logged in to generate a quotation.", {
+            action: {
+              label: "Sign In",
+              onClick: () => router.push('/auth'),
+            },
+        });
+        return { message: "Authentication required.", isError: true };
+    }
     if (!selectedTier) {
       return { message: 'Please select a pricing tier before generating a quotation.', isError: true };
     }
   
-    const input = {
+    const quotationInput = {
       category: selectedCategory,
       service: selectedService,
       tier: selectedTier,
@@ -121,16 +134,41 @@ export default function QuotationGeneratorPage() {
     };
   
     try {
-      const result = await generateQuotation(input);
+      // 1. Generate Quotation Markdown from AI
+      const result = await generateQuotation(quotationInput);
+      const quotationMarkdown = result.quotation;
+
+      // 2. Save the project to Firestore
+      const projectsCollection = collection(firestore, 'projects');
+      await addDoc(projectsCollection, {
+        clientId: user.uid,
+        clientName: user.displayName || user.email,
+        clientEmail: user.email,
+        serviceCategory: selectedCategory,
+        serviceName: selectedService,
+        tier: selectedTier,
+        addons: selectedAddons.concat(selectedCommonAddons),
+        total: total,
+        quotationMarkdown: quotationMarkdown,
+        status: "In Review",
+        progress: 0,
+        updates: [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success("Quotation generated and project saved!");
+      router.push('/projects'); // Redirect to the projects list
+
       return {
         message: 'AI quotation generated successfully!',
-        quotation: result.quotation,
+        quotation: quotationMarkdown,
         isError: false,
       };
     } catch (error) {
-      console.error('AI Quotation Error:', error);
+      console.error('AI Quotation or Firestore Error:', error);
       return {
-        message: 'There was an error generating the AI quotation. Please try again.',
+        message: 'There was an error processing your request. Please try again.',
         isError: true,
       };
     }
@@ -139,14 +177,11 @@ export default function QuotationGeneratorPage() {
   const [state, formAction] = useActionState(handleAIQuotation, initialState);
 
   useEffect(() => {
-    if (state.message && !state.quotation) { // Only toast for form-level messages, not on success with quotation
-        toast(state.isError ? "Error" : "Info", {
-          description: state.message,
-        });
-      }
-      if (state.message && state.quotation) {
-        toast.success("AI quotation generated successfully!");
-      }
+    if (state.message && !state.isError && state.quotation) {
+        // Success is handled via toast and redirect in the action
+    } else if (state.message && state.isError) {
+      toast.error(state.message);
+    }
   }, [state]);
 
   const handleDownloadPdf = () => {
@@ -164,8 +199,6 @@ export default function QuotationGeneratorPage() {
         const height = width / ratio;
 
         if (height > pdfHeight) {
-            // This is a simplistic way to handle overflow.
-            // For multi-page, you'd need more complex logic.
             console.warn("Content might be too long for a single PDF page.");
         }
         
@@ -263,7 +296,7 @@ export default function QuotationGeneratorPage() {
     );
   }
 
-  if (loading) {
+  if (loading || isUserLoading) {
     return (
       <div className="container py-12 pt-24">
         <div className="text-center mb-12">
@@ -314,7 +347,7 @@ export default function QuotationGeneratorPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-2">Quotation Generator</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Build your project quote by selecting from the available services and add-ons below.
+          Build your project quote by selecting from the available services and add-ons below. A project will be created for you to track its progress.
         </p>
       </div>
 
@@ -463,30 +496,14 @@ export default function QuotationGeneratorPage() {
                           <span>Total:</span>
                           <span>Rs. {total.toLocaleString()}</span>
                       </div>
-                      <SubmitButton disabled={!selectedTier} />
+                      <SubmitButton disabled={!selectedTier || isUserLoading} />
                   </CardFooter>
               </Card>
             </form>
-            {state.quotation && (
-              <Alert className="mt-8">
-                <Sparkles className="h-4 w-4" />
-                <AlertTitle className='flex justify-between items-center'>
-                  Generated AI Quotation
-                  <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download PDF
-                  </Button>
-                </AlertTitle>
-                <AlertDescription>
-                    <div id="quotation-content" className="prose prose-sm dark:prose-invert max-w-none bg-slate-950 p-4 rounded-md mt-2 text-white">
-                        <ReactMarkdown>{state.quotation}</ReactMarkdown>
-                    </div>
-                </AlertDescription>
-              </Alert>
-            )}
           </div>
         </div>
       </div>
     </div>
   );
 }
+

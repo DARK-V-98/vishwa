@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -27,7 +28,7 @@ const Navbar = () => {
   ];
 
   if (user) {
-    navLinks.push({ name: "Dashboard", path: "/dashboard" });
+    navLinks.push({ name: "My Projects", path: "/projects" });
     navLinks.push({ name: "Appointments", path: "/appointments" });
     navLinks.push({ name: "Admin", path: "/admin" });
   }
