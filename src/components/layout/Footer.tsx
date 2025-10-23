@@ -100,7 +100,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start space-x-2">
                 <MapPin className="h-4 w-4 text-primary mt-1" />
-                <span className="text-sm text-muted-foreground">Sri Lanka</span>
+                <span className="text-sm text-muted-foreground">No. 123, Main Street, Colombo, Sri Lanka</span>
               </li>
             </ul>
 
