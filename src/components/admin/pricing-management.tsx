@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { collection, query, orderBy, doc, updateDoc, getDocs } from 'firebase/firestore';
@@ -13,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useFirestore } from '@/firebase';
+import { usePricingDb } from '@/firebase/pricing-provider';
 
 interface Tier {
     name: string;
@@ -46,7 +47,7 @@ export default function PricingManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<PricingCategory | null>(null);
   const [editedServices, setEditedServices] = useState<Service[]>([]);
-  const firestore = useFirestore();
+  const firestore = usePricingDb();
 
 
   useEffect(() => {

@@ -20,6 +20,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import ReactMarkdown from 'react-markdown';
 import { useRouter } from 'next/navigation';
+import { FirebasePricingProvider, usePricingDb } from '@/firebase/pricing-provider';
 
 
 // Type definitions based on the guide
@@ -90,9 +91,9 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
     );
 }
 
-
-export default function QuotationGeneratorPage() {
+function QuotationGeneratorContent() {
   const mainFirestore = useFirestore();
+  const pricingFirestore = usePricingDb();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
@@ -210,14 +211,14 @@ export default function QuotationGeneratorPage() {
 
   useEffect(() => {
     async function getPricingData() {
-      if (!mainFirestore) {
-          setError("Main database is not configured.");
+      if (!pricingFirestore) {
+          setError("Pricing database is not configured.");
           setLoading(false);
           return;
       };
       setLoading(true);
       try {
-        const pricingCollection = collection(mainFirestore, 'pricing');
+        const pricingCollection = collection(pricingFirestore, 'pricing');
         const q = query(pricingCollection, orderBy('order'));
         const snapshot = await getDocs(q);
 
@@ -251,10 +252,10 @@ export default function QuotationGeneratorPage() {
       }
     }
 
-    if (mainFirestore) {
+    if (pricingFirestore) {
       getPricingData();
     }
-  }, [mainFirestore]);
+  }, [pricingFirestore]);
 
   const currentService = useMemo(() => {
     return pricingData
@@ -511,4 +512,13 @@ export default function QuotationGeneratorPage() {
       </div>
     </div>
   );
+}
+
+
+export default function QuotationGeneratorPage() {
+    return (
+        <FirebasePricingProvider>
+            <QuotationGeneratorContent />
+        </FirebasePricingProvider>
+    )
 }
