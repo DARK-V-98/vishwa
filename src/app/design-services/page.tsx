@@ -19,7 +19,7 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { collection, query, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getPricingFirestore } from "@/firebase/pricing-service";
+import { useFirestore } from "@/firebase";
 
 interface Tier {
   name: string;
@@ -37,17 +37,17 @@ const DesignServices = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const firestore = useFirestore();
   
   useEffect(() => {
     async function fetchPricing() {
-      const pricingFirestore = getPricingFirestore();
-      if (!pricingFirestore) {
-        setError("Pricing service not available.");
+      if (!firestore) {
+        setError("Firestore not available.");
         setIsLoading(false);
         return;
       }
       try {
-        const designServicesDocRef = doc(pricingFirestore, 'pricing', 'design-services');
+        const designServicesDocRef = doc(firestore, 'pricing', 'design-services');
         const docSnap = await getDoc(designServicesDocRef);
 
         if (docSnap.exists()) {
@@ -62,8 +62,10 @@ const DesignServices = () => {
         setIsLoading(false);
       }
     }
-    fetchPricing();
-  }, []);
+    if (firestore) {
+      fetchPricing();
+    }
+  }, [firestore]);
 
 
   const handleInterest = (e: React.FormEvent) => {

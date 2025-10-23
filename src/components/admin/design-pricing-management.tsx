@@ -1,7 +1,7 @@
 
 'use client';
 
-import { collection, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { MoreHorizontal, PlusCircle, Edit, Save, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getPricingFirestore } from '@/firebase/pricing-service';
+import { useFirestore } from '@/firebase';
 
 interface Tier {
     name: string;
@@ -39,23 +39,23 @@ export default function DesignPricingManagement() {
 
   const [newTier, setNewTier] = useState({name: '', price: '', features: ''});
 
-  const pricingFirestore = getPricingFirestore();
+  const firestore = useFirestore();
 
   async function fetchDesignPricing() {
-    if (!pricingFirestore) {
-        setError("Pricing database not configured.");
+    if (!firestore) {
+        setError("Firestore not available.");
         setIsLoading(false);
         return;
     }
     setIsLoading(true);
     try {
-        const designServicesDocRef = doc(pricingFirestore, 'pricing', 'design-services');
+        const designServicesDocRef = doc(firestore, 'pricing', 'design-services');
         const docSnap = await getDoc(designServicesDocRef);
         if (docSnap.exists()) {
             const data = docSnap.data();
             setServices(data.services || []);
         } else {
-            setError("'design-services' document not found in pricing database.");
+            setError("'design-services' document not found in the main pricing collection.");
         }
     } catch (e: any) {
         setError(e.message);
@@ -65,8 +65,10 @@ export default function DesignPricingManagement() {
   }
 
   useEffect(() => {
-    fetchDesignPricing();
-  }, [pricingFirestore]);
+    if(firestore) {
+        fetchDesignPricing();
+    }
+  }, [firestore]);
 
 
   const openEditDialog = (service: Service) => {
@@ -87,11 +89,11 @@ export default function DesignPricingManagement() {
   };
 
   const handleSaveChanges = async () => {
-    if (!editedService || !pricingFirestore) return;
+    if (!editedService || !firestore) return;
 
     const updatedServices = services.map(s => s.name === editedService.name ? editedService : s);
 
-    const categoryRef = doc(pricingFirestore, 'pricing', 'design-services');
+    const categoryRef = doc(firestore, 'pricing', 'design-services');
 
     try {
         await updateDoc(categoryRef, { services: updatedServices });
@@ -105,7 +107,7 @@ export default function DesignPricingManagement() {
   };
 
   const handleAddTier = async () => {
-    if (!selectedService || !pricingFirestore || !newTier.name || !newTier.price) {
+    if (!selectedService || !firestore || !newTier.name || !newTier.price) {
         toast.error("Tier Name and Price are required.");
         return;
     }
@@ -117,7 +119,7 @@ export default function DesignPricingManagement() {
 
     const updatedService = { ...selectedService, tiers: [...selectedService.tiers, tierToAdd]};
     const updatedServices = services.map(s => s.name === selectedService.name ? updatedService : s);
-    const categoryRef = doc(pricingFirestore, 'pricing', 'design-services');
+    const categoryRef = doc(firestore, 'pricing', 'design-services');
 
     try {
         await updateDoc(categoryRef, { services: updatedServices });
@@ -131,7 +133,7 @@ export default function DesignPricingManagement() {
   };
 
   const handleDeleteTier = async (serviceName: string, tierNameToDelete: string) => {
-    if (!pricingFirestore || !editedService) return;
+    if (!firestore || !editedService) return;
     
     const updatedTiers = editedService.tiers.filter(t => t.name !== tierNameToDelete);
     const updatedService = { ...editedService, tiers: updatedTiers };
@@ -140,7 +142,7 @@ export default function DesignPricingManagement() {
 
     const allServicesUpdated = services.map(s => s.name === serviceName ? updatedService : s);
 
-    const categoryRef = doc(pricingFirestore, 'pricing', 'design-services');
+    const categoryRef = doc(firestore, 'pricing', 'design-services');
     try {
         await updateDoc(categoryRef, { services: allServicesUpdated });
         toast.success("Tier deleted successfully!");
@@ -151,8 +153,8 @@ export default function DesignPricingManagement() {
   }
 
   const seedDummyData = async () => {
-    if (!pricingFirestore) {
-      toast.error("Pricing database not available.");
+    if (!firestore) {
+      toast.error("Firestore not available.");
       return;
     }
 
@@ -175,9 +177,10 @@ export default function DesignPricingManagement() {
     ];
 
     try {
-      const designServicesDocRef = doc(pricingFirestore, 'pricing', 'design-services');
-      await updateDoc(designServicesDocRef, { services: dummyServices });
+      const designServicesDocRef = doc(firestore, 'pricing', 'design-services');
+      await setDoc(designServicesDocRef, { services: dummyServices });
       setServices(dummyServices);
+      setError(null);
       toast.success("Dummy design pricing data has been seeded!");
     } catch (error: any) {
       toast.error("Failed to seed dummy data: " + error.message);
@@ -197,7 +200,20 @@ export default function DesignPricingManagement() {
       );
   }
 
-  if (error) return <p>Error loading pricing data: {error}</p>;
+  if (error) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-destructive">Error Loading Data</CardTitle>
+                <CardDescription>{error}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p>The 'design-services' document might not exist in the 'pricing' collection of your main database.</p>
+                <Button onClick={seedDummyData} className="mt-4">Seed Dummy Data</Button>
+            </CardContent>
+        </Card>
+    )
+  }
 
   return (
     <>

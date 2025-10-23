@@ -410,6 +410,13 @@
           "schema": { "$ref": "#/backend/entities/DesignOrder" },
           "description": "Stores all client design orders initiated from the design studio."
         }
+      },
+      {
+        "path": "pricing/{pricingId}",
+        "definition": {
+          "schema": { "type": "object" },
+          "description": "Stores pricing information, such as for design services. This collection can be managed by admins."
+        }
       }
     ],
     "reasoning": "The Firestore structure is designed to support user authentication, profile management, and administrative roles, focusing on security, scalability, and debuggability. It incorporates key principles such as Authorization Independence, DBAC (Database-Based Access Control), and Structural Segregation to streamline security rules and maintain data integrity.\n\n*   **Authorization Independence:** The `users/{userId}` collection includes the `profileId` field. While seemingly creating a `get()` dependency, the intended use-case is to simply store the ID. Access to `/users/{userId}/profile` is granted via path-based ownership, eliminating the need for `get()` calls in security rules.\n*   **Structural Segregation:** User profiles and roles (admin, developer, customer) are stored in separate collections (`userProfiles`, `roles_admin`, `roles_developer`, `roles_customer`), ensuring different security postures for each. This segregation simplifies rules and avoids mixing data with varying access requirements.\n*   **DBAC:** Roles are managed through their respective `roles_*` collections. The existence of a document for a user in any of these collections grants the corresponding privileges, enabling simple existence-based security rules.\n*   **QAPs:** `list` operations are secured by enforcing ownership and role-based access controls. Path-based ownership (`users/{userId}`) allows listing only resources owned by the authenticated user. Role checks in the `roles_*` collections authorize administrative `list` operations.\n\nThis structure facilitates secure and efficient data access while adhering to core design principles, minimizing complexity and maximizing debuggability."
