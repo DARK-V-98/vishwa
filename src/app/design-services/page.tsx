@@ -2,8 +2,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Palette,
   Clock,
@@ -15,64 +13,37 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { collection, query, getDocs, doc, getDoc } from "firebase/firestore";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useFirestore } from "@/firebase";
-
-interface Tier {
-  name: string;
-  price: string;
-  features: string[];
-}
-
-interface Service {
-  name: string;
-  tiers: Tier[];
-}
 
 const DesignServices = () => {
   const [email, setEmail] = useState("");
-  const [services, setServices] = useState<Service[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const firestore = useFirestore();
-  
-  useEffect(() => {
-    async function fetchPricing() {
-      if (!firestore) {
-        setError("Firestore not available.");
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const designServicesDocRef = doc(firestore, 'pricing', 'design-services');
-        const docSnap = await getDoc(designServicesDocRef);
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            setServices(data.services || []);
-        } else {
-            setServices([]); // No services found is not an error
-        }
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setIsLoading(false);
-      }
+  const services = [
+    {
+      name: "Logo Design",
+      tiers: [
+        {
+          name: "Basic",
+          price: "LKR 5,000",
+          features: ["2 Logo Concepts", "High-Resolution Files", "2 Revisions"],
+          popular: false,
+        },
+        {
+          name: "Standard",
+          price: "LKR 10,000",
+          features: ["3 Logo Concepts", "Vector Files (AI, EPS)", "5 Revisions", "Social Media Kit"],
+          popular: true,
+        },
+        {
+          name: "Premium",
+          price: "LKR 20,000",
+          features: ["5 Logo Concepts", "Full Branding Guide", "Unlimited Revisions", "Priority Support"],
+          popular: false,
+        },
+      ]
     }
-    if (firestore) {
-      fetchPricing();
-    }
-  }, [firestore]);
-
-
-  const handleInterest = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Thanks! We'll contact you soon about design services.");
-    setEmail("");
-  };
+  ];
 
   const process = [
     {
@@ -158,49 +129,40 @@ const DesignServices = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {isLoading && [...Array(3)].map((_, idx) => (
-              <Card key={idx}><CardContent className="p-8 space-y-6"><Skeleton className="h-4 w-1/2" /><Skeleton className="h-8 w-1/3" /><Skeleton className="h-20 w-full" /></CardContent></Card>
-            ))}
-            {!isLoading && services.length === 0 && !error && (
-              <p className="text-center text-muted-foreground md:col-span-3">No design packages are available at the moment. Please check back later.</p>
-            )}
-            {!isLoading && services.map((service) => (
-              service.tiers.map((tier, tierIdx) => (
-                 <Card
-                    key={`${service.name}-${tierIdx}`}
-                    className={`border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-strong transition-all flex flex-col ${
-                      tier.name === "Standard" ? "md:scale-105 shadow-medium border-primary" : ""
-                    }`}
-                  >
-                    <CardContent className="p-8 space-y-6 flex-grow">
-                      {tier.name === "Standard" && (
-                        <div className="inline-block px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-semibold border border-primary/30">
-                          Most Popular
-                        </div>
-                      )}
-                      <div>
-                        <h3 className="text-2xl font-bold mb-2">{service.name}: {tier.name}</h3>
-                        <p className="text-3xl font-bold text-primary">{tier.price}</p>
-                      </div>
-                      <ul className="space-y-3">
-                        {(tier.features || []).map((feature: string, fIdx: number) => (
-                          <li key={fIdx} className="flex items-start gap-2 text-sm">
-                            <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
-                            <span className="text-muted-foreground">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                    <div className="p-8 pt-0">
-                        <Link href="/design-studio" className="w-full">
-                           <Button className="w-full" variant={tier.name === 'Standard' ? 'default' : 'outline'}>Get Started</Button>
-                        </Link>
+            {services[0].tiers.map((tier, tierIdx) => (
+              <Card
+                key={`${services[0].name}-${tierIdx}`}
+                className={`border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-strong transition-all flex flex-col ${
+                  tier.popular ? "md:scale-105 shadow-medium border-primary" : ""
+                }`}
+              >
+                <CardContent className="p-8 space-y-6 flex-grow">
+                  {tier.popular && (
+                    <div className="inline-block px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-semibold border border-primary/30">
+                      Most Popular
                     </div>
-                  </Card>
-              ))
+                  )}
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2">{services[0].name}: {tier.name}</h3>
+                    <p className="text-3xl font-bold text-primary">{tier.price}</p>
+                  </div>
+                  <ul className="space-y-3">
+                    {(tier.features || []).map((feature: string, fIdx: number) => (
+                      <li key={fIdx} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <div className="p-8 pt-0">
+                    <Link href="/design-studio" className="w-full">
+                       <Button className="w-full" variant={tier.popular ? 'default' : 'outline'}>Get Started</Button>
+                    </Link>
+                </div>
+              </Card>
             ))}
           </div>
-          {error && <p className="text-center text-destructive mt-4">Error loading pricing: {error}</p>}
         </div>
       </section>
 

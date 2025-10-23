@@ -5,7 +5,6 @@ import { UserManagement } from "@/components/admin/user-management";
 import { ListingManagement } from "@/components/admin/listing-management";
 import { OrderManagement } from "@/components/admin/order-management";
 import ProjectManagement from "@/components/admin/project-management";
-import DesignPricingManagement from "@/components/admin/design-pricing-management";
 import { useUser } from "@/firebase";
 import { useMemo, useState, useEffect } from "react";
 import WebPricingManagement from "@/components/admin/web-pricing-management";
@@ -64,13 +63,12 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="projects" className="w-full">
-        <TabsList className={`grid w-full ${canManagePricing ? 'grid-cols-6' : 'grid-cols-4'}`}>
+        <TabsList className={`grid w-full ${canManagePricing ? 'grid-cols-5' : 'grid-cols-4'}`}>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
           <TabsTrigger value="orders">Design Orders</TabsTrigger>
           {canManagePricing && <TabsTrigger value="pricing">Web Pricing</TabsTrigger>}
-          {canManagePricing && <TabsTrigger value="design-pricing">Design Pricing</TabsTrigger>}
         </TabsList>
         <TabsContent value="projects">
             <ProjectManagement />
@@ -87,11 +85,6 @@ export default function AdminPage() {
         {canManagePricing && (
           <TabsContent value="pricing">
               <WebPricingManagement />
-          </TabsContent>
-        )}
-         {canManagePricing && (
-          <TabsContent value="design-pricing">
-              <DesignPricingManagement />
           </TabsContent>
         )}
       </Tabs>
