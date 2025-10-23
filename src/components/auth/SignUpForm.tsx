@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useFirestore } from "@/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
@@ -65,7 +65,10 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         displayName: `${firstName} ${lastName}`.trim(),
       });
       
-      await setDoc(doc(firestore, "users", user.uid), {
+      const batch = writeBatch(firestore);
+
+      const userDocRef = doc(firestore, "users", user.uid);
+      batch.set(userDocRef, {
         id: user.uid,
         firstName: firstName,
         lastName: lastName,
@@ -74,6 +77,15 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
+
+      // Assign default customer role
+      const customerRoleRef = doc(firestore, "roles_customer", user.uid);
+      batch.set(customerRoleRef, {
+          id: user.uid,
+          firstPurchaseAt: new Date().toISOString(),
+      });
+
+      await batch.commit();
 
       toast.success("Account created successfully!");
       router.push("/dashboard");
@@ -92,7 +104,9 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
+        const batch = writeBatch(firestore);
+        
+        batch.set(userDocRef, {
           id: user.uid,
           email: user.email,
           createdAt: new Date().toISOString(),
@@ -101,6 +115,16 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
           firstName: user.displayName?.split(' ')[0] || '',
           lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
         });
+
+        // Assign default customer role
+        const customerRoleRef = doc(firestore, "roles_customer", user.uid);
+        batch.set(customerRoleRef, {
+            id: user.uid,
+            firstPurchaseAt: new Date().toISOString(),
+        });
+        
+        await batch.commit();
+        
         toast.success("Welcome! Please complete your profile.");
         router.push("/auth/complete-profile");
       } else {
