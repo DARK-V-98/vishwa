@@ -8,24 +8,34 @@ import { OrderManagement } from "@/components/admin/order-management";
 import ProjectManagement from "@/components/admin/project-management";
 import PricingManagement from "@/components/admin/pricing-management";
 import DesignPricingManagement from "@/components/admin/design-pricing-management";
-import { useUser } from "@/firebase";
+import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { useMemo } from "react";
+import { doc } from "firebase/firestore";
+
+interface UserProfile {
+    roles?: string[];
+}
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
-  const userRoles = user?.roles || [];
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+  
+  const userRoles = userProfile?.roles || [];
 
   const canManagePricing = useMemo(() => userRoles.includes('admin') || userRoles.includes('developer'), [userRoles]);
 
+  const isLoading = isUserLoading || isProfileLoading;
 
-  if (isUserLoading) {
+  if (isLoading) {
     return <div className="container py-12 pt-24">Loading...</div>
   }
 
   if (!user) {
     return <div className="container py-12 pt-24">You must be logged in to view this page.</div>
   }
-
 
   return (
     <div className="container py-12 pt-24">
@@ -71,5 +81,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    
