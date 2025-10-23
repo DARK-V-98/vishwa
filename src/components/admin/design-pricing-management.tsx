@@ -56,7 +56,7 @@ export default function DesignPricingManagement() {
             setServices(data.services || []);
             setError(null);
         } else {
-            setError("'design-services' document not found in the main pricing collection.");
+            setError("'design-services' document not found in the 'pricing' collection of your main database.");
         }
     } catch (e: any) {
         setError(e.message);
@@ -209,7 +209,7 @@ export default function DesignPricingManagement() {
                 <CardDescription>{error}</CardDescription>
             </CardHeader>
             <CardContent>
-                <p>The 'design-services' document might not exist in the 'pricing' collection of your main database.</p>
+                <p>You can create the document with some example data to get started.</p>
                 <Button onClick={seedDummyData} className="mt-4">Seed Dummy Data</Button>
             </CardContent>
         </Card>
@@ -226,7 +226,7 @@ export default function DesignPricingManagement() {
                     Manage packages for Logo Design and Social Media Posts.
                 </CardDescription>
             </div>
-            <Button onClick={seedDummyData} variant="secondary">Seed Dummy Data</Button>
+            {/* Future "Add Service" button can go here */}
         </CardHeader>
         <CardContent>
           <Table>
@@ -352,3 +352,5 @@ export default function DesignPricingManagement() {
     </>
   );
 }
+
+    
