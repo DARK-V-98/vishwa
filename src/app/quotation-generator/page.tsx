@@ -74,7 +74,9 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
 
     // This is a bit of a hack to get the pending state since useFormStatus is not working
     const handleClick = () => {
-        setPending(true);
+        if (!disabled) {
+            setPending(true);
+        }
     }
   
     return (
@@ -390,48 +392,49 @@ export default function QuotationGeneratorPage() {
         </div>
 
         {/* Summary Card */}
-        <div className="lg:col-span-1 sticky top-24">
-          <form action={formAction}>
-            <Card className="shadow-lg">
-                <CardHeader>
-                    <CardTitle>Quotation Summary</CardTitle>
-                    <CardDescription>Your estimated project cost.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {selectedTier ? (
-                        <div className="flex justify-between">
-                            <span className="font-semibold">{selectedTier.name}</span>
-                            <span>{selectedTier.price}</span>
-                        </div>
-                    ) : (
-                        <p className="text-muted-foreground text-sm">Please select a service and tier.</p>
-                    )}
-                    {(selectedAddons.length > 0 || selectedCommonAddons.length > 0) && (
-                        <div className="border-t pt-4 mt-4 space-y-2">
-                            <h4 className="font-semibold">Add-ons:</h4>
-                            {selectedAddons.map(addon => (
-                                <div key={addon.name} className="flex justify-between text-sm">
-                                    <span>{addon.name}</span>
-                                    <span>{addon.price}</span>
-                                </div>
-                            ))}
-                             {selectedCommonAddons.map(addon => (
-                                <div key={addon.name} className="flex justify-between text-sm">
-                                    <span>{addon.name}</span>
-                                    <span>{addon.price}</span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-                <CardFooter className="flex-col gap-4">
-                    <div className="flex justify-between w-full text-2xl font-bold border-t pt-4">
-                        <span>Total:</span>
-                        <span>Rs. {total.toLocaleString()}</span>
-                    </div>
-                     <SubmitButton disabled={!selectedTier} />
-                </CardFooter>
-            </Card>
+        <div className="lg:col-span-1 space-y-8">
+          <div className="sticky top-24">
+            <form action={formAction}>
+              <Card className="shadow-lg">
+                  <CardHeader>
+                      <CardTitle>Quotation Summary</CardTitle>
+                      <CardDescription>Your estimated project cost.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                      {selectedTier ? (
+                          <div className="flex justify-between">
+                              <span className="font-semibold">{selectedTier.name}</span>
+                              <span>{selectedTier.price}</span>
+                          </div>
+                      ) : (
+                          <p className="text-muted-foreground text-sm">Please select a service and tier.</p>
+                      )}
+                      {(selectedAddons.length > 0 || selectedCommonAddons.length > 0) && (
+                          <div className="border-t pt-4 mt-4 space-y-2">
+                              <h4 className="font-semibold">Add-ons:</h4>
+                              {selectedAddons.map(addon => (
+                                  <div key={addon.name} className="flex justify-between text-sm">
+                                      <span>{addon.name}</span>
+                                      <span>{addon.price}</span>
+                                  </div>
+                              ))}
+                              {selectedCommonAddons.map(addon => (
+                                  <div key={addon.name} className="flex justify-between text-sm">
+                                      <span>{addon.name}</span>
+                                      <span>{addon.price}</span>
+                                  </div>
+                              ))}
+                          </div>
+                      )}
+                  </CardContent>
+                  <CardFooter className="flex-col gap-4">
+                      <div className="flex justify-between w-full text-2xl font-bold border-t pt-4">
+                          <span>Total:</span>
+                          <span>Rs. {total.toLocaleString()}</span>
+                      </div>
+                      <SubmitButton disabled={!selectedTier} />
+                  </CardFooter>
+              </Card>
             </form>
             {state.quotation && (
               <Alert className="mt-8">
@@ -444,6 +447,7 @@ export default function QuotationGeneratorPage() {
                 </AlertDescription>
               </Alert>
             )}
+          </div>
         </div>
       </div>
     </div>
