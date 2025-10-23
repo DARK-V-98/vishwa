@@ -6,11 +6,11 @@ import { UserManagement } from "@/components/admin/user-management";
 import { ListingManagement } from "@/components/admin/listing-management";
 import { OrderManagement } from "@/components/admin/order-management";
 import ProjectManagement from "@/components/admin/project-management";
-import PricingManagement from "@/components/admin/pricing-management";
 import DesignPricingManagement from "@/components/admin/design-pricing-management";
 import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { useMemo } from "react";
 import { doc } from "firebase/firestore";
+import WebPricingManagement from "@/components/admin/web-pricing-management";
 
 interface UserProfile {
     roles?: string[];
@@ -70,7 +70,7 @@ export default function AdminPage() {
         </TabsContent>
         {canManagePricing && (
           <TabsContent value="pricing">
-              <PricingManagement />
+              <WebPricingManagement />
           </TabsContent>
         )}
          {canManagePricing && (
