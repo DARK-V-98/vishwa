@@ -1,28 +1,24 @@
 
-'use client';
-
-import { useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import SignInForm from '@/components/auth/SignInForm';
-import SignUpForm from '@/components/auth/SignUpForm';
+import AuthForms from '@/components/auth/AuthForms';
+
+function AuthPageSkeleton() {
+    return (
+        <div className="w-full h-full flex flex-col justify-center text-foreground">
+            <div className="h-10 bg-muted rounded w-1/2 mb-2 animate-pulse"></div>
+            <div className="h-6 bg-muted rounded w-3/4 mb-8 animate-pulse"></div>
+            <div className="space-y-6">
+                <div className="h-10 bg-muted rounded w-full animate-pulse"></div>
+                <div className="h-10 bg-muted rounded w-full animate-pulse"></div>
+            </div>
+        </div>
+    )
+}
+
 
 export default function AuthPage() {
-  const searchParams = useSearchParams();
-  const formParam = searchParams.get('form');
-  const [isSignIn, setIsSignIn] = useState(formParam !== 'signup');
-
-  useEffect(() => {
-    setIsSignIn(formParam !== 'signup');
-  }, [formParam]);
-
-  const toggleForm = () => {
-    setIsSignIn(!isSignIn);
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-4xl rounded-2xl bg-card shadow-2xl overflow-hidden grid md:grid-cols-2">
@@ -63,7 +59,9 @@ export default function AuthPage() {
 
         {/* Right Panel */}
         <div className="p-8 md:p-12 bg-background">
-            {isSignIn ? <SignInForm onToggle={toggleForm} /> : <SignUpForm onToggle={toggleForm} />}
+          <Suspense fallback={<AuthPageSkeleton />}>
+            <AuthForms />
+          </Suspense>
         </div>
       </div>
     </div>
