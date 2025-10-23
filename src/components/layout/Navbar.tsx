@@ -21,6 +21,7 @@ const Navbar = () => {
     { name: "ESystemLK", path: "/esystemlk" },
     { name: "Marketplace", path: "/marketplace" },
     { name: "Design Services", path: "/design-services" },
+    { name: "Get a Quote", path: "/quotation-generator" },
     { name: "Contact", path: "/contact" },
   ];
 
