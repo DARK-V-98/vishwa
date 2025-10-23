@@ -131,24 +131,58 @@ export default function DesignPricingManagement() {
   };
 
   const handleDeleteTier = async (serviceName: string, tierNameToDelete: string) => {
-    if (!pricingFirestore) return;
-
-    const serviceToUpdate = services.find(s => s.name === serviceName);
-    if (!serviceToUpdate) return;
+    if (!pricingFirestore || !editedService) return;
     
-    const updatedTiers = serviceToUpdate.tiers.filter(t => t.name !== tierNameToDelete);
-    const updatedService = { ...serviceToUpdate, tiers: updatedTiers };
-    const updatedServicesList = services.map(s => s.name === serviceName ? updatedService : s);
+    const updatedTiers = editedService.tiers.filter(t => t.name !== tierNameToDelete);
+    const updatedService = { ...editedService, tiers: updatedTiers };
+    
+    setEditedService(updatedService);
+
+    const allServicesUpdated = services.map(s => s.name === serviceName ? updatedService : s);
 
     const categoryRef = doc(pricingFirestore, 'pricing', 'design-services');
     try {
-        await updateDoc(categoryRef, { services: updatedServicesList });
+        await updateDoc(categoryRef, { services: allServicesUpdated });
         toast.success("Tier deleted successfully!");
-        setServices(updatedServicesList);
+        setServices(allServicesUpdated);
     } catch (e: any) {
         toast.error("Failed to delete tier:", e.message);
     }
   }
+
+  const seedDummyData = async () => {
+    if (!pricingFirestore) {
+      toast.error("Pricing database not available.");
+      return;
+    }
+
+    const dummyServices: Service[] = [
+      {
+        name: "Logo Design",
+        tiers: [
+          { name: "Basic", price: "Rs. 5,000", features: ["2 Logo Concepts", "High-Resolution Files", "2 Revisions"] },
+          { name: "Standard", price: "Rs. 10,000", features: ["3 Logo Concepts", "Vector Files (AI, EPS)", "5 Revisions", "Social Media Kit"] },
+          { name: "Premium", price: "Rs. 20,000", features: ["5 Logo Concepts", "Full Branding Guide", "Unlimited Revisions", "Priority Support"] }
+        ]
+      },
+      {
+        name: "Social Media Post",
+        tiers: [
+          { name: "Single Post", price: "Rs. 2,500", features: ["1 Custom Post Design", "Source File (PSD/AI)", "2 Revisions"] },
+          { name: "5-Post Pack", price: "Rs. 10,000", features: ["5 Custom Post Designs", "Source Files", "5 Revisions"] }
+        ]
+      }
+    ];
+
+    try {
+      const designServicesDocRef = doc(pricingFirestore, 'pricing', 'design-services');
+      await updateDoc(designServicesDocRef, { services: dummyServices });
+      setServices(dummyServices);
+      toast.success("Dummy design pricing data has been seeded!");
+    } catch (error: any) {
+      toast.error("Failed to seed dummy data: " + error.message);
+    }
+  };
 
   if (isLoading) {
       return (
@@ -168,11 +202,14 @@ export default function DesignPricingManagement() {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>Design Service Packages</CardTitle>
-          <CardDescription>
-            Manage packages for Logo Design and Social Media Posts.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>Design Service Packages</CardTitle>
+                <CardDescription>
+                    Manage packages for Logo Design and Social Media Posts.
+                </CardDescription>
+            </div>
+            <Button onClick={seedDummyData} variant="secondary">Seed Dummy Data</Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -216,7 +253,7 @@ export default function DesignPricingManagement() {
               </DialogHeader>
               <div className="space-y-6 py-4 max-h-[60vh] overflow-y-auto">
                   {editedService?.tiers.map((tier, tierIndex) => (
-                      <Card key={tier.name} className="p-4">
+                      <Card key={tierIndex} className="p-4">
                         <div className="flex justify-between items-start">
                             <h4 className="font-semibold mb-2 text-lg">{tier.name}</h4>
                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeleteTier(editedService.name, tier.name)}>
@@ -298,5 +335,3 @@ export default function DesignPricingManagement() {
     </>
   );
 }
-
-    

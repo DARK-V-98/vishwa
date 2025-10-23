@@ -23,11 +23,12 @@ export default function AdminPage() {
   const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
   
-  const userRoles = userProfile?.roles || [];
-
-  const canManagePricing = useMemo(() => userRoles.includes('admin') || userRoles.includes('developer'), [userRoles]);
-
   const isLoading = isUserLoading || isProfileLoading;
+
+  const canManagePricing = useMemo(() => {
+    if (isLoading || !userProfile) return false;
+    return userProfile.roles?.includes('admin') || userProfile.roles?.includes('developer');
+  }, [isLoading, userProfile]);
 
   if (isLoading) {
     return <div className="container py-12 pt-24">Loading...</div>

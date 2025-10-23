@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { collection, query, getDocs } from "firebase/firestore";
+import { collection, query, getDocs, doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getPricingFirestore } from "@/firebase/pricing-service";
 
@@ -47,12 +47,14 @@ const DesignServices = () => {
         return;
       }
       try {
-        const pricingCollection = collection(pricingFirestore, "pricing");
-        const snapshot = await getDocs(query(collection(pricingFirestore, "pricing")));
-        const pricingData = snapshot.docs.map(doc => doc.data());
-        const designCategory = pricingData.find(cat => cat.id === 'design-services');
-        if (designCategory && designCategory.services) {
-          setServices(designCategory.services);
+        const designServicesDocRef = doc(pricingFirestore, 'pricing', 'design-services');
+        const docSnap = await getDoc(designServicesDocRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            setServices(data.services || []);
+        } else {
+            setServices([]); // No services found is not an error
         }
       } catch (e: any) {
         setError(e.message);
@@ -153,21 +155,24 @@ const DesignServices = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {isLoading && [...Array(3)].map((_, idx) => (
               <Card key={idx}><CardContent className="p-8 space-y-6"><Skeleton className="h-4 w-1/2" /><Skeleton className="h-8 w-1/3" /><Skeleton className="h-20 w-full" /></CardContent></Card>
             ))}
-            {!isLoading && services.map((service, serviceIdx) => (
+            {!isLoading && services.length === 0 && !error && (
+              <p className="text-center text-muted-foreground md:col-span-3">No design packages are available at the moment. Please check back later.</p>
+            )}
+            {!isLoading && services.map((service) => (
               service.tiers.map((tier, tierIdx) => (
                  <Card
-                    key={`${serviceIdx}-${tierIdx}`}
-                    className={`border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-strong transition-all ${
-                      tier.name === "Social Media Posts" ? "md:scale-105 shadow-medium" : ""
+                    key={`${service.name}-${tierIdx}`}
+                    className={`border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-strong transition-all flex flex-col ${
+                      tier.name === "Standard" ? "md:scale-105 shadow-medium border-primary" : ""
                     }`}
                   >
-                    <CardContent className="p-8 space-y-6">
-                      {tier.name === "Social Media Posts" && (
-                        <div className="inline-block px-3 py-1 bg-secondary/20 text-secondary rounded-full text-xs font-semibold border border-secondary/30">
+                    <CardContent className="p-8 space-y-6 flex-grow">
+                      {tier.name === "Standard" && (
+                        <div className="inline-block px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-semibold border border-primary/30">
                           Most Popular
                         </div>
                       )}
@@ -177,13 +182,18 @@ const DesignServices = () => {
                       </div>
                       <ul className="space-y-3">
                         {(tier.features || []).map((feature: string, fIdx: number) => (
-                          <li key={fIdx} className="flex items-center gap-2 text-sm">
-                            <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0" />
+                          <li key={fIdx} className="flex items-start gap-2 text-sm">
+                            <CheckCircle className="h-5 w-5 text-secondary flex-shrink-0 mt-0.5" />
                             <span className="text-muted-foreground">{feature}</span>
                           </li>
                         ))}
                       </ul>
                     </CardContent>
+                    <div className="p-8 pt-0">
+                        <Link href="/design-studio" className="w-full">
+                           <Button className="w-full" variant={tier.name === 'Standard' ? 'default' : 'outline'}>Get Started</Button>
+                        </Link>
+                    </div>
                   </Card>
               ))
             ))}

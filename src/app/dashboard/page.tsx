@@ -53,6 +53,24 @@ export default function DashboardPage() {
   };
   
   const isLoading = isUserLoading || isProfileLoading;
+  
+  const hasAdminAccess = useMemo(() => {
+    if (isLoading || !userProfile) return false;
+    return userProfile.roles?.includes('admin') || userProfile.roles?.includes('developer');
+  }, [isLoading, userProfile]);
+
+  const menuItems = useMemo(() => {
+    const items = [
+      { id: 'projects', label: 'My Projects', icon: FolderKanban, href: '/projects', description: 'Track your ongoing projects' },
+      { id: 'appointments', label: 'Appointments', icon: Calendar, href: '/appointments', description: 'Manage your meetings' },
+      { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'View your conversations' },
+      { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
+    ];
+    if (hasAdminAccess) {
+      items.push({ id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' });
+    }
+    return items;
+  }, [hasAdminAccess]);
 
   if (isLoading || !user) {
     return (
@@ -61,16 +79,6 @@ export default function DashboardPage() {
         </div>
     );
   }
-  
-  const hasAdminAccess = userProfile?.roles?.includes('admin') || userProfile?.roles?.includes('developer');
-
-  const menuItems = [
-      { id: 'projects', label: 'My Projects', icon: FolderKanban, href: '/projects', description: 'Track your ongoing projects' },
-      { id: 'appointments', label: 'Appointments', icon: Calendar, href: '/appointments', description: 'Manage your meetings' },
-      { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'View your conversations' },
-      { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
-      ...(hasAdminAccess ? [{ id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' }] : []),
-  ];
   
   const roleIcons: { [key: string]: React.ElementType } = {
     admin: Crown,
