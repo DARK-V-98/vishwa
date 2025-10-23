@@ -40,12 +40,6 @@ const Navbar = () => {
     { name: "Contact", path: "/contact" },
   ];
 
-  if (user) {
-    navLinks.push({ name: "My Projects", path: "/projects" });
-    navLinks.push({ name: "Appointments", path: "/appointments" });
-    navLinks.push({ name: "Admin", path: "/admin" });
-  }
-
   const isActive = (path: string) => pathname === path;
 
   const handleSignOut = () => {
@@ -180,11 +174,21 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
-            {!isUserLoading &&
+             <DropdownMenuSeparator />
+             {!isUserLoading &&
               (user ? (
-                <Button variant="hero" size="sm" className="w-full mt-4" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
+                <>
+                 <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        Dashboard
+                    </Button>
+                  </Link>
+                  <Button variant="hero" size="sm" className="w-full" onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </>
               ) : (
                 <Link href="/auth" onClick={() => setIsOpen(false)}>
                   <Button variant="hero" size="sm" className="w-full mt-4">
