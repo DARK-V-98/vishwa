@@ -1,19 +1,17 @@
 
 "use client";
 
-import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getAuth, signOut } from "firebase/auth";
-import { doc } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 import {
   Crown,
   Code,
   ShoppingCart,
   User as UserIcon,
-  LayoutDashboard,
   FolderKanban,
   MessageSquare,
   Calendar,
@@ -23,27 +21,42 @@ import {
   ArrowRight
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-
-interface UserProfile {
-    roles?: string[];
-}
-
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const router = useRouter();
-
-  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/auth");
     }
   }, [user, isUserLoading, router]);
+
+  useEffect(() => {
+    const checkRoles = async () => {
+      setIsLoading(true);
+      if (isUserLoading) return;
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        const idTokenResult = await user.getIdTokenResult(true); // Force refresh
+        const userRoles = (idTokenResult.claims.roles as string[]) || [];
+        setRoles(userRoles);
+      } catch (error) {
+        console.error("Error fetching user roles:", error);
+        setRoles([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkRoles();
+  }, [user, isUserLoading]);
 
   const handleSignOut = () => {
     const auth = getAuth();
@@ -52,12 +65,10 @@ export default function DashboardPage() {
     });
   };
   
-  const isLoading = isUserLoading || isProfileLoading;
-  
   const hasAdminAccess = useMemo(() => {
-    if (isLoading || !userProfile) return false;
-    return userProfile.roles?.includes('admin') || userProfile.roles?.includes('developer');
-  }, [isLoading, userProfile]);
+    if (isLoading) return false;
+    return roles.includes('admin') || roles.includes('developer');
+  }, [isLoading, roles]);
 
   const menuItems = useMemo(() => {
     const items = [
@@ -72,7 +83,7 @@ export default function DashboardPage() {
     return items;
   }, [hasAdminAccess]);
 
-  if (isLoading || !user) {
+  if (isLoading || isUserLoading || !user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <p>Loading...</p>
@@ -86,7 +97,6 @@ export default function DashboardPage() {
     customer: ShoppingCart,
   };
 
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] pt-24 pb-12">
         <main className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-8">
@@ -97,10 +107,10 @@ export default function DashboardPage() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 justify-center">
                     <Badge variant="secondary"><UserIcon className="h-4 w-4 mr-1" /> User</Badge>
-                    {userProfile?.roles?.map(role => {
+                    {roles.map(role => {
                         const Icon = roleIcons[role];
                         return (
-                            <Badge key={role}>
+                            <Badge key={role} variant={role === 'admin' ? 'default' : 'outline'}>
                                 {Icon && <Icon className="h-4 w-4 mr-1" />} {role.charAt(0).toUpperCase() + role.slice(1)}
                             </Badge>
                         );

@@ -2,191 +2,205 @@
  * @fileoverview Firestore Security Rules for the application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for personal data and allows public read access for some shared collections like Services and Products while restricting write access to authorized users or owners.
+ * This ruleset enforces a strict user-ownership model for user-specific data
+ * (design orders, appointments, quotation requests), ensuring that only the
+ * authenticated user who owns the data can create, read, update, or delete it.
+ * Public data (services) is readable by anyone but writable only with appropriate authorization (not implemented in this prototyping ruleset).
+ * Product listings are readable by anyone, but only the seller can modify them.
  *
  * Data Structure:
- * - User profiles are stored in the `/users/{userId}` collection, ensuring individual user data isolation.
- * - Design orders, appointments, and quotation requests are stored as subcollections under each user's profile, further isolating user-specific information.
- * - Services and products are stored in top-level collections (`/services`, `/products`) to facilitate easy querying of all available items.  Products have a `sellerId` field for ownership.
+ * - /users/{userId}: Stores user profile information.
+ * - /users/{userId}/designOrders/{designOrderId}: Stores design orders for a specific user.
+ * - /users/{userId}/appointments/{appointmentId}: Stores appointments for a specific user.
+ * - /users/{userId}/quotationRequests/{quotationRequestId}: Stores quotation requests for a specific user.
+ * - /services/{serviceId}: Stores company services.
+ * - /products/{productId}: Stores product listings with a 'sellerId' field indicating ownership.
  *
  * Key Security Decisions:
- * - Listing all users is disallowed.
- * - User-owned resources under `/users/{userId}` are accessible only to the authenticated user matching the `userId`.
- * - Services are publicly readable but writes are not allowed in this prototype.
- * - Products are publicly readable, but create/update/delete operations are restricted to the product owner (seller).
+ * - User listing is implicitly allowed via the `get` and `list` rules on `/users/{userId}`.
+ * - Services are publicly readable but require additional authorization to modify (not implemented here).
+ * - Strict ownership is enforced for design orders, appointments, and quotation requests.
+ * - Products can be read by anyone but only modified by the seller.
  *
  * Denormalization for Authorization:
- * - Product documents contain a `sellerId` field, which is used to authorize updates and deletes.
+ * - Products have a `sellerId` field, which is used to determine ownership and authorize modifications. This avoids needing a separate query to determine ownership.
+ *
+ * Structural Segregation:
+ * - User-specific data is stored in subcollections under the `/users/{userId}` path. This structural segregation is used to enforce strict ownership and simplify rules.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces access control for user profiles. Only the user can read/write their own profile.
+     * @description Controls access to user profile information.
      * @path /users/{userId}
-     * @allow (create) - User with ID 'user123' creates their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.id: 'user123'
-     * @allow (get, update, delete) - User with ID 'user123' reads/updates/deletes their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.id: 'user123'
-     * @deny (create) - User with ID 'user123' tries to create a profile for 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.id: 'user456'
-     * @deny (get, update, delete) - User with ID 'user123' tries to read/update/delete the profile of 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.id: 'user456'
-     * @principle Enforces document ownership and restricts access to a user's own data.
+     * @allow (create) - Authenticated user can create their own profile if the userId matches their auth.uid.
+     * @allow (get, list) - Authenticated users can read any user profile.
+     * @allow (update) - Authenticated user can update their own profile if the userId matches their auth.uid.
+     * @allow (delete) - Authenticated user can delete their own profile if the userId matches their auth.uid.
+     * @deny (create) - If the userId doesn't match the authenticated user's ID.
+     * @deny (update) - If the userId doesn't match the authenticated user's ID.
+     * @deny (delete) - If the userId doesn't match the authenticated user's ID.
+     * @principle Enforces document ownership for writes; allows public reads.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false; // Disallowing listing all users
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
 
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && resource.data.id == userId;
-      allow delete: if isOwner(userId) && resource != null;
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get, list: if true;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for design orders. Only the owner can read/write their design orders.
+     * @description Controls access to design orders placed by a user.
      * @path /users/{userId}/designOrders/{designOrderId}
-     * @allow (create) - User with ID 'user123' creates a design order under their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user123'
-     * @allow (get, update, delete) - User with ID 'user123' reads/updates/deletes a design order under their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user123'
-     * @deny (create) - User with ID 'user123' tries to create a design order for 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user456'
-     * @deny (get, update, delete) - User with ID 'user123' tries to read/update/delete a design order for 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user456'
-     * @principle Enforces path-based ownership for private user data.
+     * @allow (create) - Authenticated user can create a design order under their own user ID.
+     * @allow (get, list) - Authenticated user can read design orders under their own user ID.
+     * @allow (update) - Authenticated user can update design orders under their own user ID.
+     * @allow (delete) - Authenticated user can delete design orders under their own user ID.
+     * @deny (create) - If the user ID in the path does not match the authenticated user's ID.
+     * @deny (update) - If the user ID in the path does not match the authenticated user's ID, or if the document doesn't exist.
+     * @deny (delete) - If the user ID in the path does not match the authenticated user's ID, or if the document doesn't exist.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/designOrders/{designOrderId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
 
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isOwner(userId) && resource.data.userId == userId && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get, list: if isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for appointments. Only the owner can read/write their appointments.
+     * @description Controls access to appointments booked by a user.
      * @path /users/{userId}/appointments/{appointmentId}
-     * @allow (create) - User with ID 'user123' creates an appointment under their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user123'
-     * @allow (get, update, delete) - User with ID 'user123' reads/updates/deletes an appointment under their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user123'
-     * @deny (create) - User with ID 'user123' tries to create an appointment for 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user456'
-     * @deny (get, update, delete) - User with ID 'user123' tries to read/update/delete an appointment for 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user456'
-     * @principle Enforces path-based ownership for private user data.
+     * @allow (create) - Authenticated user can create an appointment under their own user ID.
+     * @allow (get, list) - Authenticated user can read appointments under their own user ID.
+     * @allow (update) - Authenticated user can update appointments under their own user ID.
+     * @allow (delete) - Authenticated user can delete appointments under their own user ID.
+     * @deny (create) - If the user ID in the path does not match the authenticated user's ID.
+     * @deny (update) - If the user ID in the path does not match the authenticated user's ID, or if the document doesn't exist.
+     * @deny (delete) - If the user ID in the path does not match the authenticated user's ID, or if the document doesn't exist.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/appointments/{appointmentId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
 
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isOwner(userId) && resource.data.userId == userId && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get, list: if isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces access control for quotation requests. Only the owner can read/write their quotation requests.
+     * @description Controls access to quotation requests submitted by a user.
      * @path /users/{userId}/quotationRequests/{quotationRequestId}
-     * @allow (create) - User with ID 'user123' creates a quotation request under their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user123'
-     * @allow (get, update, delete) - User with ID 'user123' reads/updates/deletes a quotation request under their profile.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user123'
-     * @deny (create) - User with ID 'user123' tries to create a quotation request for 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user456'
-     * @deny (get, update, delete) - User with ID 'user123' tries to read/update/delete a quotation request for 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.userId: 'user456'
-     * @principle Enforces path-based ownership for private user data.
+     * @allow (create) - Authenticated user can create a quotation request under their own user ID.
+     * @allow (get, list) - Authenticated user can read quotation requests under their own user ID.
+     * @allow (update) - Authenticated user can update quotation requests under their own user ID.
+     * @allow (delete) - Authenticated user can delete quotation requests under their own user ID.
+     * @deny (create) - If the user ID in the path does not match the authenticated user's ID.
+     * @deny (update) - If the user ID in the path does not match the authenticated user's ID, or if the document doesn't exist.
+     * @deny (delete) - If the user ID in the path does not match the authenticated user's ID, or if the document doesn't exist.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/quotationRequests/{quotationRequestId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
 
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isOwner(userId) && resource.data.userId == userId && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get, list: if isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows public read access to services, but restricts writes.
+     * @description Controls access to services offered by the company.
      * @path /services/{serviceId}
-     * @allow (get, list) - Any user can read the service details.
-     * @deny (create, update, delete) - No one can create, update, or delete a service.
-     * @principle Allows public read access with restricted write access for services.
+     * @allow (get, list) - Anyone can read the services.
+     * @allow (create) - No one can create a service without proper authentication, requires future development.
+     * @allow (update) - No one can update a service without proper authentication, requires future development.
+     * @allow (delete) - No one can delete a service without proper authentication, requires future development.
+     * @principle Allows public reads; restricts writes.
      */
     match /services/{serviceId} {
-      allow get: if true;
-      allow list: if true;
-
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list: if true;
+      allow create: if false; // TODO: Add admin-only validation
+      allow update: if false; // TODO: Add admin-only validation
+      allow delete: if false; // TODO: Add admin-only validation
     }
 
     /**
-     * @description Allows public read access to products, but restricts writes to the seller.
+     * @description Controls access to products listed on the online marketplace.
      * @path /products/{productId}
-     * @allow (get, list) - Any user can read the product details.
-     * @allow (create) - User with ID 'user123' creates a product with sellerId 'user123'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.sellerId: 'user123'
-     * @allow (update, delete) - User with ID 'user123' updates/deletes a product where resource.data.sellerId is 'user123'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.sellerId: 'user123'
-     * @deny (create) - User with ID 'user123' tries to create a product with sellerId 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.sellerId: 'user456'
-     * @deny (update, delete) - User with ID 'user123' tries to update/delete a product where resource.data.sellerId is 'user456'.
-     *   - auth.uid: 'user123'
-     *   - resource.data.sellerId: 'user456'
-     * @principle Allows public read access with owner-only writes for products.
+     * @allow (get, list) - Anyone can read the products.
+     * @allow (create) - Authenticated user can create a product with their user ID as the sellerId.
+     * @allow (update) - Authenticated user can update a product if they are the seller.
+     * @allow (delete) - Authenticated user can delete a product if they are the seller and the document exists.
+     * @deny (create) - If the authenticated user ID does not match the sellerId in the request.
+     * @deny (update) - If the authenticated user ID does not match the existing sellerId.
+     * @deny (delete) - If the authenticated user ID does not match the existing sellerId or if the document doesn't exist.
+     * @principle Enforces seller ownership for writes; allows public reads.
      */
     match /products/{productId} {
-      function isOwner(sellerId) {
-        return request.auth != null && request.auth.uid == sellerId;
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      allow get: if true;
-      allow list: if true;
+      function isOwner(sellerId) {
+        return request.auth.uid == sellerId;
+      }
 
-      allow create: if request.auth != null && isOwner(request.resource.data.sellerId);
-      allow update: if request.auth != null && isOwner(resource.data.sellerId) && resource != null;
-      allow delete: if request.auth != null && isOwner(resource.data.sellerId) && resource != null;
+      function isExistingOwner(sellerId) {
+          return isOwner(sellerId) && resource != null;
+      }
+
+      allow get, list: if true;
+      allow create: if isSignedIn() && isOwner(request.resource.data.sellerId);
+      allow update: if isExistingOwner(resource.data.sellerId) && request.resource.data.sellerId == resource.data.sellerId;
+      allow delete: if isExistingOwner(resource.data.sellerId);
     }
   }
 }

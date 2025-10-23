@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,9 +6,8 @@ import { ListingManagement } from "@/components/admin/listing-management";
 import { OrderManagement } from "@/components/admin/order-management";
 import ProjectManagement from "@/components/admin/project-management";
 import DesignPricingManagement from "@/components/admin/design-pricing-management";
-import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { useMemo } from "react";
-import { doc } from "firebase/firestore";
+import { useUser } from "@/firebase";
+import { useMemo, useState, useEffect } from "react";
 import WebPricingManagement from "@/components/admin/web-pricing-management";
 
 interface UserProfile {
@@ -18,17 +16,35 @@ interface UserProfile {
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const [roles, setRoles] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+  useEffect(() => {
+    const checkRoles = async () => {
+      if (isUserLoading) return;
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        const idTokenResult = await user.getIdTokenResult();
+        const userRoles = (idTokenResult.claims.roles as string[]) || [];
+        setRoles(userRoles);
+      } catch (error) {
+        console.error("Error fetching user roles:", error);
+        setRoles([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkRoles();
+  }, [user, isUserLoading]);
   
-  const isLoading = isUserLoading || isProfileLoading;
-
   const canManagePricing = useMemo(() => {
-    if (isLoading || !userProfile) return false;
-    return userProfile.roles?.includes('admin') || userProfile.roles?.includes('developer');
-  }, [isLoading, userProfile]);
+    if (isLoading) return false;
+    return roles.includes('admin') || roles.includes('developer');
+  }, [isLoading, roles]);
 
   if (isLoading) {
     return <div className="container py-12 pt-24">Loading...</div>

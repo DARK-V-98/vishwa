@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, doc, query, writeBatch, orderBy, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
-import { MoreHorizontal, CheckCircle, Shield, User, Crown, Code, ShoppingCart, UserPlus, Trash2 } from "lucide-react";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
+import { MoreHorizontal, User, Crown, Code, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,10 +18,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -33,42 +29,43 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "../ui/skeleton";
-import { toast } from "sonner";
 import { format } from "date-fns";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
-interface User {
+interface AppUser {
   id: string;
   username: string;
   email: string;
   createdAt: { toDate: () => Date };
+}
+
+interface UserWithRoles extends AppUser {
   roles: string[];
 }
 
 export function UserManagement() {
   const firestore = useFirestore();
-
+  const [usersWithRoles, setUsersWithRoles] = useState<UserWithRoles[]>([]);
+  
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, "users"), orderBy("createdAt", "desc"));
   }, [firestore]);
 
-  const { data: users, isLoading, error } = useCollection<User>(usersQuery);
-  
-  const handleRoleChange = async (userId: string, role: 'admin' | 'developer' | 'customer', grant: boolean) => {
-    if (!firestore) return;
-    const userDocRef = doc(firestore, "users", userId);
-    
-    try {
-        await updateDoc(userDocRef, {
-            roles: grant ? arrayUnion(role) : arrayRemove(role)
-        });
+  const { data: users, isLoading, error } = useCollection<AppUser>(usersQuery);
 
-        toast.success(`Role ${grant ? 'granted' : 'revoked'} successfully.`);
-    } catch(e: any) {
-        toast.error(`Failed to update role: ${e.message}`);
+  useEffect(() => {
+    // Note: In a real app, you would fetch ID tokens for all users from a secure backend.
+    // This is a placeholder to show roles. For now, we will simulate this by assuming a default role.
+    if (users) {
+        const updatedUsers = users.map(user => ({
+            ...user,
+            roles: user.id ? ['customer'] : [], // Placeholder logic
+        }));
+        // In a real scenario, you'd fetch claims and populate roles here.
+        setUsersWithRoles(updatedUsers);
     }
-  }
+  }, [users]);
 
 
   if (isLoading) {
@@ -99,7 +96,9 @@ export function UserManagement() {
     <Card>
       <CardHeader>
         <CardTitle>User Accounts</CardTitle>
-        <CardDescription>Manage all registered user accounts.</CardDescription>
+        <CardDescription>
+            Manage all registered user accounts. To grant admin or developer roles, please use the Firebase console.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -115,7 +114,7 @@ export function UserManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users?.map((user) => (
+            {usersWithRoles?.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="font-medium">{user.username || 'N/A'}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -141,25 +140,7 @@ export function UserManagement() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger><UserPlus className="mr-2 h-4 w-4" /> Manage Roles</DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'admin', !user.roles.includes('admin'))}>
-                                {user.roles.includes('admin') ? <Trash2 className="mr-2 h-4 w-4" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                                {user.roles.includes('admin') ? "Revoke Admin" : "Grant Admin"}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'developer', !user.roles.includes('developer'))}>
-                                {user.roles.includes('developer') ? <Trash2 className="mr-2 h-4 w-4" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                                {user.roles.includes('developer') ? "Revoke Developer" : "Grant Developer"}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleRoleChange(user.id, 'customer', !user.roles.includes('customer'))}>
-                                {user.roles.includes('customer') ? <Trash2 className="mr-2 h-4 w-4" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                                {user.roles.includes('customer') ? "Revoke Customer" : "Grant Customer"}
-                            </DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">Delete User</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive">Delete User (Not Implemented)</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -171,5 +152,3 @@ export function UserManagement() {
     </Card>
   );
 }
-
-    
