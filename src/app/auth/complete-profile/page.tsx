@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,7 +38,7 @@ export default function CompleteProfilePage() {
       const userDocRef = doc(firestore, "users", user.uid);
       await updateDoc(userDocRef, {
         username: username,
-        updatedAt: new Date().toISOString(),
+        updatedAt: serverTimestamp(),
       });
       toast.success("Profile completed successfully!");
       router.push("/dashboard");
@@ -77,3 +77,5 @@ export default function CompleteProfilePage() {
     </div>
   );
 }
+
+    

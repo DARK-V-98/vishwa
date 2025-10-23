@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useFirestore } from "@/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
-import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
+import { doc, getDoc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
@@ -74,8 +74,8 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         lastName: lastName,
         username: `${firstName.toLowerCase()}${lastName.toLowerCase()}`.trim(), // simple username generation
         email: user.email,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
         roles: ['customer']
       });
 
@@ -83,7 +83,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
       const customerRoleRef = doc(firestore, "roles_customer", user.uid);
       batch.set(customerRoleRef, {
           id: user.uid,
-          firstPurchaseAt: new Date().toISOString(),
+          firstPurchaseAt: serverTimestamp(),
       });
 
       await batch.commit();
@@ -110,8 +110,8 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         batch.set(userDocRef, {
           id: user.uid,
           email: user.email,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
           username: null,
           firstName: user.displayName?.split(' ')[0] || '',
           lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
@@ -122,7 +122,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         const customerRoleRef = doc(firestore, "roles_customer", user.uid);
         batch.set(customerRoleRef, {
             id: user.uid,
-            firstPurchaseAt: new Date().toISOString(),
+            firstPurchaseAt: serverTimestamp(),
         });
         
         await batch.commit();
@@ -240,5 +240,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
     </div>
   );
 }
+
+    
 
     
