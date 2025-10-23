@@ -18,6 +18,14 @@ export default function AdminPage() {
     return <div className="container py-12 pt-24">You must be logged in to view this page.</div>
   }
 
+  // A simple role check - in a real app, you'd use custom claims.
+  const isAdmin = user.email === 'tikfese@gmail.com';
+
+  if (!isAdmin) {
+      return <div className="container py-12 pt-24">You do not have permission to view this page.</div>
+  }
+
+
   return (
     <div className="container py-12 pt-24">
       <div className="text-center mb-12">

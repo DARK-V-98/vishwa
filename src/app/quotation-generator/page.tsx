@@ -1,9 +1,8 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo, useActionState } from 'react';
-import { collection, getDocs, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -16,44 +15,9 @@ import { AlertCircle, Download, FileText, Sparkles } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { generateQuotation } from '@/ai/flows/automated-quotation-generation';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import ReactMarkdown from 'react-markdown';
 import { useRouter } from 'next/navigation';
-import { FirebasePricingProvider, usePricingDb } from '@/firebase/pricing-provider';
+import { pricingData, getPricingCategories, getCommonAddons, type PricingCategory, type CommonAddons, type Service, type Tier, type Addon } from '@/lib/pricing-data';
 
-
-// Type definitions based on the guide
-interface Tier {
-  name: string;
-  price: string;
-}
-
-interface Addon extends Tier {}
-
-interface Service {
-  name: string;
-  enabled: boolean;
-  tiers: Tier[];
-  addons?: Addon[];
-}
-
-interface PricingCategory {
-  id: string;
-  category: string;
-  icon: string;
-  enabled: boolean;
-  order: number;
-  services: Service[];
-}
-
-interface CommonAddons {
-  id: string;
-  category: string;
-  icon: string;
-  enabled: boolean;
-  items: Addon[];
-}
 
 const parsePrice = (priceString: string): number => {
     if (!priceString) return 0;
@@ -91,9 +55,8 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
     );
 }
 
-function QuotationGeneratorContent() {
+export default function QuotationGeneratorPage() {
   const mainFirestore = useFirestore();
-  const pricingFirestore = usePricingDb();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
 
@@ -185,77 +148,26 @@ function QuotationGeneratorContent() {
     }
   }, [state]);
 
-  const handleDownloadPdf = () => {
-    const input = document.getElementById('quotation-content');
-    if (input) {
-      html2canvas(input, { scale: 2 }).then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'px', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-        const width = pdfWidth;
-        const height = width / ratio;
-
-        if (height > pdfHeight) {
-            console.warn("Content might be too long for a single PDF page.");
-        }
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, width, height);
-        pdf.save('quotation.pdf');
-      });
-    }
-  };
-
   useEffect(() => {
-    async function getPricingData() {
-      if (!pricingFirestore) {
-          setError("Pricing database is not configured.");
-          setLoading(false);
-          return;
-      };
-      setLoading(true);
-      try {
-        const pricingCollection = collection(pricingFirestore, 'pricing');
-        const q = query(pricingCollection, orderBy('order'));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-          throw new Error("No pricing data found. Please check the 'pricing' collection in Firestore.");
-        }
-
-        const allData: any[] = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((category) => category.enabled);
-
-        const commonAddonsDoc = allData.find((d) => d.id === 'common-addons') as CommonAddons | undefined;
-        setCommonAddons(commonAddonsDoc || null);
-
-        const serviceCategories = allData
-          .filter((d) => d.id !== 'common-addons')
-          .map((category) => {
-            if (category.services) {
-              category.services = category.services.filter((service: Service) => service.enabled);
-            }
-            return category;
-          })
-          .filter((category) => category.services && category.services.length > 0) as PricingCategory[];
-        
-        setPricingData(serviceCategories);
-      } catch (e: any) {
-        console.error("Failed to fetch pricing data:", e);
-        setError(e.message || "An unexpected error occurred while fetching pricing data.");
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      const categories = getPricingCategories();
+      const addons = getCommonAddons();
+      
+      if (!categories || categories.length === 0) {
+        throw new Error("No pricing data found.");
       }
-    }
 
-    if (pricingFirestore) {
-      getPricingData();
+      setPricingData(categories);
+      setCommonAddons(addons);
+
+    } catch (e: any) {
+      console.error("Failed to load pricing data:", e);
+      setError(e.message || "An unexpected error occurred while loading pricing data.");
+    } finally {
+      setLoading(false);
     }
-  }, [pricingFirestore]);
+  }, []);
 
   const currentService = useMemo(() => {
     return pricingData
@@ -512,13 +424,4 @@ function QuotationGeneratorContent() {
       </div>
     </div>
   );
-}
-
-
-export default function QuotationGeneratorPage() {
-    return (
-        <FirebasePricingProvider>
-            <QuotationGeneratorContent />
-        </FirebasePricingProvider>
-    )
 }
