@@ -107,7 +107,9 @@ const Footer = () => {
             {/* Social Links */}
             <div className="flex space-x-4 mt-4">
               <a
-                href="#"
+                href="https://www.linkedin.com/in/vishwa-vidarshana-6b2608394"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="LinkedIn"
               >
