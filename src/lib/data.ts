@@ -1,3 +1,4 @@
+
 import { Code, Briefcase, Award, Users, ShoppingBag, Palette, FileText, CheckCircle, Clock } from 'lucide-react';
 
 export const profile = {

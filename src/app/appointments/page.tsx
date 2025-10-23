@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -56,7 +57,7 @@ export default function AppointmentPage() {
   }
   
   return (
-    <div className="container py-12">
+    <div className="container py-12 pt-24">
       <h1 className="text-4xl font-bold text-center mb-2">Book an Appointment</h1>
       <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
         Schedule a meeting with us to discuss your project. Choose a date, select a time, and let's talk.

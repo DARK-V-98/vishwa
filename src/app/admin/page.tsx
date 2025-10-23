@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserManagement } from "@/components/admin/user-management";
 import { ListingManagement } from "@/components/admin/listing-management";
@@ -5,7 +6,7 @@ import { OrderManagement } from "@/components/admin/order-management";
 
 export default function AdminPage() {
   return (
-    <div className="container py-12">
+    <div className="container py-12 pt-24">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">

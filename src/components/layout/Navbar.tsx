@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -27,6 +28,8 @@ const Navbar = () => {
 
   if (user) {
     navLinks.push({ name: "Dashboard", path: "/dashboard" });
+    navLinks.push({ name: "Appointments", path: "/appointments" });
+    navLinks.push({ name: "Admin", path: "/admin" });
   }
 
   const isActive = (path: string) => pathname === path;
