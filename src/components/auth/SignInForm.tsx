@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/firebase";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
 import { toast } from "sonner";
-import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
 import { Separator } from "../ui/separator";
 
@@ -43,6 +44,7 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -59,9 +61,29 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      toast.success("Signed in with Google successfully!");
-      router.push("/dashboard");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Check if user document exists
+      const userDocRef = doc(firestore, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        // New user, create document and redirect to complete profile
+        await setDoc(userDocRef, {
+          id: user.uid,
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          username: null,
+        });
+        toast.success("Welcome! Please complete your profile.");
+        router.push("/auth/complete-profile");
+      } else {
+        // Existing user
+        toast.success("Signed in with Google successfully!");
+        router.push("/dashboard");
+      }
     } catch (error: any) {
       toast.error(error.message);
     }

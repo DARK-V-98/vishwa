@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/firebase";
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { useAuth, useFirestore } from "@/firebase";
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
@@ -47,6 +48,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -56,8 +58,23 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
       return;
     }
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // You might want to save the first and last name to the user's profile here
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      await updateProfile(user, {
+        displayName: `${firstName} ${lastName}`.trim(),
+      });
+      
+      await setDoc(doc(firestore, "users", user.uid), {
+        id: user.uid,
+        firstName: firstName,
+        lastName: lastName,
+        username: `${firstName.toLowerCase()}${lastName.toLowerCase()}`.trim(), // simple username generation
+        email: user.email,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
       toast.success("Account created successfully!");
       router.push("/dashboard");
     } catch (error: any) {
@@ -68,9 +85,28 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      toast.success("Signed in with Google successfully!");
-      router.push("/dashboard");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      const userDocRef = doc(firestore, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          id: user.uid,
+          email: user.email,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          username: null,
+          firstName: user.displayName?.split(' ')[0] || '',
+          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+        });
+        toast.success("Welcome! Please complete your profile.");
+        router.push("/auth/complete-profile");
+      } else {
+        toast.success("Signed in with Google successfully!");
+        router.push("/dashboard");
+      }
     } catch (error: any) {
       toast.error(error.message);
     }

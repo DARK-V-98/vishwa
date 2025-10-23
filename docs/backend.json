@@ -11,6 +11,10 @@
           "type": "string",
           "description": "Unique identifier for the user account."
         },
+        "username": {
+          "type": "string",
+          "description": "The user's unique username."
+        },
         "firstName": {
           "type": "string",
           "description": "The user's first name."
@@ -45,8 +49,6 @@
       },
       "required": [
         "id",
-        "firstName",
-        "lastName",
         "email",
         "createdAt",
         "updatedAt"
