@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,46 +7,11 @@ import { ListingManagement } from "@/components/admin/listing-management";
 import { OrderManagement } from "@/components/admin/order-management";
 import ProjectManagement from "@/components/admin/project-management";
 import { useUser } from "@/firebase";
-import { useMemo, useState, useEffect } from "react";
-import WebPricingManagement from "@/components/admin/web-pricing-management";
-
-interface UserProfile {
-    roles?: string[];
-}
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
-  const [roles, setRoles] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const checkRoles = async () => {
-      if (isUserLoading) return;
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        const idTokenResult = await user.getIdTokenResult();
-        const userRoles = (idTokenResult.claims.roles as string[]) || [];
-        setRoles(userRoles);
-      } catch (error) {
-        console.error("Error fetching user roles:", error);
-        setRoles([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkRoles();
-  }, [user, isUserLoading]);
-  
-  const canManagePricing = useMemo(() => {
-    if (isLoading) return false;
-    return roles.includes('admin') || roles.includes('developer');
-  }, [isLoading, roles]);
-
-  if (isLoading) {
+  if (isUserLoading) {
     return <div className="container py-12 pt-24">Loading...</div>
   }
 
@@ -63,12 +29,11 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="projects" className="w-full">
-        <TabsList className={`grid w-full ${canManagePricing ? 'grid-cols-5' : 'grid-cols-4'}`}>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
           <TabsTrigger value="orders">Design Orders</TabsTrigger>
-          {canManagePricing && <TabsTrigger value="pricing">Web Pricing</TabsTrigger>}
         </TabsList>
         <TabsContent value="projects">
             <ProjectManagement />
@@ -82,11 +47,6 @@ export default function AdminPage() {
         <TabsContent value="orders">
             <OrderManagement />
         </TabsContent>
-        {canManagePricing && (
-          <TabsContent value="pricing">
-              <WebPricingManagement />
-          </TabsContent>
-        )}
       </Tabs>
     </div>
   );

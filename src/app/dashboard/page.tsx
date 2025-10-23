@@ -3,14 +3,11 @@
 
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getAuth, signOut } from "firebase/auth";
 import { Badge } from "@/components/ui/badge";
 import {
-  Crown,
-  Code,
-  ShoppingCart,
   User as UserIcon,
   FolderKanban,
   MessageSquare,
@@ -26,8 +23,6 @@ import { Button } from "@/components/ui/button";
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const [roles, setRoles] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -35,28 +30,6 @@ export default function DashboardPage() {
     }
   }, [user, isUserLoading, router]);
 
-  useEffect(() => {
-    const checkRoles = async () => {
-      setIsLoading(true);
-      if (isUserLoading) return;
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        const idTokenResult = await user.getIdTokenResult(true); // Force refresh
-        const userRoles = (idTokenResult.claims.roles as string[]) || [];
-        setRoles(userRoles);
-      } catch (error) {
-        console.error("Error fetching user roles:", error);
-        setRoles([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkRoles();
-  }, [user, isUserLoading]);
 
   const handleSignOut = () => {
     const auth = getAuth();
@@ -65,25 +38,18 @@ export default function DashboardPage() {
     });
   };
   
-  const hasAdminAccess = useMemo(() => {
-    if (isLoading) return false;
-    return roles.includes('admin') || roles.includes('developer');
-  }, [isLoading, roles]);
-
   const menuItems = useMemo(() => {
     const items = [
       { id: 'projects', label: 'My Projects', icon: FolderKanban, href: '/projects', description: 'Track your ongoing projects' },
       { id: 'appointments', label: 'Appointments', icon: Calendar, href: '/appointments', description: 'Manage your meetings' },
       { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'View your conversations' },
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
+      { id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' }
     ];
-    if (hasAdminAccess) {
-      items.push({ id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' });
-    }
     return items;
-  }, [hasAdminAccess]);
+  }, []);
 
-  if (isLoading || isUserLoading || !user) {
+  if (isUserLoading || !user) {
     return (
         <div className="flex items-center justify-center min-h-screen">
             <p>Loading...</p>
@@ -91,12 +57,6 @@ export default function DashboardPage() {
     );
   }
   
-  const roleIcons: { [key: string]: React.ElementType } = {
-    admin: Crown,
-    developer: Code,
-    customer: ShoppingCart,
-  };
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] pt-24 pb-12">
         <main className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-8">
@@ -107,14 +67,6 @@ export default function DashboardPage() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 justify-center">
                     <Badge variant="secondary"><UserIcon className="h-4 w-4 mr-1" /> User</Badge>
-                    {roles.map(role => {
-                        const Icon = roleIcons[role];
-                        return (
-                            <Badge key={role} variant={role === 'admin' ? 'default' : 'outline'}>
-                                {Icon && <Icon className="h-4 w-4 mr-1" />} {role.charAt(0).toUpperCase() + role.slice(1)}
-                            </Badge>
-                        );
-                    })}
                 </div>
             </div>
 
