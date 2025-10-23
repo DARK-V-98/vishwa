@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo, useActionState } from 'react';
@@ -49,9 +50,10 @@ interface CommonAddons {
 }
 
 const parsePrice = (priceString: string): number => {
-  if (!priceString) return 0;
-  const numberString = priceString.replace(/[^0-9.-]+/g, '');
-  return parseFloat(numberString) || 0;
+    if (!priceString) return 0;
+    // Remove "Rs. ", commas, and then parse.
+    const numberString = priceString.replace(/Rs\.\s*|,/g, '');
+    return parseFloat(numberString) || 0;
 };
 
 
