@@ -1,218 +1,239 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user data and employs role-based access control for administrative functions.
+ * @description This ruleset enforces a strict user-ownership model for personal data and uses database-based access control (DBAC) for administrative roles.
  *
  * Data Structure:
- * - /users/{userId}: Stores user account information, secured by owner-only access.
- * - /userProfiles/{profileId}: Stores user profile information, also secured by owner-only access via the userId link.
- * - /roles_admin/{userId}: Documents in this collection grant admin privileges to the corresponding user.
- * - /roles_developer/{userId}: Documents in this collection grant developer privileges to the corresponding user.
- * - /roles_customer/{userId}: Documents in this collection grant customer privileges to the corresponding user.
- * - /projects/{projectId}: Stores client projects.
- * - /designOrders/{orderId}: Stores client design orders.
+ * - /users/{userId}: Stores user account information. User's can only manage their own accounts.
+ * - /userProfiles/{profileId}: Stores user profile information.
+ * - /roles_admin/{userId}, /roles_developer/{userId}, /roles_customer/{userId}: Collections that grant roles based on document existence.
+ * - /projects/{projectId}: Stores project data. Only the project owner can manage projects.
+ * - /designOrders/{orderId}: Stores design orders. Only the order owner can manage design orders.
+ * - /pricing/{pricingId}: Stores pricing data.
  *
  * Key Security Decisions:
- * - User data is strictly private and accessible only to the owning user.
- * - Administrative privileges are granted based on the existence of a document in the `roles_admin` collection.
- * - Listing of users is disallowed.
- * - Public read access is not generally permitted except where explicitly noted.
+ * - User data is strictly controlled by the owning user.
+ * - Listing of users and user profiles is disallowed.
+ * - Administrative, developer, and customer roles are granted via document existence in dedicated collections.
+ * - Write operations must be authenticated.
  *
  * Denormalization for Authorization:
- * - UserProfile documents contain a `userId` field, which enables path-based ownership checks without needing additional `get()` calls.
+ * - User documents include the 'profileId' to link to the user profile, eliminating the need for `get()` calls to determine ownership.
+ *
+ * Structural Segregation:
+ * - User profiles and role collections are stored separately to apply different security postures.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is made by a signed-in user.
-     * @return {bool} True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of the document based on the provided userId.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {bool} True if the authenticated user is the owner, false otherwise.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of an existing document.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {bool} True if the authenticated user is the owner and the document exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Checks if a user has an admin role.
-     * @param {string} userId - The user ID to check for admin privileges.
-     * @return {bool} True if the user has the admin role, false otherwise.
-     */
-    function isAdmin(userId) {
-        return exists(/databases/$(database)/documents/roles_admin/$(userId));
-    }
-
-    /**
-     * @description Checks if a user has a developer role.
-     * @param {string} userId - The user ID to check for developer privileges.
-     * @return {bool} True if the user has the developer role, false otherwise.
-     */
-    function isDeveloper(userId) {
-        return exists(/databases/$(database)/documents/roles_developer/$(userId));
-    }
-
-    /**
-     * @description Checks if a user has a customer role.
-     * @param {string} userId - The user ID to check for customer privileges.
-     * @return {bool} True if the user has the customer role, false otherwise.
-     */
-    function isCustomer(userId) {
-        return exists(/databases/$(database)/documents/roles_customer/$(userId));
-    }
-
-    /**
-     * @description Rules for user documents.
+     * @description Allows users to manage their own user accounts.
      * @path /users/{userId}
-     * @allow (create) User with ID 'user123' can create their own user document if authenticated as 'user123'.
-     * @allow (get) User with ID 'user123' can read their own user document if authenticated as 'user123'.
-     * @allow (update) User with ID 'user123' can update their own user document if authenticated as 'user123'.
-     * @allow (delete) User with ID 'user123' can delete their own user document if authenticated as 'user123'.
-     * @deny (create) User with ID 'user456' cannot create a user document for 'user123' if authenticated as 'user456'.
-     * @deny (get) User with ID 'user456' cannot read the user document of 'user123' if authenticated as 'user456'.
-     * @deny (update) User with ID 'user456' cannot update the user document of 'user123' if authenticated as 'user456'.
-     * @deny (delete) User with ID 'user456' cannot delete the user document of 'user123' if authenticated as 'user456'.
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User with matching id can create their account.
+     * @allow (get, update, delete) Authenticated user can get, update, or delete their own account.
+     * @deny (create) User attempts to create an account with a different id.
+     * @deny (get, update, delete) Unauthorized user attempts to access another user's account.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource.data.id == userId;
+      }
+
       allow get: if isOwner(userId);
-      allow list: if false; // Listing users is not permitted.
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == request.auth.uid;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == request.auth.uid;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Rules for user profile documents.
+     * @description Allows users to manage their own user profiles.
      * @path /userProfiles/{profileId}
-     * @allow (create) User with profile ID 'profile123' can create their own profile document.
-     * @allow (get) User with profile ID 'profile123' can read their own profile document.
-     * @allow (update) User with profile ID 'profile123' can update their own profile document.
-     * @allow (delete) User with profile ID 'profile123' can delete their own profile document.
-     * @deny (create) User with profile ID 'profile456' cannot create a profile document for 'profile123'.
-     * @deny (get) User with profile ID 'profile456' cannot read the profile document of 'profile123'.
-     * @deny (update) User with profile ID 'profile456' cannot update the profile document of 'profile123'.
-     * @deny (delete) User with profile ID 'profile456' cannot delete the profile document of 'profile123'.
-     * @principle Enforces document ownership based on the userId field.
+     * @allow (create) User with matching userId can create their profile.
+     * @allow (get, update, delete) Authenticated user can get, update, or delete their own profile.
+     * @deny (create) User attempts to create a profile with a different userId.
+     * @deny (get, update, delete) Unauthorized user attempts to access another user's profile.
+     * @principle Enforces document ownership for writes.
      */
     match /userProfiles/{profileId} {
-      allow get: if isSignedIn() && exists(/databases/$(database)/documents/users/$(resource.data.userId));
-      allow list: if false; // Listing user profiles is not permitted.
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwnerByProfileId(profileId) {
+        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.profileId == profileId;
+      }
+      function isExistingOwnerByProfileId(profileId) {
+        return isOwnerByProfileId(profileId) && resource.data.userId == request.auth.uid;
+      }
+
+      allow get: if isOwnerByProfileId(profileId);
+      allow list: if false;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwnerByProfileId(profileId) && request.resource.data.userId == request.auth.uid;
+      allow delete: if isExistingOwnerByProfileId(profileId);
     }
 
     /**
-     * @description Rules for granting admin roles.
+     * @description Allows admins to be created by backend only, admins can list all admins.
      * @path /roles_admin/{userId}
-     * @allow (get) Any authenticated user can check if a user ID exists in this collection.
-     * @allow (list) Only an admin can list admin roles.
-     * @allow (create) Only an admin can grant admin roles.
-     * @allow (update) Only an admin can update admin roles.
-     * @allow (delete) Only an admin can revoke admin roles.
-     * @deny (create) A non-admin user cannot grant themselves admin roles.
-     * @deny (get) A non-admin user cannot read the admin doc of another user.
-     * @principle Implements role-based access control.
+     * @allow (create) Only the backend can create admin accounts.
+     * @allow (get) Authenticated user can get their own admin role.
+     * @deny (create) Non-backend attempts to create admin roles.
+     * @deny (get) Unauthorized user attempts to access admin roles.
+     * @principle Enforces role-based access control.
      */
     match /roles_admin/{userId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn() && isAdmin(request.auth.uid);
-      allow create: if isSignedIn() && isAdmin(request.auth.uid);
-      allow update: if isSignedIn() && isAdmin(request.auth.uid);
-      allow delete: if isSignedIn() && isAdmin(request.auth.uid);
-    }
+        function isSignedIn() {
+            return request.auth != null;
+        }
 
-      /**
-       * @description Rules for granting developer roles.
-       * @path /roles_developer/{userId}
-       * @allow (get) Any authenticated user can check if a user ID exists in this collection.
-       * @allow (list) Only an admin or developer can list developer roles.
-       * @allow (create) Only an admin can grant developer roles.
-       * @allow (update) Only an admin can update developer roles.
-       * @allow (delete) Only an admin can revoke developer roles.
-       * @deny (create) A non-admin user cannot grant themselves developer roles.
-       * @deny (get) A non-admin user cannot read the developer doc of another user.
-       * @principle Implements role-based access control.
-       */
-    match /roles_developer/{userId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn() && (isAdmin(request.auth.uid) || isDeveloper(request.auth.uid));
-        allow create: if isSignedIn() && isAdmin(request.auth.uid);
-        allow update: if isSignedIn() && isAdmin(request.auth.uid);
-        allow delete: if isSignedIn() && isAdmin(request.auth.uid);
-    }
+        function isAdmin() {
+            return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+        }
 
-      /**
-       * @description Rules for granting customer roles.
-       * @path /roles_customer/{userId}
-       * @allow (get) Any authenticated user can check if a user ID exists in this collection.
-       * @allow (list) Only an admin, developer or customer can list customer roles.
-       * @allow (create) Only an admin or developer can grant customer roles.
-       * @allow (update) Only an admin or developer can update customer roles.
-       * @allow (delete) Only an admin or developer can revoke customer roles.
-       * @deny (create) A non-admin/developer user cannot grant themselves customer roles.
-       * @deny (get) A non-admin/developer user cannot read the customer doc of another user.
-       * @principle Implements role-based access control.
-       */
-    match /roles_customer/{userId} {
-        allow get: if isSignedIn();
-        allow list: if isSignedIn() && (isAdmin(request.auth.uid) || isDeveloper(request.auth.uid) || isCustomer(request.auth.uid));
-        allow create: if isSignedIn() && (isAdmin(request.auth.uid) || isDeveloper(request.auth.uid));
-        allow update: if isSignedIn() && (isAdmin(request.auth.uid) || isDeveloper(request.auth.uid));
-        allow delete: if isSignedIn() && (isAdmin(request.auth.uid) || isDeveloper(request.auth.uid));
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if isAdmin();
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
     }
 
     /**
-     * @description Rules for project documents.
+     * @description Allows developers to be created by backend only, admins can list all developers.
+     * @path /roles_developer/{userId}
+     * @allow (create) Only the backend can create developer accounts.
+     * @allow (get) Authenticated user can get their own developer role.
+     * @deny (create) Non-backend attempts to create developer roles.
+     * @deny (get) Unauthorized user attempts to access developer roles.
+     * @principle Enforces role-based access control.
+     */
+    match /roles_developer/{userId} {
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        function isAdmin() {
+            return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+        }
+        function isDeveloper() {
+            return exists(/databases/$(database)/documents/roles_developer/$(request.auth.uid));
+        }
+
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if isAdmin();
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
+    }
+
+    /**
+     * @description Allows customers to be created by backend only, admins can list all customers.
+     * @path /roles_customer/{userId}
+     * @allow (create) Only the backend can create customer accounts.
+     * @allow (get) Authenticated user can get their own customer role.
+     * @deny (create) Non-backend attempts to create customer roles.
+     * @deny (get) Unauthorized user attempts to access customer roles.
+     * @principle Enforces role-based access control.
+     */
+    match /roles_customer/{userId} {
+        function isSignedIn() {
+            return request.auth != null;
+        }
+        function isAdmin() {
+            return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+        }
+        function isCustomer() {
+            return exists(/databases/$(database)/documents/roles_customer/$(request.auth.uid));
+        }
+
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if isAdmin();
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
+    }
+
+    /**
+     * @description Allows project owners to manage their own projects.
      * @path /projects/{projectId}
-     * @allow (get) Any authenticated user can read project documents.
-     * @allow (list) Any authenticated user can list project documents.
-     * @allow (create) Only the project owner can create a project.
-     * @allow (update) Only the project owner can update a project.
-     * @allow (delete) Only the project owner can delete a project.
-     * @principle Allows public read access but restricts write access to the project owner.
+     * @allow (create) Authenticated user can create a project.
+     * @allow (get, update, delete) Authenticated user can get, update, or delete their own project.
+     * @deny (create) User attempts to create a project with a different ownerId.
+     * @deny (get, update, delete) Unauthorized user attempts to access another user's project.
+     * @principle Enforces document ownership for writes.
      */
     match /projects/{projectId} {
-      allow get: if true;
-      allow list: if true;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(clientId) {
+        return isSignedIn() && request.auth.uid == clientId;
+      }
+      function isExistingOwner(clientId) {
+        return isOwner(clientId) && resource.data.clientId == clientId;
+      }
+
+      allow get: if isOwner(resource.data.clientId);
+      allow list: if false;
       allow create: if isSignedIn() && request.resource.data.clientId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.clientId == request.auth.uid && resource != null;
-      allow delete: if isSignedIn() && resource.data.clientId == request.auth.uid && resource != null;
+      allow update: if isExistingOwner(resource.data.clientId) && request.resource.data.clientId == request.auth.uid;
+      allow delete: if isExistingOwner(resource.data.clientId) && request.resource.data.clientId == request.auth.uid;
     }
 
     /**
-     * @description Rules for design order documents.
+     * @description Allows design order owners to manage their own design orders.
      * @path /designOrders/{orderId}
-     * @allow (get) Any authenticated user can read design order documents.
-     * @allow (list) Any authenticated user can list design order documents.
-     * @allow (create) Only the design order owner can create a design order.
-     * @allow (update) Only the design order owner can update a design order.
-     * @allow (delete) Only the design order owner can delete a design order.
-     * @principle Allows public read access but restricts write access to the design order owner.
+     * @allow (create) Authenticated user can create a design order.
+     * @allow (get, update, delete) Authenticated user can get, update, or delete their own design order.
+     * @deny (create) User attempts to create a design order with a different ownerId.
+     * @deny (get, update, delete) Unauthorized user attempts to access another user's design order.
      */
     match /designOrders/{orderId} {
-      allow get: if true;
-      allow list: if true;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(clientId) {
+        return isSignedIn() && request.auth.uid == clientId;
+      }
+      function isExistingOwner(clientId) {
+        return isOwner(clientId) && resource.data.clientId == clientId;
+      }
+       function isAdmin() {
+            return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+        }
+
+      allow get: if isOwner(resource.data.clientId) || isAdmin();
+      allow list: if false;
       allow create: if isSignedIn() && request.resource.data.clientId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.clientId == request.auth.uid && resource != null;
-      allow delete: if isSignedIn() && resource.data.clientId == request.auth.uid && resource != null;
+      allow update: if isExistingOwner(resource.data.clientId) || isAdmin();
+      allow delete: if isExistingOwner(resource.data.clientId) || isAdmin();
+    }
+
+     /**
+      * @description Allows admins to manage pricing information.
+      * @path /pricing/{pricingId}
+      */
+    match /pricing/{pricingId} {
+        function isSignedIn() {
+            return request.auth != null;
+        }
+
+        function isAdmin() {
+            return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+        }
+
+        allow get: if isAdmin();
+        allow list: if isAdmin();
+        allow create: if isAdmin();
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
     }
   }
 }
