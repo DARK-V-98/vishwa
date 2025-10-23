@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import "./globals.css";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
+import WelcomeMat from "@/components/welcome-mat";
 
 export const metadata: Metadata = {
   title: "R.M.T Vishwa Vidarshana | Web Developer & Designer",
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased")}>
         <FirebaseClientProvider>
+          <WelcomeMat />
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
