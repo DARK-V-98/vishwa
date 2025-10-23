@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/firebase";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
@@ -53,12 +53,10 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Check if user document exists
       const userDocRef = doc(firestore, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-        // New user, create documents
         const batch = writeBatch(firestore);
         
         batch.set(userDocRef, {
@@ -66,13 +64,12 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
           email: user.email,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          username: user.email, // Use email as a placeholder username
+          username: user.email,
           firstName: '',
           lastName: '',
           roles: ['customer']
         });
 
-        // Assign default customer role
         const customerRoleRef = doc(firestore, "roles_customer", user.uid);
         batch.set(customerRoleRef, {
             id: user.uid,
@@ -80,8 +77,15 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
         });
 
         await batch.commit();
-        toast.success("Welcome back! Your profile has been initialized.");
+        toast.success("Welcome! Your profile has been initialized.");
       } else {
+        const userData = userDoc.data();
+        if (!userData.roles) {
+          await updateDoc(userDocRef, {
+            roles: ['customer']
+          });
+          toast.info("Your profile has been updated with default roles.");
+        }
         toast.success("Signed in successfully!");
       }
 
@@ -97,13 +101,11 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // Check if user document exists
       const userDocRef = doc(firestore, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
         const batch = writeBatch(firestore);
-        // New user, create document and redirect to complete profile
         batch.set(userDocRef, {
           id: user.uid,
           email: user.email,
@@ -115,7 +117,6 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
           roles: ['customer']
         });
         
-        // Assign default customer role
         const customerRoleRef = doc(firestore, "roles_customer", user.uid);
         batch.set(customerRoleRef, {
             id: user.uid,
@@ -127,7 +128,13 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
         toast.success("Welcome! Please complete your profile.");
         router.push("/auth/complete-profile");
       } else {
-        // Existing user
+        const userData = userDoc.data();
+        if (!userData.roles) {
+          await updateDoc(userDocRef, {
+            roles: ['customer']
+          });
+          toast.info("Your profile has been updated with default roles.");
+        }
         toast.success("Signed in with Google successfully!");
         router.push("/dashboard");
       }
@@ -202,5 +209,3 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
     </div>
   );
 }
-
-    
