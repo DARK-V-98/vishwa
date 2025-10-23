@@ -13,6 +13,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const About = () => {
   const skills = [
@@ -76,10 +77,14 @@ const About = () => {
             <Card className="shadow-strong border-border/50 bg-card/50 backdrop-blur-sm">
               <CardContent className="p-8 md:p-12">
                 <div className="grid md:grid-cols-2 gap-8 items-center">
-                  <div>
-                    <div className="w-full aspect-square bg-gradient-hero rounded-2xl shadow-strong flex items-center justify-center">
-                      <span className="text-8xl font-bold text-primary-foreground">VV</span>
-                    </div>
+                  <div className="relative aspect-square rounded-2xl shadow-strong overflow-hidden">
+                    <Image
+                        src="https://picsum.photos/seed/profile/600/600"
+                        alt="Vishwa Vidarshana"
+                        fill
+                        className="object-cover"
+                        data-ai-hint="professional portrait"
+                    />
                   </div>
                   <div className="space-y-4">
                     <h2 className="text-3xl font-bold">Hello! I'm Vishwa</h2>
