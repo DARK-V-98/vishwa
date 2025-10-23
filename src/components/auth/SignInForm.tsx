@@ -80,11 +80,12 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
         toast.success("Welcome! Your profile has been initialized.");
       } else {
         const userData = userDoc.data();
-        if (!userData.roles) {
-          await updateDoc(userDocRef, {
-            roles: ['customer']
-          });
-          toast.info("Your profile has been updated with default roles.");
+        if (!userData.roles || userData.roles.length === 0) {
+            await updateDoc(userDocRef, {
+              roles: ['customer'],
+              updatedAt: serverTimestamp()
+            });
+            toast.info("Your profile has been updated with default roles.");
         }
         toast.success("Signed in successfully!");
       }
@@ -129,11 +130,12 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
         router.push("/auth/complete-profile");
       } else {
         const userData = userDoc.data();
-        if (!userData.roles) {
-          await updateDoc(userDocRef, {
-            roles: ['customer']
-          });
-          toast.info("Your profile has been updated with default roles.");
+        if (!userData.roles || userData.roles.length === 0) {
+            await updateDoc(userDocRef, {
+              roles: ['customer'],
+              updatedAt: serverTimestamp()
+            });
+            toast.info("Your profile has been updated with default roles.");
         }
         toast.success("Signed in with Google successfully!");
         router.push("/dashboard");
@@ -209,5 +211,3 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
     </div>
   );
 }
-
-    
