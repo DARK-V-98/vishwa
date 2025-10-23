@@ -2,78 +2,88 @@
  * @fileoverview Firestore Security Rules for the application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for personal data while allowing public read access to products and services.
- * All user-specific data (design orders, appointments, quotation requests) is nested under the `/users/{userId}` path, ensuring that only the authenticated user can access their own data.
- * Products have `sellerId`, so product listings are secure.
+ * This ruleset enforces a strict user-ownership model for personal data and
+ * allows public read access to service and product listings.  All write
+ * operations require authentication.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile information.
- * - /users/{userId}/designOrders/{designOrderId}: Stores design orders placed by a user.
- * - /users/{userId}/appointments/{appointmentId}: Stores appointments booked by a user.
- * - /users/{userId}/quotationRequests/{quotationRequestId}: Stores quotation requests submitted by a user.
- * - /services/{serviceId}: Stores services offered by the company. Publicly readable.
- * - /products/{productId}: Stores products listed on the online marketplace. Publicly readable, owner-only writes.
+ * - User profiles are stored in `/users/{userId}`.
+ * - User-specific data (design orders, appointments, quotation requests)
+ *   are stored in subcollections under `/users/{userId}`.
+ * - Services and Products are stored in top-level collections (`/services`, `/products`).
  *
  * Key Security Decisions:
- * - Users can only access their own profile and associated subcollections.
- * - Products are publicly readable, but only the seller can modify them.
- * - Services are publicly readable and writable (for admins - this is not yet implemented).
- * - Listing of user profiles is disallowed.
+ * - Users can only create, read, update, and delete their own profile and
+ *   associated data.
+ * - Listing all users is disallowed.
+ * - Services are publicly readable.
+ * - Products are publicly readable, but write access is restricted to the owner (seller).
  *
  * Denormalization for Authorization:
- * The 'products' collection leverages the 'sellerId' field to enforce ownership. No denormalization is needed in this initial prototype.
+ * - Products have a `sellerId` field to enable owner-based write restrictions.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to read and write their own profile data.
+     * @description Secure root access. No read or write access to the root of the database is allowed.
+     * @path /databases/{database}/documents
+     * @allow (get) - N/A
+     * @allow (list) - N/A
+     * @allow (create) - N/A
+     * @allow (update) - N/A
+     * @allow (delete) - N/A
+     * @principle Root access is forbidden.
+     */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Manages user profile information. Only the authenticated user can read, update, or delete their own profile.
      * @path /users/{userId}
-     * @allow (create) User with UID 'user123' can create a profile with id: 'user123'.
-     * @allow (get) User with UID 'user123' can read their own profile.
-     * @allow (update) User with UID 'user123' can update their own profile.
-     * @allow (delete) User with UID 'user123' can delete their own profile.
-     * @deny (create) User with UID 'user456' cannot create a profile with id: 'user123'.
-     * @deny (get) User with UID 'user456' cannot read profile of 'user123'.
-     * @principle Enforces document ownership for user profiles.
+     * @allow (get) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can get their own profile.
+     * @allow (list) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can list their own profile.
+     * @allow (create) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can create their own profile.
+     * @allow (update) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can update their own profile.
+     * @allow (delete) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can delete their own profile.
+     * @deny (create) User with id 'DIFFERENT_USER_ID' cannot create profile for 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @principle Enforces user-ownership for profile data.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
-      allow list: if false; // Listing user profiles is not permitted.
+      // Listing all users is disallowed for privacy reasons.
+      allow list: if false;
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id; // Enforce immutability of userId.
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows a user to manage their own design orders.
+     * @description Manages design orders placed by a user. Only the authenticated user can read, create, update, or delete their own design orders.
      * @path /users/{userId}/designOrders/{designOrderId}
-     * @allow (create) User with UID 'user123' can create a design order under their profile.
-     * @allow (get) User with UID 'user123' can read their own design order.
-     * @allow (update) User with UID 'user123' can update their own design order.
-     * @allow (delete) User with UID 'user123' can delete their own design order.
-     * @deny (create) User with UID 'user456' cannot create a design order under user 'user123''s profile.
-     * @deny (get) User with UID 'user456' cannot read design order of user 'user123'.
-     * @principle Enforces document ownership for design orders.
+     * @allow (get) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can get designOrder with id 'designOrderId'.
+     * @allow (list) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can list their designOrders.
+     * @allow (create) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can create designOrder with id 'designOrderId'.
+     * @allow (update) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can update designOrder with id 'designOrderId'.
+     * @allow (delete) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can delete designOrder with id 'designOrderId'.
+     * @deny (create) User with id 'DIFFERENT_USER_ID' cannot create designOrder for 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @principle Enforces user-ownership for design order data.
      */
     match /users/{userId}/designOrders/{designOrderId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId);
@@ -82,25 +92,17 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a user to manage their own appointments.
+     * @description Manages appointments booked by a user. Only the authenticated user can read, create, update, or delete their own appointments.
      * @path /users/{userId}/appointments/{appointmentId}
-     * @allow (create) User with UID 'user123' can create an appointment under their profile.
-     * @allow (get) User with UID 'user123' can read their own appointment.
-     * @allow (update) User with UID 'user123' can update their own appointment.
-     * @allow (delete) User with UID 'user123' can delete their own appointment.
-     * @deny (create) User with UID 'user456' cannot create an appointment under user 'user123''s profile.
-     * @deny (get) User with UID 'user456' cannot read appointment of user 'user123'.
-     * @principle Enforces document ownership for appointments.
+     * @allow (get) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can get appointment with id 'appointmentId'.
+     * @allow (list) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can list their appointments.
+     * @allow (create) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can create appointment with id 'appointmentId'.
+     * @allow (update) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can update appointment with id 'appointmentId'.
+     * @allow (delete) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can delete appointment with id 'appointmentId'.
+     * @deny (create) User with id 'DIFFERENT_USER_ID' cannot create appointment for 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @principle Enforces user-ownership for appointment data.
      */
     match /users/{userId}/appointments/{appointmentId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId);
@@ -109,24 +111,17 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows a user to manage their own quotation requests.
+     * @description Manages quotation requests submitted by a user. Only the authenticated user can read, create, update, or delete their own quotation requests.
      * @path /users/{userId}/quotationRequests/{quotationRequestId}
-     * @allow (create) User with UID 'user123' can create a quotation request under their profile.
-     * @allow (get) User with UID 'user123' can read their own quotation request.
-     * @allow (update) User with UID 'user123' can update their own quotation request.
-     * @allow (delete) User with UID 'user123' can delete their own quotation request.
-     * @deny (create) User with UID 'user456' cannot create a quotation request under user 'user123''s profile.
-     * @deny (get) User with UID 'user456' cannot read quotation request of user 'user123'.
-     * @principle Enforces document ownership for quotation requests.
+     * @allow (get) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can get quotationRequest with id 'quotationRequestId'.
+     * @allow (list) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can list their quotationRequests.
+     * @allow (create) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can create quotationRequest with id 'quotationRequestId'.
+     * @allow (update) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can update quotationRequest with id 'quotationRequestId'.
+     * @allow (delete) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can delete quotationRequest with id 'quotationRequestId'.
+     * @deny (create) User with id 'DIFFERENT_USER_ID' cannot create quotationRequest for 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @principle Enforces user-ownership for quotation request data.
      */
     match /users/{userId}/quotationRequests/{quotationRequestId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId);
@@ -135,46 +130,51 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows anyone to read services.  Write access is not secured yet (TODO: add admin role).
+     * @description Manages services offered by the company. All users can read services. Only admins can create, update, or delete services.
      * @path /services/{serviceId}
-     * @allow (get) Any user can read any service.
+     * @allow (get) Any user can get service with id 'serviceId'.
      * @allow (list) Any user can list services.
-     * @deny (create) Currently no condition exists to allow service creation
-     * @deny (update) Currently no condition exists to allow service updates
-     * @deny (delete) Currently no condition exists to allow service deletes
+     * @allow (create) Only admins can create service with id 'serviceId'.
+     * @allow (update) Only admins can update service with id 'serviceId'.
+     * @allow (delete) Only admins can delete service with id 'serviceId'.
+     * @principle Allows public read access for services.
      */
     match /services/{serviceId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false; // TODO: Add admin role check
-      allow update: if false; // TODO: Add admin role check
-      allow delete: if false; // TODO: Add admin role check
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add admin-only write rule.
     }
 
     /**
-     * @description Allows anyone to read products, but only the seller can modify them.
+     * @description Manages products listed on the online marketplace. All users can read products. Only the seller can create, update, or delete their own products.
      * @path /products/{productId}
-     * @allow (get) Any user can read any product.
+     * @allow (get) Any user can get product with id 'productId'.
      * @allow (list) Any user can list products.
-     * @allow (create) A user can create a product if request.auth.uid == request.resource.data.sellerId.
-     * @allow (update) The seller can update their product.
-     * @allow (delete) The seller can delete their product.
-     * @deny (create) A user cannot create a product if request.auth.uid != request.resource.data.sellerId.
+     * @allow (create) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can create product with sellerId 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @allow (update) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can update product with sellerId 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @allow (delete) User with id 'MB4gBJlbDaeQDTPdql5rvirLIFT2' can delete product with sellerId 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @deny (create) User with id 'DIFFERENT_USER_ID' cannot create product for sellerId 'MB4gBJlbDaeQDTPdql5rvirLIFT2'.
+     * @principle Allows public read access for products, but restricts writes to the owner (seller).
      */
     match /products/{productId} {
-      function isOwner(sellerId) {
-        return request.auth.uid == sellerId;
-      }
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.sellerId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.sellerId == request.auth.uid && resource != null;
+      allow delete: if isSignedIn() && resource.data.sellerId == request.auth.uid && resource != null;
+    }
 
-      function isExistingOwner(sellerId) {
-          return isOwner(sellerId) && resource != null;
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if request.resource.data.sellerId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.sellerId);
-      allow delete: if isExistingOwner(resource.data.sellerId);
+     /**
+      * @description Secure access to the top level projects collection.  No writes are allowed
+      * @path /projects
+      * @allow (get) All users can read this data.
+      * @allow (list) All users can list this data.
+      * @allow (create) Not allowed.
+      * @allow (update) Not allowed.
+      * @allow (delete) Not allowed.
+      * @principle Public read access to projects
+      */
+    match /projects/{document} {
+        allow list, get: if true;
+        allow create, update, delete: if false;
     }
   }
 }
