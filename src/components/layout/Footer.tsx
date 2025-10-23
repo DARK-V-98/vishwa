@@ -116,7 +116,9 @@ const Footer = () => {
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com/share/1Ber5EBeNW/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Facebook"
               >
