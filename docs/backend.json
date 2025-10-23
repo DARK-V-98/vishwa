@@ -222,6 +222,52 @@
         }
       },
       "required": ["id", "clientId", "serviceCategory", "serviceName", "total", "status", "progress", "createdAt", "updatedAt"]
+    },
+    "DesignOrder": {
+      "title": "DesignOrder",
+      "type": "object",
+      "description": "Represents a design service order placed by a client.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the design order."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "The ID of the user who placed this order."
+        },
+        "clientName": {
+          "type": "string",
+          "description": "The name of the client."
+        },
+        "clientEmail": {
+          "type": "string",
+          "description": "The email of the client."
+        },
+        "serviceType": {
+          "type": "string",
+          "description": "The type of design service requested (e.g., 'Logo Design').",
+          "enum": ["logo", "post"]
+        },
+        "projectBrief": {
+          "type": "string",
+          "description": "A detailed brief of the design project."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the design order.",
+          "enum": ["Pending", "In Progress", "Completed", "Cancelled"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "clientId", "clientName", "clientEmail", "serviceType", "projectBrief", "status", "createdAt", "updatedAt"]
     }
   },
   "auth": {
@@ -289,8 +335,18 @@
           "schema": { "$ref": "#/backend/entities/Project" },
           "description": "Stores all client projects initiated from the quotation generator."
         }
+      },
+      {
+        "path": "designOrders/{orderId}",
+        "definition": {
+          "entityName": "DesignOrder",
+          "schema": { "$ref": "#/backend/entities/DesignOrder" },
+          "description": "Stores all client design orders initiated from the design studio."
+        }
       }
     ],
     "reasoning": "The Firestore structure is designed to support user authentication, profile management, and administrative roles, focusing on security, scalability, and debuggability. It incorporates key principles such as Authorization Independence, DBAC (Database-Based Access Control), and Structural Segregation to streamline security rules and maintain data integrity.\n\n*   **Authorization Independence:** The `users/{userId}` collection includes the `profileId` field. While seemingly creating a `get()` dependency, the intended use-case is to simply store the ID. Access to `/users/{userId}/profile` is granted via path-based ownership, eliminating the need for `get()` calls in security rules.\n*   **Structural Segregation:** User profiles and admin roles are stored in separate collections (`userProfiles` and `roles_admin`), ensuring different security postures for each. This segregation simplifies rules and avoids mixing data with varying access requirements.\n*   **DBAC:** Admin roles are managed through the `roles_admin/{uid}` collection. The existence of a document for a user in this collection grants admin privileges, enabling simple existence-based security rules.\n*   **QAPs:** `list` operations are secured by enforcing ownership and role-based access controls. Path-based ownership (`users/{userId}`) allows listing only resources owned by the authenticated user. Admin role checks in the `roles_admin` collection authorize administrative `list` operations.\n\nThis structure facilitates secure and efficient data access while adhering to core design principles, minimizing complexity and maximizing debuggability."
   }
 }
+
+    
