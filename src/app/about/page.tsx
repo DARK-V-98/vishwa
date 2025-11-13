@@ -94,7 +94,7 @@ const About = () => {
                       modern world.
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      As the founder of ESystemLK, I lead a talented team of developers delivering
+                      ESystemLK is my own software company. As the founder, I lead a talented team of developers delivering
                       world-class software solutions. My expertise spans web development, UI/UX
                       design, branding, and business systems.
                     </p>
