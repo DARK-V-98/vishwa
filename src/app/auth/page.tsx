@@ -20,11 +20,16 @@ function AuthPageSkeleton() {
 
 export default function AuthPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
-      <div className="w-full max-w-4xl rounded-2xl bg-card shadow-2xl overflow-hidden grid md:grid-cols-2">
-        
-        {/* Left Panel */}
-        <div className="relative p-8 text-white hidden md:flex flex-col justify-between bg-primary">
+    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
+      <div className="flex items-center justify-center py-12">
+        <div className="mx-auto grid w-[350px] gap-6">
+           <Suspense fallback={<AuthPageSkeleton />}>
+            <AuthForms />
+          </Suspense>
+        </div>
+      </div>
+      <div className="hidden bg-muted lg:block relative">
+         <div className="relative p-8 text-white h-full flex flex-col justify-between bg-primary">
           <div className="absolute inset-0">
             <Image
               src="https://picsum.photos/seed/auth-light/800/1200"
@@ -55,13 +60,6 @@ export default function AuthPage() {
             <h2 className="text-3xl font-bold text-primary-foreground">Welcome to the Platform</h2>
             <p className="text-primary-foreground/80 mt-2">Your one-stop solution for digital excellence.</p>
           </div>
-        </div>
-
-        {/* Right Panel */}
-        <div className="p-8 md:p-12 bg-background">
-          <Suspense fallback={<AuthPageSkeleton />}>
-            <AuthForms />
-          </Suspense>
         </div>
       </div>
     </div>
