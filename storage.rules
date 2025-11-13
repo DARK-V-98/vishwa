@@ -1,5 +1,7 @@
 rules_version = '2';
 
+// NOTE: To fix CORS errors during development, you may need to apply a cors.json file
+// to your bucket. Run `npm run update:cors` from your terminal to do this.
 service firebase.storage {
   match /b/{bucket}/o {
     // Allow read and write access for all authenticated users
