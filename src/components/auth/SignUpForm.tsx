@@ -12,7 +12,6 @@ import { doc, getDoc, setDoc, writeBatch, serverTimestamp } from "firebase/fires
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
-import { Separator } from "../ui/separator";
 import Link from "next/link";
 
 interface SignUpFormProps {
@@ -101,111 +100,119 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
     try {
         await signInWithRedirect(auth, provider);
     } catch (error: any) {
-      toast.error(error.message);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            toast.error(error.message);
+        }
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-center text-foreground p-8">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">Create an Account</h2>
-        <p className="text-muted-foreground">
-          Already have an account?{" "}
-          <Button variant="link" onClick={onToggle} className="p-0 h-auto text-primary">
-            Log in
-          </Button>
+    <>
+      <div className="grid gap-2 text-center">
+        <h1 className="text-3xl font-bold">Sign Up</h1>
+        <p className="text-balance text-muted-foreground">
+          Enter your information to create an account
         </p>
       </div>
 
-       <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-        <GoogleIcon />
-        Sign up with Google
-      </Button>
-
-      <div className="flex items-center my-6">
-        <Separator className="flex-grow" />
-        <span className="mx-4 text-xs text-muted-foreground">OR</span>
-        <Separator className="flex-grow" />
-      </div>
-
-
-      <form onSubmit={handleSignUp} className="space-y-6">
-        <div className="flex gap-4">
-          <div className="space-y-2 w-1/2">
-            <Label htmlFor="firstName">First name</Label>
-            <Input
-              id="firstName"
-              type="text"
-              required
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="bg-background border-border"
-            />
-          </div>
-          <div className="space-y-2 w-1/2">
-            <Label htmlFor="lastName">Last name</Label>
-            <Input
-              id="lastName"
-              type="text"
-              required
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="bg-background border-border"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email-signup">Email</Label>
-          <Input
-            id="email-signup"
-            type="email"
-            placeholder="your@email.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="bg-background border-border"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="password-signup">Password</Label>
-          <div className="relative">
-            <Input
-              id="password-signup"
-              type={showPassword ? 'text' : 'password'}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="bg-background border-border"
-            />
-             <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute top-0 right-0 h-full px-3 text-muted-foreground hover:text-foreground"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-            <Checkbox id="terms" onCheckedChange={(checked) => setAgreed(!!checked)} />
-            <label
-                htmlFor="terms"
-                className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-                I agree to the <Link href="/terms" className="text-primary hover:underline" target="_blank">Terms & Conditions</Link>
-            </label>
-        </div>
-
-        <Button type="submit" className="w-full !mt-10 bg-primary hover:bg-primary/90 text-primary-foreground text-md py-6">
-          Create account
+      <div className="grid gap-4">
+        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+          <GoogleIcon />
+          Sign up with Google
         </Button>
-      </form>
-    </div>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSignUp} className="grid gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="firstName">First name</Label>
+              <Input
+                id="firstName"
+                type="text"
+                required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="lastName">Last name</Label>
+              <Input
+                id="lastName"
+                type="text"
+                required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="email-signup">Email</Label>
+            <Input
+              id="email-signup"
+              type="email"
+              placeholder="your@email.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="password-signup">Password</Label>
+            <div className="relative">
+              <Input
+                id="password-signup"
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute top-0 right-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+              <Checkbox id="terms" onCheckedChange={(checked) => setAgreed(!!checked)} />
+              <label
+                  htmlFor="terms"
+                  className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                  I agree to the <Link href="/terms" className="text-primary hover:underline" target="_blank">Terms & Conditions</Link>
+              </label>
+          </div>
+
+          <Button type="submit" className="w-full">
+            Create account
+          </Button>
+        </form>
+
+        <div className="mt-4 text-center text-sm">
+          Already have an account?{" "}
+          <Button variant="link" onClick={onToggle} className="p-0 h-auto">
+            Log in
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }

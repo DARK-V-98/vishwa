@@ -18,26 +18,23 @@ function AuthPageSkeleton() {
 
 export default function AuthPage() {
   return (
-    <div className="min-h-screen bg-muted/40 flex items-center justify-center p-4">
-       <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 bg-card rounded-2xl shadow-strong overflow-hidden">
-          {/* Left Panel */}
-          <div className="hidden md:block relative w-full h-full">
-             <Image 
-                src="/lgn.png"
-                alt="Brand Logo"
-                fill
-                className="object-cover"
-                sizes="50vw"
-             />
-          </div>
-          
-          {/* Right Panel */}
-          <div className="flex items-center justify-center p-8 md:p-12">
-             <Suspense fallback={<AuthPageSkeleton />}>
+    <div className="min-h-screen w-full lg:grid lg:grid-cols-2">
+      <div className="hidden bg-muted lg:block relative">
+        <Image
+          src="/lgn.png"
+          alt="Image"
+          fill
+          className="object-contain p-12"
+          sizes="50vw"
+        />
+      </div>
+      <div className="flex items-center justify-center py-12">
+        <div className="mx-auto grid w-[350px] gap-6">
+            <Suspense fallback={<AuthPageSkeleton />}>
                 <AuthForms />
-             </Suspense>
-          </div>
-       </div>
+            </Suspense>
+        </div>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
-import { getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { getRedirectResult } from 'firebase/auth';
 import { doc, getDoc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import SignInForm from '@/components/auth/SignInForm';

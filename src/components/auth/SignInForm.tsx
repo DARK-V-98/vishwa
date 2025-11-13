@@ -100,78 +100,87 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
     const provider = new GoogleAuthProvider();
     try {
         await signInWithRedirect(auth, provider);
-        // The rest of the logic (creating user doc, etc.) should be handled
-        // by a page that processes the redirect result, or in a useEffect 
-        // that runs on the destination page (e.g., /dashboard) after login.
-        // For simplicity, we assume an onAuthStateChanged listener handles user creation.
     } catch (error: any) {
-        toast.error(error.message);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            toast.error(error.message);
+        }
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-center text-foreground p-8">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">Welcome Back!</h2>
-        <p className="text-muted-foreground">
-          Don't have an account?{" "}
-          <Button variant="link" onClick={onToggle} className="p-0 h-auto text-primary">
-            Sign up
-          </Button>
+    <>
+      <div className="grid gap-2 text-center">
+        <h1 className="text-3xl font-bold">Login</h1>
+        <p className="text-balance text-muted-foreground">
+          Enter your email below to login to your account
         </p>
       </div>
 
-      <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-        <GoogleIcon />
-        Sign in with Google
-      </Button>
-
-      <div className="flex items-center my-6">
-        <Separator className="flex-grow" />
-        <span className="mx-4 text-xs text-muted-foreground">OR</span>
-        <Separator className="flex-grow" />
-      </div>
-
-      <form onSubmit={handleSignIn} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="email-signin">Email</Label>
-          <Input
-            id="email-signin"
-            type="email"
-            placeholder="your@email.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="password-signin">Password</Label>
-          <div className="relative">
-            <Input
-              id="password-signin"
-              type={showPassword ? "text" : "password"}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute top-0 right-0 h-full px-3 text-muted-foreground hover:text-foreground"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </Button>
+      <div className="grid gap-4">
+        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+          <GoogleIcon />
+          Login with Google
+        </Button>
+        
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
           </div>
         </div>
 
-        <Button type="submit" className="w-full !mt-10" variant="hero">
-          Sign In
-        </Button>
-      </form>
-    </div>
+        <form onSubmit={handleSignIn} className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="email-signin">Email</Label>
+            <Input
+              id="email-signin"
+              type="email"
+              placeholder="your@email.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="password-signin">Password</Label>
+            <div className="relative">
+              <Input
+                id="password-signin"
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute top-0 right-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </Button>
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full">
+            Login
+          </Button>
+        </form>
+
+        <div className="mt-4 text-center text-sm">
+          Don&apos;t have an account?{" "}
+          <Button variant="link" onClick={onToggle} className="p-0 h-auto">
+            Sign up
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }
