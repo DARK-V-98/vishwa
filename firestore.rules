@@ -139,6 +139,17 @@ service cloud.firestore {
       allow update: if isSignedIn() && isOwner(resource.data.sellerId) && resource != null;
       allow delete: if isSignedIn() && isExistingOwner(resource.data.sellerId);
     }
+
+    /**
+     * @description Allows public read access to top-up packages but restricts write access to admins.
+     * @path /topupPackages/{packageId}
+     * @allow (read) - Public read access for all.
+     * @allow (write) - Admin-only write access.
+     */
+    match /topupPackages/{packageId} {
+      allow read: if true;
+      allow write: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true);
+    }
   }
 
   function isSignedIn() {
@@ -153,3 +164,5 @@ service cloud.firestore {
     return isOwner(userId) && resource != null;
   }
 }
+
+    

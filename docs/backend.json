@@ -215,6 +215,46 @@
         "quotation",
         "dateRequested"
       ]
+    },
+    "TopupPackage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TopupPackage",
+      "type": "object",
+      "description": "Represents a game top-up package.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the package."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the package (e.g., 115 Diamonds)."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the package in LKR."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the package.",
+          "enum": ["Gems", "Membership", "Other"]
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL for the package image, if not a gem package."
+        },
+        "order": {
+            "type": "number",
+            "description": "The display order of the package."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "price",
+        "category",
+        "order"
+      ]
     }
   },
   "auth": {
@@ -332,8 +372,26 @@
             }
           ]
         }
+      },
+      {
+        "path": "/topupPackages/{packageId}",
+        "definition": {
+          "entityName": "TopupPackage",
+          "schema": {
+            "$ref": "#/backend/entities/TopupPackage"
+          },
+          "description": "Stores game top-up packages available in the store.",
+          "params": [
+            {
+              "name": "packageId",
+              "description": "The unique identifier for the package."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, and products are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user."
   }
 }
+
+    

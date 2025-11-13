@@ -3,6 +3,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListingManagement } from "@/components/admin/listing-management";
+import TopupManagement from "@/components/admin/topup-management";
 import { useUser } from "@/firebase";
 
 export default function AdminPage() {
@@ -29,18 +30,24 @@ export default function AdminPage() {
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Manage marketplace listings from this central hub.
+          Manage your platform's content and settings from this central hub.
         </p>
       </div>
 
       <Tabs defaultValue="listings" className="w-full">
-        <TabsList className="grid w-full grid-cols-1">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
+          <TabsTrigger value="topup">Top-up Packages</TabsTrigger>
         </TabsList>
         <TabsContent value="listings">
             <ListingManagement />
+        </TabsContent>
+        <TabsContent value="topup">
+            <TopupManagement />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+    

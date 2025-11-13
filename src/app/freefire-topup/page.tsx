@@ -1,47 +1,56 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Gem, ShieldCheck, Zap } from 'lucide-react';
+import { Gem, ShieldCheck, Zap, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const diamondPackages = [
-  { id: 'pkg1', diamonds: 115, price: 200 },
-  { id: 'pkg2', diamonds: 240, price: 400 },
-  { id: 'pkg3', diamonds: 610, price: 1000 },
-  { id: 'pkg4', diamonds: 1240, price: 2000 },
-  { id: 'pkg5', diamonds: 2530, price: 4000 },
-  { id: 'pkg6', diamonds: 6450, price: 10000 },
-];
+interface TopupPackage {
+  id: string;
+  name: string;
+  price: number;
+  category: 'Gems' | 'Membership' | 'Other';
+  imageUrl?: string;
+  order: number;
+}
+
 
 export default function FreefireTopupPage() {
+  const firestore = useFirestore();
+  const packagesCollection = useMemoFirebase(() => collection(firestore, 'topupPackages'), [firestore]);
+  const packagesQuery = useMemoFirebase(() => query(packagesCollection, orderBy('order')), [packagesCollection]);
+  const { data: packages, isLoading, error } = useCollection<Omit<TopupPackage, 'id'>>(packagesQuery);
+
   const [playerId, setPlayerId] = useState('');
-  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
 
   const handleTopUp = () => {
     if (!playerId) {
       toast.error('Please enter your Player ID.');
       return;
     }
-    if (!selectedPackage) {
-      toast.error('Please select a diamond package.');
+    if (!selectedPackageId) {
+      toast.error('Please select a package.');
       return;
     }
-    const pkg = diamondPackages.find(p => p.id === selectedPackage);
+    const pkg = packages?.find(p => p.id === selectedPackageId);
     toast.success(
-      `Top-up successful! ${pkg?.diamonds} diamonds will be sent to Player ID: ${playerId}.`
+      `Top-up successful! "${pkg?.name}" will be sent to Player ID: ${playerId}.`
     );
   };
 
@@ -88,7 +97,7 @@ export default function FreefireTopupPage() {
                   Select Your Top-up
                 </CardTitle>
                 <CardDescription>
-                  Choose a diamond package and enter your Player ID.
+                  Choose a package and enter your Player ID.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
@@ -110,34 +119,50 @@ export default function FreefireTopupPage() {
                 {/* Diamond Packages */}
                 <div className="space-y-4">
                    <Label className="text-lg font-semibold">
-                    Step 2: Choose Diamond Package
+                    Step 2: Choose a Package
                   </Label>
-                  <RadioGroup
-                    value={selectedPackage || ''}
-                    onValueChange={setSelectedPackage}
-                    className="grid grid-cols-2 md:grid-cols-3 gap-4"
-                  >
-                    {diamondPackages.map((pkg) => (
-                      <Card
-                        key={pkg.id}
-                        className={`cursor-pointer transition-all ${
-                          selectedPackage === pkg.id
-                            ? 'border-primary ring-2 ring-primary shadow-strong'
-                            : 'border-border/50 hover:shadow-medium'
-                        }`}
-                        onClick={() => setSelectedPackage(pkg.id)}
-                      >
-                        <CardContent className="p-4 text-center space-y-2 relative">
-                           <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2" />
-                          <Gem className="h-8 w-8 text-secondary mx-auto" />
-                          <p className="text-xl font-bold">{pkg.diamonds} Diamonds</p>
-                          <p className="text-md text-primary font-semibold">
-                            LKR {pkg.price.toLocaleString()}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </RadioGroup>
+                  {isLoading && (
+                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+                     </div>
+                  )}
+                  {error && <p className="text-destructive">Could not load packages. Please try again later.</p>}
+                  {!isLoading && packages && (
+                    <RadioGroup
+                        value={selectedPackageId || ''}
+                        onValueChange={setSelectedPackageId}
+                        className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                    >
+                        {packages.map((pkg) => (
+                        <Card
+                            key={pkg.id}
+                            className={`cursor-pointer transition-all ${
+                            selectedPackageId === pkg.id
+                                ? 'border-primary ring-2 ring-primary shadow-strong'
+                                : 'border-border/50 hover:shadow-medium'
+                            }`}
+                            onClick={() => setSelectedPackageId(pkg.id)}
+                        >
+                            <CardContent className="p-4 text-center space-y-2 relative">
+                                <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2" />
+                                <div className="mx-auto w-12 h-12 flex items-center justify-center mb-2">
+                                  {pkg.category === 'Gems' ? (
+                                      <Gem className="h-8 w-8 text-secondary" />
+                                  ) : pkg.imageUrl ? (
+                                      <Image src={pkg.imageUrl} alt={pkg.name} width={48} height={48} className="object-contain" />
+                                  ) : (
+                                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <p className="text-lg font-bold">{pkg.name}</p>
+                                <p className="text-md text-primary font-semibold">
+                                LKR {pkg.price.toLocaleString()}
+                                </p>
+                            </CardContent>
+                        </Card>
+                        ))}
+                    </RadioGroup>
+                  )}
                 </div>
               </CardContent>
               <CardFooter>
@@ -146,7 +171,7 @@ export default function FreefireTopupPage() {
                   className="w-full text-lg py-7"
                   variant="hero"
                   onClick={handleTopUp}
-                  disabled={!playerId || !selectedPackage}
+                  disabled={!playerId || !selectedPackageId || isLoading}
                 >
                   <Zap className="mr-2" />
                   Top-up Now
@@ -212,3 +237,5 @@ export default function FreefireTopupPage() {
     </div>
   );
 }
+
+    
