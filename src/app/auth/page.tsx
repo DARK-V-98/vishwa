@@ -20,14 +20,7 @@ function AuthPageSkeleton() {
 
 export default function AuthPage() {
   return (
-    <div className="w-full lg:grid lg:grid-cols-2 min-h-screen">
-      <div className="flex items-center justify-center py-12 px-4">
-        <div className="mx-auto grid w-full max-w-sm gap-6">
-           <Suspense fallback={<AuthPageSkeleton />}>
-            <AuthForms />
-          </Suspense>
-        </div>
-      </div>
+    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
       <div className="hidden bg-muted lg:block relative">
          <div className="relative p-8 text-white h-full flex flex-col justify-between bg-primary">
           <div className="absolute inset-0">
@@ -37,7 +30,6 @@ export default function AuthPage() {
               fill
               className="object-contain p-20 opacity-20"
             />
-             <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent"></div>
           </div>
 
           <div className="relative z-10">
@@ -59,6 +51,13 @@ export default function AuthPage() {
             <h2 className="text-3xl font-bold text-primary-foreground">Welcome to the Platform</h2>
             <p className="text-primary-foreground/80 mt-2">Your one-stop solution for digital excellence.</p>
           </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-center py-12 px-4">
+        <div className="mx-auto grid w-[350px] gap-6">
+           <Suspense fallback={<AuthPageSkeleton />}>
+            <AuthForms />
+          </Suspense>
         </div>
       </div>
     </div>
