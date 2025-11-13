@@ -21,6 +21,7 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useRouter } from 'next/navigation';
 
 interface TopupPackage {
   id: string;
@@ -39,6 +40,7 @@ interface PaymentSettings {
 export default function FreefireTopupPage() {
   const firestore = useFirestore();
   const { user } = useUser();
+  const router = useRouter();
 
   const packagesCollection = useMemoFirebase(() => collection(firestore, 'topupPackages'), [firestore]);
   const packagesQuery = useMemoFirebase(() => query(packagesCollection, orderBy('order')), [packagesCollection]);
@@ -53,6 +55,16 @@ export default function FreefireTopupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePlaceOrder = async () => {
+    if (!user) {
+      toast.error('You must create an account to place an order.', {
+        action: {
+          label: "Sign Up / Log In",
+          onClick: () => router.push('/auth'),
+        },
+      });
+      return;
+    }
+
     if (!playerId) {
       toast.error('Please enter your Player ID.');
       return;
@@ -77,8 +89,8 @@ export default function FreefireTopupPage() {
     try {
         const ordersCollection = collection(firestore, 'topupOrders');
         await addDoc(ordersCollection, {
-            userId: user?.uid || null,
-            userEmail: user?.email || null,
+            userId: user.uid,
+            userEmail: user.email,
             playerId,
             packageId: selectedPackage.id,
             packageName: selectedPackage.name,
