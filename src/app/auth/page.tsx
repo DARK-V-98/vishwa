@@ -20,9 +20,9 @@ function AuthPageSkeleton() {
 
 export default function AuthPage() {
   return (
-    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
-      <div className="flex items-center justify-center py-12">
-        <div className="mx-auto grid w-[350px] gap-6">
+    <div className="w-full lg:grid lg:grid-cols-2 min-h-screen">
+      <div className="flex items-center justify-center py-12 px-4">
+        <div className="mx-auto grid w-full max-w-sm gap-6">
            <Suspense fallback={<AuthPageSkeleton />}>
             <AuthForms />
           </Suspense>
@@ -32,13 +32,12 @@ export default function AuthPage() {
          <div className="relative p-8 text-white h-full flex flex-col justify-between bg-primary">
           <div className="absolute inset-0">
             <Image
-              src="https://picsum.photos/seed/auth-light/800/1200"
-              alt="Abstract background"
+              src="/lgn.png"
+              alt="Vishwa Vidarshana Logo Background"
               fill
-              className="object-cover opacity-20"
-              data-ai-hint="abstract texture light"
+              className="object-contain p-20 opacity-20"
             />
-             <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent"></div>
+             <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent"></div>
           </div>
 
           <div className="relative z-10">
