@@ -39,7 +39,7 @@ export default function AuthPage() {
           <div className="relative z-10">
             <Link href="/" className="flex items-center space-x-2 group">
               <Image
-                src="/lg.png"
+                src="/lgn.png"
                 alt="Vishwa Vidarshana Logo"
                 width={40}
                 height={40}
