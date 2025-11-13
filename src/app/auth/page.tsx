@@ -26,8 +26,8 @@ export default function AuthPage() {
                 src="/lgn.png"
                 alt="Brand Logo"
                 fill
-                className="object-contain p-12"
-                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                sizes="50vw"
              />
           </div>
           
