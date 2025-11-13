@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
 import { Separator } from "../ui/separator";
+import Link from "next/link";
 
 interface SignUpFormProps {
   onToggle: () => void;
@@ -229,7 +230,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
                 htmlFor="terms"
                 className="text-sm text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-                I agree to the <a href="/terms" className="text-primary hover:underline">Terms & Conditions</a>
+                I agree to the <Link href="/terms" className="text-primary hover:underline" target="_blank">Terms & Conditions</Link>
             </label>
         </div>
 

@@ -7,62 +7,50 @@ const PrivacyPage = () => {
       <div className="prose dark:prose-invert max-w-none bg-card p-8 rounded-lg shadow-medium">
         <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
 
-        <h2>1. Introduction</h2>
-        <p>
-          Welcome to the personal and business platform of R.M.T Vishwa Vidarshana ("we," "us," or "our"). We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.
-        </p>
+        <p>At VishwaVerse, we are committed to protecting the privacy and security of our customers' personal information. This Privacy Policy outlines how we collect, use, and safeguard your information when you visit or make a purchase on our website. By using our website, you consent to the practices described in this policy.</p>
 
-        <h2>2. Information We Collect</h2>
-        <p>
-          We may collect information about you in a variety of ways. The information we may collect on the Site includes:
-        </p>
+        <h2>Information We Collect</h2>
+
+        <p>When you visit our website, we may collect certain information about you, including:</p>
+
         <ul>
-            <li><strong>Personal Data:</strong> Personally identifiable information, such as your name, email address, and telephone number, that you voluntarily give to us when you register with the Site or when you choose to participate in various activities related to the Site, such as online chat and message boards.</li>
-            <li><strong>Derivative Data:</strong> Information our servers automatically collect when you access the Site, such as your IP address, your browser type, your operating system, your access times, and the pages you have viewed directly before and after accessing the Site.</li>
-            <li><strong>Financial Data:</strong> We do not store any financial information. All financial information is handled by our third-party payment processors.</li>
+            <li>Personal identification information (such as your name, email address, and phone number) provided voluntarily by you during the registration or checkout process.</li>
+            <li>Payment and billing information necessary to process your orders, including credit card details, which are securely handled by trusted third-party payment processors.</li>
+            <li>Browsing information, such as your IP address, browser type, and device information, collected automatically using cookies and similar technologies.</li>
         </ul>
 
-        <h2>3. Use of Your Information</h2>
-        <p>
-          Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Site to:
-        </p>
+        <h2>Use of Information</h2>
+
+        <p>We may use the collected information for the following purposes:</p>
+
         <ul>
-            <li>Create and manage your account.</li>
-            <li>Email you regarding your account or order.</li>
-            <li>Fulfill and manage purchases, orders, payments, and other transactions related to the Site.</li>
-            <li>Generate a personal profile about you to make future visits to the Site more personalized.</li>
-            <li>Monitor and analyze usage and trends to improve your experience with the Site.</li>
+            <li>To process and fulfill your orders, including shipping and delivery.</li>
+            <li>To communicate with you regarding your purchases, provide customer support, and respond to inquiries or requests.</li>
+            <li>To personalize your shopping experience and present relevant product recommendations and promotions.</li>
+            <li>To improve our website, products, and services based on your feedback and browsing patterns.</li>
+            <li>To detect and prevent fraud, unauthorized activities, and abuse of our website.</li>
         </ul>
         
-        <h2>4. Disclosure of Your Information</h2>
-        <p>
-          We may share information we have collected about you in certain situations. Your information may be disclosed as follows:
-        </p>
+        <h2>Information Sharing</h2>
+
+        <p>We respect your privacy and do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except in the following circumstances:</p>
+
         <ul>
-            <li><strong>By Law or to Protect Rights:</strong> If we believe the release of information about you is necessary to respond to legal process, to investigate or remedy potential violations of our policies, or to protect the rights, property, and safety of others, we may share your information as permitted or required by any applicable law, rule, or regulation.</li>
-            <li><strong>Third-Party Service Providers:</strong> We may share your information with third parties that perform services for us or on our behalf, including payment processing, data analysis, email delivery, hosting services, customer service, and marketing assistance.</li>
+            <li><strong>Trusted service providers:</strong> We may share your information with third-party service providers who assist us in operating our website, processing payments, and delivering products. These providers are contractually obligated to handle your data securely and confidentially.</li>
+            <li><strong>Legal requirements:</strong> We may disclose your information if required to do so by law or in response to valid legal requests or orders.</li>
         </ul>
 
+        <h2>Data Security</h2>
+        <p>We implement industry-standard security measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction. However, please be aware that no method of transmission over the internet or electronic storage is 100% secure, and we cannot guarantee absolute security.</p>
 
-        <h2>5. Security of Your Information</h2>
-        <p>
-          We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.
-        </p>
+        <h2>Cookies and Tracking Technologies</h2>
+        <p>We use cookies and similar technologies to enhance your browsing experience, analyze website traffic, and gather information about your preferences and interactions with our website. You have the option to disable cookies through your browser settings, but this may limit certain features and functionality of our website.</p>
 
-        <h2>6. Policy for Children</h2>
-        <p>
-          We do not knowingly solicit information from or market to children under the age of 13. If you become aware of any data we have collected from children under age 13, please contact us using the contact information provided below.
-        </p>
+        <h2>Changes to the Privacy Policy</h2>
+        <p>We reserve the right to update or modify this Privacy Policy at any time. Any changes will be posted on this page with a revised "last updated" date. We encourage you to review this Privacy Policy periodically to stay informed about how we collect, use, and protect your information.</p>
 
-        <h2>7. Changes to This Privacy Policy</h2>
-        <p>
-          We may update this Privacy Policy from time to time in order to reflect, for example, changes to our practices or for other operational, legal, or regulatory reasons. We will notify you of any changes by posting the new Privacy Policy on this page.
-        </p>
-
-        <h2>8. Contact Us</h2>
-        <p>
-          If you have questions or comments about this Privacy Policy, please contact us at: <a href="mailto:esystemlk@gmail.com">esystemlk@gmail.com</a>.
-        </p>
+        <h2>Contact Us</h2>
+        <p>If you have any questions, concerns, or requests regarding our Privacy Policy or the handling of your personal information, please contact us using the information provided on our website.</p>
       </div>
     </div>
   )

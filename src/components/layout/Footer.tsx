@@ -153,6 +153,12 @@ const Footer = () => {
             >
               Terms of Service
             </Link>
+            <Link
+              href="/refund-policy"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Refund Policy
+            </Link>
           </div>
         </div>
       </div>
