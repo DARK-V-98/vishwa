@@ -184,7 +184,7 @@ export default function FreefireTopupPage() {
                   </Label>
                   {isLoading && (
                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+                        {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
                      </div>
                   )}
                   {packagesError && <p className="text-destructive">Could not load packages. Please try again later.</p>}
@@ -197,26 +197,28 @@ export default function FreefireTopupPage() {
                         {packages.map((pkg) => (
                         <Card
                             key={pkg.id}
-                            className={`cursor-pointer transition-all ${
+                            className={`cursor-pointer transition-all overflow-hidden ${
                             selectedPackageId === pkg.id
                                 ? 'border-primary ring-2 ring-primary shadow-strong'
                                 : 'border-border/50 hover:shadow-medium'
                             }`}
                             onClick={() => setSelectedPackageId(pkg.id)}
                         >
-                            <CardContent className="p-4 text-center space-y-2 relative">
-                                <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2" />
-                                <div className="mx-auto w-16 h-16 flex items-center justify-center mb-2 relative">
+                            <CardContent className="p-0 text-center relative flex flex-col h-full">
+                                <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2 z-10 bg-black/50 border-white/50" />
+                                <div className="aspect-video w-full flex items-center justify-center mb-2 relative bg-black/10">
                                   {pkg.imageUrl ? (
-                                      <Image src={pkg.imageUrl} alt={pkg.name} width={48} height={48} className="object-contain" />
+                                      <Image src={pkg.imageUrl} alt={pkg.name} layout="fill" className="object-cover" />
                                   ) : (
                                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                   )}
                                 </div>
-                                <p className="text-lg font-bold">{pkg.name}</p>
-                                <p className="text-md text-primary font-semibold">
-                                LKR {pkg.price.toLocaleString()}
-                                </p>
+                                <div className="p-4 pt-0 space-y-1 flex-grow flex flex-col justify-between">
+                                  <p className="text-base font-bold flex-grow">{pkg.name}</p>
+                                  <p className="text-md text-primary font-semibold">
+                                    LKR {pkg.price.toLocaleString()}
+                                  </p>
+                                </div>
                             </CardContent>
                         </Card>
                         ))}
