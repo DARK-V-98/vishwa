@@ -7,7 +7,7 @@ const PrivacyPage = () => {
       <div className="prose dark:prose-invert max-w-none bg-card p-8 rounded-lg shadow-medium">
         <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
 
-        <p>At VishwaVerse, we are committed to protecting the privacy and security of our customers' personal information. This Privacy Policy outlines how we collect, use, and safeguard your information when you visit or make a purchase on our website. By using our website, you consent to the practices described in this policy.</p>
+        <p>At Vishwa Vidarshana, we are committed to protecting the privacy and security of our customers' personal information. This Privacy Policy outlines how we collect, use, and safeguard your information when you visit or make a purchase on our website. By using our website, you consent to the practices described in this policy.</p>
 
         <h2>Information We Collect</h2>
 

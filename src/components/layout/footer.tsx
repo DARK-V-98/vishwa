@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
           <Sprout className="h-6 w-6 text-primary" />
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            &copy; {new Date().getFullYear()} VishwaVerse. Built by ESystemLK.
+            &copy; {new Date().getFullYear()} Vishwa Vidarshana. Built by ESystemLK.
           </p>
         </div>
         <div className="flex items-center gap-2">

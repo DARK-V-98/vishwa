@@ -7,7 +7,7 @@ const TermsPage = () => {
       <div className="prose dark:prose-invert max-w-none bg-card p-8 rounded-lg shadow-medium">
         <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
         
-        <p>Welcome to VishwaVerse. These Terms and Conditions govern your use of our website and the purchase and sale of products from our platform. By accessing and using our website, you agree to comply with these terms. Please read them carefully before proceeding with any transactions.</p>
+        <p>Welcome to Vishwa Vidarshana. These Terms and Conditions govern your use of our website and the purchase and sale of products from our platform. By accessing and using our website, you agree to comply with these terms. Please read them carefully before proceeding with any transactions.</p>
 
         <h2>Use of the Website</h2>
         <ol type="a">
@@ -44,13 +44,13 @@ const TermsPage = () => {
 
         <h2>Intellectual Property</h2>
         <ol type="a">
-            <li>All content and materials on our website, including but not limited to text, images, logos, and graphics, are protected by intellectual property rights and are the property of VishwaVerse or its licensors.</li>
+            <li>All content and materials on our website, including but not limited to text, images, logos, and graphics, are protected by intellectual property rights and are the property of Vishwa Vidarshana or its licensors.</li>
             <li>You may not use, reproduce, distribute, or modify any content from our website without our prior written consent.</li>
         </ol>
 
         <h2>Limitation of Liability</h2>
         <ol type="a">
-            <li>In no event shall VishwaVerse, its directors, employees, or affiliates be liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with your use of our website or the purchase and use of our products.</li>
+            <li>In no event shall Vishwa Vidarshana, its directors, employees, or affiliates be liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with your use of our website or the purchase and use of our products.</li>
             <li>We make no warranties or representations, express or implied, regarding the quality, accuracy, or suitability of the products offered on our website.</li>
         </ol>
 

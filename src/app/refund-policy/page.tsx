@@ -7,7 +7,7 @@ const RefundPolicyPage = () => {
       <div className="prose dark:prose-invert max-w-none bg-card p-8 rounded-lg shadow-medium">
         <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
 
-        <p>Thank you for shopping at VishwaVerse. We value your satisfaction and strive to provide you with the best online shopping experience possible. If, for any reason, you are not completely satisfied with your purchase, we are here to help.</p>
+        <p>Thank you for shopping at Vishwa Vidarshana. We value your satisfaction and strive to provide you with the best online shopping experience possible. If, for any reason, you are not completely satisfied with your purchase, we are here to help.</p>
 
         <h2>Returns</h2>
         <p>We accept returns within 7 days from the date of purchase. To be eligible for a return, your item must be unused and in the same condition that you received it. It must also be in the original packaging.</p>
