@@ -103,10 +103,6 @@ const About = () => {
                       beautiful design, and strategic thinking.
                     </p>
                     <div className="flex gap-4 pt-4">
-                      <Button variant="hero">
-                        <Download className="mr-2 h-4 w-4" />
-                        Download CV
-                      </Button>
                       <Link href="/contact">
                         <Button variant="outline">
                           <Calendar className="mr-2 h-4 w-4" />
