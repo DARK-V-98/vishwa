@@ -2,8 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useStorage } from '@/firebase';
 import { collection, query, orderBy, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -26,11 +27,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ImageIcon, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { ImageIcon, PlusCircle, Edit, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
-import { availableIcons } from '@/lib/topup-icons';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface TopupPackage {
   id: string;
@@ -45,6 +44,7 @@ const packageCategories = ['Gems', 'Membership', 'Other'] as const;
 
 export default function TopupManagement() {
   const firestore = useFirestore();
+  const storage = useStorage();
   const packagesCollection = useMemoFirebase(() => collection(firestore, 'topupPackages'), [firestore]);
   const packagesQuery = useMemoFirebase(() => query(packagesCollection, orderBy('order')), [packagesCollection]);
   const { data: packages, isLoading, error } = useCollection<Omit<TopupPackage, 'id'>>(packagesQuery);
@@ -52,6 +52,9 @@ export default function TopupManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingPackage, setEditingPackage] = useState<TopupPackage | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -62,6 +65,7 @@ export default function TopupManagement() {
 
   const handleOpenDialog = (pkg: TopupPackage | null = null) => {
     setEditingPackage(pkg);
+    setSelectedFile(null);
     if (pkg) {
       setFormData({
         name: pkg.name,
@@ -70,6 +74,7 @@ export default function TopupManagement() {
         imageUrl: pkg.imageUrl || '',
         order: pkg.order,
       });
+      setImagePreview(pkg.imageUrl || null);
     } else {
       // Reset for new package
       setFormData({
@@ -79,6 +84,7 @@ export default function TopupManagement() {
         imageUrl: '',
         order: packages ? packages.length + 1 : 1,
       });
+      setImagePreview(null);
     }
     setIsDialogOpen(true);
   };
@@ -92,26 +98,47 @@ export default function TopupManagement() {
       setFormData(prev => ({ ...prev, category: value }));
   }
 
-  const handleIconSelect = (path: string) => {
-    setFormData(prev => ({ ...prev, imageUrl: path }));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    }
+  }
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const storageRef = ref(storage, `topup-packages/${Date.now()}_${file.name}`);
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+    return downloadURL;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    if (!formData.imageUrl) {
-        toast.error("Please select an icon for the package.");
-        setIsSubmitting(false);
-        return;
-    }
+
+    let finalImageUrl = formData.imageUrl;
 
     try {
+        if (selectedFile) {
+            finalImageUrl = await uploadImage(selectedFile);
+        }
+
+        if (!finalImageUrl) {
+            toast.error("An image is required for the package.");
+            setIsSubmitting(false);
+            return;
+        }
+        
         const dataToSave = {
           name: formData.name,
           price: parseFloat(formData.price),
           category: formData.category,
-          imageUrl: formData.imageUrl,
+          imageUrl: finalImageUrl,
           order: Number(formData.order),
           updatedAt: serverTimestamp(),
         };
@@ -181,9 +208,9 @@ export default function TopupManagement() {
           {packages.map(pkg => (
             <Card key={pkg.id} className="flex flex-col">
               <CardHeader className="text-center">
-                 <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-lg bg-muted mb-2 relative">
+                 <div className="mx-auto w-20 h-20 flex items-center justify-center rounded-lg bg-muted mb-2 relative">
                     {pkg.imageUrl ? (
-                        <Image src={pkg.imageUrl} alt={pkg.name} width={48} height={48} className="object-contain" />
+                        <Image src={pkg.imageUrl} alt={pkg.name} width={64} height={64} className="object-contain" />
                     ) : (
                         <ImageIcon className="h-8 w-8 text-muted-foreground" />
                     )}
@@ -215,10 +242,17 @@ export default function TopupManagement() {
                     <Label htmlFor="name">Package Name</Label>
                     <Input id="name" name="name" value={formData.name} onChange={handleFormChange} placeholder="e.g., 115 Diamonds" required />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="price">Price (LKR)</Label>
-                    <Input id="price" name="price" type="number" value={formData.price} onChange={handleFormChange} placeholder="e.g., 200" required />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="price">Price (LKR)</Label>
+                        <Input id="price" name="price" type="number" value={formData.price} onChange={handleFormChange} placeholder="e.g., 200" required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="order">Display Order</Label>
+                        <Input id="order" name="order" type="number" value={formData.order} onChange={handleFormChange} required />
+                    </div>
                 </div>
+
                 <div className="space-y-2">
                     <Label>Category</Label>
                     <Select onValueChange={handleCategoryChange} value={formData.category}>
@@ -232,27 +266,22 @@ export default function TopupManagement() {
                 </div>
                 
                 <div className="space-y-2">
-                    <Label>Icon</Label>
-                    <RadioGroup 
-                        value={formData.imageUrl} 
-                        onValueChange={handleIconSelect}
-                        className="grid grid-cols-4 md:grid-cols-6 gap-4"
-                    >
-                        {availableIcons.map(icon => (
-                            <Label key={icon.path} htmlFor={icon.path} className={`relative flex flex-col items-center justify-center rounded-md border-2 p-2 aspect-square cursor-pointer transition-colors ${formData.imageUrl === icon.path ? 'border-primary ring-2 ring-primary' : 'border-muted hover:border-accent'}`}>
-                                <div className="relative w-12 h-12">
-                                    <Image src={icon.path} alt={icon.name} fill className="object-contain" />
-                                </div>
-                                <RadioGroupItem value={icon.path} id={icon.path} className="sr-only" />
-                            </Label>
-                        ))}
-                    </RadioGroup>
+                    <Label htmlFor="image">Package Image</Label>
+                    <div className="flex items-center gap-4">
+                        <div className="w-24 h-24 rounded-md border border-dashed flex items-center justify-center bg-muted relative">
+                           {imagePreview ? (
+                             <Image src={imagePreview} alt="Preview" fill className="object-contain rounded-md" />
+                           ) : (
+                            <div className="text-center text-muted-foreground">
+                                <ImageIcon className="mx-auto h-8 w-8" />
+                                <p className="text-xs">Preview</p>
+                            </div>
+                           )}
+                        </div>
+                        <Input id="image" type="file" onChange={handleFileChange} accept="image/*" className="flex-1" />
+                    </div>
                 </div>
                 
-                 <div className="space-y-2">
-                    <Label htmlFor="order">Display Order</Label>
-                    <Input id="order" name="order" type="number" value={formData.order} onChange={handleFormChange} required />
-                </div>
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button type="button" variant="secondary">Cancel</Button>
