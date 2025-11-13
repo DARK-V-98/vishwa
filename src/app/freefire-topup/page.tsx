@@ -206,10 +206,8 @@ export default function FreefireTopupPage() {
                         >
                             <CardContent className="p-4 text-center space-y-2 relative">
                                 <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2" />
-                                <div className="mx-auto w-12 h-12 flex items-center justify-center mb-2 relative">
-                                  {pkg.category === 'Gems' ? (
-                                      <Gem className="h-8 w-8 text-secondary" />
-                                  ) : pkg.imageUrl ? (
+                                <div className="mx-auto w-16 h-16 flex items-center justify-center mb-2 relative">
+                                  {pkg.imageUrl ? (
                                       <Image src={pkg.imageUrl} alt={pkg.name} fill className="object-contain p-1" />
                                   ) : (
                                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
@@ -370,5 +368,3 @@ export default function FreefireTopupPage() {
     </div>
   );
 }
-
-    

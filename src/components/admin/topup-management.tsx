@@ -20,12 +20,13 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Gem, Image as ImageIcon, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { ImageIcon, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { availableIcons } from '@/lib/topup-icons';
@@ -175,9 +176,7 @@ export default function TopupManagement() {
             <Card key={pkg.id} className="flex flex-col">
               <CardHeader className="text-center">
                  <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-lg bg-muted mb-2 relative">
-                    {pkg.category === 'Gems' ? (
-                        <Gem className="h-8 w-8 text-primary" />
-                    ) : pkg.imageUrl ? (
+                    {pkg.imageUrl ? (
                         <Image src={pkg.imageUrl} alt={pkg.name} fill className="object-contain p-2" />
                     ) : (
                         <ImageIcon className="h-8 w-8 text-muted-foreground" />
@@ -203,6 +202,7 @@ export default function TopupManagement() {
         <DialogContent className="max-w-2xl">
             <DialogHeader>
                 <DialogTitle>{editingPackage ? 'Edit Package' : 'Add New Package'}</DialogTitle>
+                <DialogDescription>Fill in the details for the top-up package.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -224,23 +224,23 @@ export default function TopupManagement() {
                         </SelectContent>
                     </Select>
                 </div>
-                {formData.category !== 'Gems' && (
-                    <div className="space-y-2">
-                        <Label>Icon</Label>
-                        <RadioGroup 
-                            value={formData.imageUrl} 
-                            onValueChange={handleIconSelect}
-                            className="grid grid-cols-4 md:grid-cols-6 gap-4"
-                        >
-                            {availableIcons.map(icon => (
-                                <Label key={icon.path} htmlFor={icon.path} className={`relative flex flex-col items-center justify-center rounded-md border-2 p-2 aspect-square cursor-pointer transition-colors ${formData.imageUrl === icon.path ? 'border-primary' : 'border-muted hover:border-accent'}`}>
-                                    <Image src={icon.path} alt={icon.name} fill className="object-contain p-2" />
-                                    <RadioGroupItem value={icon.path} id={icon.path} className="sr-only" />
-                                </Label>
-                            ))}
-                        </RadioGroup>
-                    </div>
-                )}
+                
+                <div className="space-y-2">
+                    <Label>Icon</Label>
+                    <RadioGroup 
+                        value={formData.imageUrl} 
+                        onValueChange={handleIconSelect}
+                        className="grid grid-cols-4 md:grid-cols-6 gap-4"
+                    >
+                        {availableIcons.map(icon => (
+                            <Label key={icon.path} htmlFor={icon.path} className={`relative flex flex-col items-center justify-center rounded-md border-2 p-2 aspect-square cursor-pointer transition-colors ${formData.imageUrl === icon.path ? 'border-primary' : 'border-muted hover:border-accent'}`}>
+                                <Image src={icon.path} alt={icon.name} fill className="object-contain p-2" />
+                                <RadioGroupItem value={icon.path} id={icon.path} className="sr-only" />
+                            </Label>
+                        ))}
+                    </RadioGroup>
+                </div>
+                
                  <div className="space-y-2">
                     <Label htmlFor="order">Display Order</Label>
                     <Input id="order" name="order" type="number" value={formData.order} onChange={handleFormChange} required />
@@ -259,5 +259,3 @@ export default function TopupManagement() {
     </div>
   );
 }
-
-    
