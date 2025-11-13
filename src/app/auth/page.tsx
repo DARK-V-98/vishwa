@@ -21,14 +21,16 @@ export default function AuthPage() {
     <div className="min-h-screen bg-muted/40 flex items-center justify-center p-4">
        <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 bg-card rounded-2xl shadow-strong overflow-hidden">
           {/* Left Panel */}
-          <div className="hidden md:flex flex-col items-center justify-between bg-primary text-primary-foreground p-10 relative">
-             <div className="absolute inset-0 opacity-10">
+          <div className="hidden md:flex flex-col justify-between bg-primary text-primary-foreground p-10 relative">
+             <div className="absolute inset-0">
                 <Image 
-                    src="/lgn.png"
-                    alt="Background"
+                    src="https://picsum.photos/seed/auth-bg/600/800"
+                    alt="Gamers"
                     fill
                     className="object-cover"
+                    data-ai-hint="people gaming vr"
                 />
+                <div className="absolute inset-0 bg-primary/80"></div>
              </div>
              <div className="relative z-10 w-full">
                 <div className="flex items-center gap-2">
@@ -46,10 +48,12 @@ export default function AuthPage() {
                 <h2 className="text-3xl font-bold">Welcome to the Platform</h2>
                 <p className="text-primary-foreground/80 mt-2">Your one-stop solution for digital excellence.</p>
              </div>
+             {/* This empty div helps with the justify-between */}
+             <div className="relative z-10 w-full h-10"></div>
           </div>
           
           {/* Right Panel */}
-          <div className="flex items-center justify-center p-8">
+          <div className="flex items-center justify-center p-8 md:p-12">
              <Suspense fallback={<AuthPageSkeleton />}>
                 <AuthForms />
              </Suspense>
