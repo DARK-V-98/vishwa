@@ -77,7 +77,7 @@ export default function FreefireTopupPage() {
           </div>
           <h1 className="text-4xl md:text-6xl font-bold">
             <span className="bg-gradient-accent bg-clip-text text-transparent">
-              Free Fire Top-up (SG)
+              DARK DIAMOND STORE
             </span>
           </h1>
           <p className="text-xl text-muted-foreground">
