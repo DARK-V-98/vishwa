@@ -82,7 +82,7 @@ const Home = () => {
     <div className="min-h-screen bg-gradient-subtle">
       
       {/* Robot Video Overlay */}
-      <div className="fixed bottom-0 left-0 z-50 w-64 h-64 pointer-events-none mix-blend-screen md:block hidden">
+      <div className="fixed bottom-0 left-0 z-[60] w-64 h-64 pointer-events-none mix-blend-lighten md:block hidden">
         <video
           autoPlay
           loop
