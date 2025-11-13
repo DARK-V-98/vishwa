@@ -253,9 +253,9 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full">
-          <Card className="bg-gradient-hero border-0 shadow-strong relative overflow-hidden">
-            <div className="hidden md:block absolute -left-8 -bottom-16 w-64 h-64 pointer-events-none z-0 mix-blend-lighten">
+      <section className="w-full py-16 md:py-24">
+          <Card className="container mx-auto bg-gradient-hero border-0 shadow-strong relative overflow-hidden">
+            <div className="hidden md:block absolute -left-8 -bottom-8 w-64 h-64 pointer-events-none z-0 mix-blend-lighten">
               <video
                 autoPlay
                 loop
@@ -266,7 +266,7 @@ const Home = () => {
                 <source src="/robot.mp4" type="video/mp4" />
               </video>
             </div>
-            <CardContent className="container mx-auto px-4 py-16 md:py-24 text-center relative z-10">
+            <CardContent className="py-16 md:py-24 text-center relative z-10">
               <div className="max-w-4xl mx-auto space-y-6">
                 <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
                   Ready to Start Your Project?
