@@ -213,8 +213,8 @@ const About = () => {
             
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { title: "100+ Projects Completed", desc: "Successfully delivered" },
-                { title: "50+ Happy Clients", desc: "Trusted partnerships" },
+                { title: "50+ websites done", desc: "Successfully delivered" },
+                { title: "250+ Happy Clients", desc: "Trusted partnerships" },
                 { title: "6+ Years Experience", desc: "In the industry" },
               ].map((achievement, idx) => (
                 <Card key={idx} className="border-border/50 bg-card/50 backdrop-blur-sm text-center">
