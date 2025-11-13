@@ -344,6 +344,57 @@
           "description": "Whether bank transfers are enabled."
         }
       }
+    },
+    "Chat": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chat",
+      "type": "object",
+      "description": "Represents a chat thread between a user and an admin.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user participating in the chat."
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "The email of the user for identification."
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "The text of the last message sent in the chat."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the last message."
+        },
+        "isReadByAdmin": {
+            "type": "boolean"
+        }
+      },
+      "required": ["userId", "userEmail", "updatedAt"]
+    },
+    "Message": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Message",
+        "type": "object",
+        "description": "Represents a single message within a chat.",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The content of the message."
+          },
+          "senderId": {
+            "type": "string",
+            "description": "The UID of the user who sent the message."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The time the message was sent."
+          }
+        },
+        "required": ["text", "senderId", "timestamp"]
     }
   },
   "auth": {
@@ -504,9 +555,31 @@
           "description": "Stores global payment method settings.",
           "params": []
         }
+      },
+      {
+        "path": "/chats/{userId}",
+        "definition": {
+            "entityName": "Chat",
+            "schema": { "$ref": "#/backend/entities/Chat" },
+            "description": "Top-level collection storing chat threads by user ID.",
+            "params": [{ "name": "userId", "description": "The user's unique ID." }]
+        }
+      },
+      {
+        "path": "/chats/{userId}/messages/{messageId}",
+        "definition": {
+            "entityName": "Message",
+            "schema": { "$ref": "#/backend/entities/Message" },
+            "description": "Subcollection storing all messages for a specific chat thread.",
+            "params": [
+                { "name": "userId", "description": "The ID of the user in the chat." },
+                { "name": "messageId", "description": "The unique ID for the message." }
+            ]
+        }
       }
     ],
     "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders` and `settings` are added to handle the new functionality."
   }
 }
+
     

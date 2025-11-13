@@ -160,7 +160,8 @@ service cloud.firestore {
      */
     match /topupOrders/{orderId} {
       allow create: if true;
-      allow read, update, delete: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true || request.auth.token.email == 'tikfese@gmail.com');
+      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow update, delete: if isSignedIn() && isAdmin();
     }
 
     /**
@@ -171,7 +172,24 @@ service cloud.firestore {
      */
     match /settings/payment {
         allow read: if true;
-        allow write: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true || request.auth.token.email == 'tikfese@gmail.com');
+        allow write: if isSignedIn() && isAdmin();
+    }
+
+    /**
+     * @description Manages chat threads.
+     * @path /chats/{userId}
+     */
+    match /chats/{userId} {
+        allow get, list, create, update: if isSignedIn() && (isOwner(userId) || isAdmin());
+    }
+
+    /**
+     * @description Manages chat messages within a thread.
+     * @path /chats/{userId}/messages/{messageId}
+     */
+    match /chats/{userId}/messages/{messageId} {
+        allow read, list: if isSignedIn() && (isOwner(userId) || isAdmin());
+        allow create: if isSignedIn() && (isOwner(userId) || isAdmin()) && request.resource.data.senderId == request.auth.uid;
     }
   }
 
@@ -185,6 +203,10 @@ service cloud.firestore {
 
   function isExistingOwner(userId) {
     return isOwner(userId) && resource != null;
+  }
+
+  function isAdmin() {
+      return request.auth.token.email == 'tikfese@gmail.com';
   }
 }
 

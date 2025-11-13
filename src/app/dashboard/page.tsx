@@ -14,7 +14,8 @@ import {
   Sparkles,
   Shield,
   LogOut,
-  ArrowRight
+  ArrowRight,
+  ShoppingBag,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -39,8 +40,9 @@ export default function DashboardPage() {
   
   const menuItems = useMemo(() => {
     const items = [
+      { id: 'orders', label: 'My Orders', icon: ShoppingBag, href: '/my-orders', description: 'View your top-up history' },
+      { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'Chat with support' },
       { id: 'appointments', label: 'Appointments', icon: Calendar, href: '/appointments', description: 'Manage your meetings' },
-      { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'View your conversations' },
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
       { id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' }
     ];
@@ -99,3 +101,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
