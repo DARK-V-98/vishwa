@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -28,7 +28,7 @@ export default function MyOrdersPage() {
     const ordersCollection = useMemoFirebase(() => collection(firestore, 'topupOrders'), [firestore]);
     const ordersQuery = useMemoFirebase(() => {
         if (!user) return null;
-        return query(ordersCollection, where('userId', '==', user.uid));
+        return query(ordersCollection, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
     }, [ordersCollection, user]);
 
     const { data: orders, isLoading: ordersLoading, error } = useCollection<Omit<TopupOrder, 'id'>>(ordersQuery);
@@ -111,5 +111,3 @@ export default function MyOrdersPage() {
         </div>
     );
 }
-
-    

@@ -44,10 +44,15 @@ export default function DashboardPage() {
       { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'Chat with support' },
       { id: 'appointments', label: 'Appointments', icon: Calendar, href: '/appointments', description: 'Manage your meetings' },
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
-      { id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' }
     ];
+    
+    // A simple role check - in a real app, you'd use custom claims.
+    if (user?.email === 'tikfese@gmail.com') {
+        items.push({ id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' });
+    }
+
     return items;
-  }, []);
+  }, [user]);
 
   if (isUserLoading || !user) {
     return (
@@ -101,5 +106,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

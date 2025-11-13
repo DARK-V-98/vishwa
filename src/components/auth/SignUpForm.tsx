@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useFirestore } from "@/firebase";
 import { createUserWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider, updateProfile } from "firebase/auth";
-import { doc, getDoc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
@@ -77,13 +77,6 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         roles: ['customer']
-      });
-
-      // Assign default customer role
-      const customerRoleRef = doc(firestore, "roles_customer", user.uid);
-      batch.set(customerRoleRef, {
-          id: user.uid,
-          firstPurchaseAt: serverTimestamp(),
       });
 
       await batch.commit();

@@ -6,13 +6,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/firebase";
+import { useAuth, useFirestore } from "@/firebase";
 import { signInWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, writeBatch, serverTimestamp } from "firebase/firestore";
-import { useFirestore } from "@/firebase";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { Separator } from "../ui/separator";
 
 interface SignInFormProps {
   onToggle: () => void;
@@ -68,12 +66,6 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
           firstName: '',
           lastName: '',
           roles: ['customer']
-        });
-
-        const customerRoleRef = doc(firestore, "roles_customer", user.uid);
-        batch.set(customerRoleRef, {
-            id: user.uid,
-            firstPurchaseAt: serverTimestamp(),
         });
 
         await batch.commit();
