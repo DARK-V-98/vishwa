@@ -206,7 +206,7 @@ export default function FreefireTopupPage() {
                         >
                             <CardContent className="p-0 text-center relative flex flex-col h-full">
                                 <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2 z-10 bg-black/50 border-white/50" />
-                                <div className="h-32 w-full flex items-center justify-center p-2 relative bg-black/10">
+                                <div className="h-48 w-full flex items-center justify-center p-2 relative bg-black/10">
                                   {pkg.imageUrl ? (
                                       <Image src={pkg.imageUrl} alt={pkg.name} layout="fill" className="object-contain p-2" />
                                   ) : (
@@ -242,7 +242,7 @@ export default function FreefireTopupPage() {
                         <RadioGroup
                             value={paymentMethod || ''}
                             onValueChange={(val: 'online' | 'bank') => setPaymentMethod(val)}
-                            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                            className="grid grid-cols-1 gap-4"
                         >
                             {paymentSettings.onlinePaymentEnabled && (
                                 <Card className={`cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-primary ring-2 ring-primary' : 'hover:shadow-medium'}`} onClick={() => setPaymentMethod('online')}>
@@ -258,13 +258,18 @@ export default function FreefireTopupPage() {
                             )}
                             {paymentSettings.bankTransferEnabled && (
                                  <Card className={`cursor-pointer transition-all ${paymentMethod === 'bank' ? 'border-primary ring-2 ring-primary' : 'hover:shadow-medium'}`} onClick={() => setPaymentMethod('bank')}>
-                                    <CardContent className="p-4 flex items-center gap-4">
-                                        <Banknote className="h-6 w-6 text-primary" />
-                                        <div>
+                                    <CardContent className="p-4 flex items-start gap-4">
+                                        <Banknote className="h-6 w-6 text-primary mt-1" />
+                                        <div className="flex-grow">
                                             <p className="font-semibold">Bank Transfer</p>
-                                            <p className="text-sm text-muted-foreground">Manual bank deposit.</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                Manual bank deposit. It will take 10 minutes to 2 hours to fulfill. 24h service available.
+                                            </p>
+                                            <p className="text-sm text-destructive mt-2">
+                                                Sometimes top-ups will get some time to add to account because of game server problems and other server problems, but all top-ups will be securely top-upped to you as soon as possible.
+                                            </p>
                                         </div>
-                                        <RadioGroupItem value="bank" className="ml-auto" />
+                                        <RadioGroupItem value="bank" className="ml-auto mt-1" />
                                     </CardContent>
                                 </Card>
                             )}
