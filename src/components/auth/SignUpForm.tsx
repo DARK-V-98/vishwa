@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useFirestore } from "@/firebase";
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider, updateProfile } from "firebase/auth";
 import { doc, getDoc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
@@ -99,46 +99,8 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      const userDocRef = doc(firestore, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-        const batch = writeBatch(firestore);
-        
-        batch.set(userDocRef, {
-          id: user.uid,
-          email: user.email,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          username: null,
-          firstName: user.displayName?.split(' ')[0] || '',
-          lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-          roles: ['customer']
-        });
-
-        // Assign default customer role
-        const customerRoleRef = doc(firestore, "roles_customer", user.uid);
-        batch.set(customerRoleRef, {
-            id: user.uid,
-            firstPurchaseAt: serverTimestamp(),
-        });
-        
-        await batch.commit();
-        
-        toast.success("Welcome! Please complete your profile.");
-        router.push("/auth/complete-profile");
-      } else {
-        toast.success("Signed in with Google successfully!");
-        router.push("/dashboard");
-      }
+        await signInWithRedirect(auth, provider);
     } catch (error: any) {
-       // Don't show a toast if the user closes the popup
-      if (error.code === 'auth/popup-closed-by-user') {
-        return;
-      }
       toast.error(error.message);
     }
   };

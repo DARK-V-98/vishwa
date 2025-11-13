@@ -21,12 +21,13 @@ export default function AuthPage() {
     <div className="min-h-screen bg-muted/40 flex items-center justify-center p-4">
        <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 bg-card rounded-2xl shadow-strong overflow-hidden">
           {/* Left Panel */}
-          <div className="hidden md:block relative">
+          <div className="hidden md:block relative w-full h-full">
              <Image 
                 src="/lgn.png"
                 alt="Brand Logo"
                 fill
-                className="object-cover"
+                className="object-contain p-12"
+                sizes="(max-width: 768px) 100vw, 50vw"
              />
           </div>
           
