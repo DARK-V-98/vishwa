@@ -395,6 +395,53 @@
           }
         },
         "required": ["text", "senderId", "timestamp"]
+    },
+    "Testimonial": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Testimonial",
+      "type": "object",
+      "description": "Represents a customer testimonial for display on the website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the testimonial."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the person giving the testimonial."
+        },
+        "position": {
+          "type": "string",
+          "description": "The job title or role of the person."
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the testimonial."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the person's photo."
+        },
+        "rating": {
+          "type": "number",
+          "description": "A rating from 1 to 5.",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the testimonial was created."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "position",
+        "message",
+        "rating",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -576,10 +623,24 @@
                 { "name": "messageId", "description": "The unique ID for the message." }
             ]
         }
+      },
+      {
+        "path": "/testimonials/{testimonialId}",
+        "definition": {
+          "entityName": "Testimonial",
+          "schema": {
+            "$ref": "#/backend/entities/Testimonial"
+          },
+          "description": "Stores customer testimonials for public display on the homepage.",
+          "params": [
+            {
+              "name": "testimonialId",
+              "description": "The unique identifier for the testimonial."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders` and `settings` are added to handle the new functionality."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, and `testimonials` are added to handle the new functionality."
   }
 }
-
-    

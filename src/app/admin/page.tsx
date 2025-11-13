@@ -8,6 +8,7 @@ import TopupOrderManagement from "@/components/admin/topup-order-management";
 import PaymentSettings from "@/components/admin/payment-settings";
 import { useUser } from "@/firebase";
 import AdminChat from "@/components/admin/admin-chat";
+import TestimonialManagement from "@/components/admin/testimonial-management";
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
@@ -38,9 +39,10 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="topup-orders" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
           <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
+          <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
           <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
@@ -50,6 +52,9 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="topup-packages">
             <TopupManagement />
+        </TabsContent>
+         <TabsContent value="testimonials">
+            <TestimonialManagement />
         </TabsContent>
         <TabsContent value="payment-settings">
             <PaymentSettings />
@@ -64,5 +69,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    

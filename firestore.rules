@@ -193,6 +193,17 @@ service cloud.firestore {
         allow read, list: if isSignedIn() && (isOwner(userId) || isAdmin());
         allow create: if isSignedIn() && (isOwner(userId) || isAdmin()) && request.resource.data.senderId == request.auth.uid;
     }
+    
+    /**
+     * @description Manages testimonials.
+     * @path /testimonials/{testimonialId}
+     * @allow (read) - Publicly readable by anyone.
+     * @allow (write) - Admin-only write access.
+     */
+    match /testimonials/{testimonialId} {
+        allow read: if true;
+        allow write: if isSignedIn() && isAdmin();
+    }
   }
 
   function isSignedIn() {
@@ -211,5 +222,3 @@ service cloud.firestore {
       return request.auth.token.email == 'tikfese@gmail.com';
   }
 }
-
-    

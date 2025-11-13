@@ -1,4 +1,6 @@
 
+'use client';
+
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -6,17 +8,43 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Code,
   Palette,
-  ShoppingBag,
   Building2,
   ArrowRight,
-  CheckCircle,
+  Star,
   Zap,
   Shield,
   Users,
   Gamepad2,
 } from "lucide-react";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+
+
+interface Testimonial {
+  id: string;
+  name: string;
+  position: string;
+  message: string;
+  imageUrl: string;
+  rating: number;
+}
 
 const Home = () => {
+  const firestore = useFirestore();
+  const testimonialsCollection = useMemoFirebase(() => collection(firestore, 'testimonials'), [firestore]);
+  const testimonialsQuery = useMemoFirebase(() => query(testimonialsCollection, orderBy('createdAt', 'desc')), [testimonialsCollection]);
+  const { data: testimonials, isLoading: testimonialsLoading } = useCollection<Omit<Testimonial, 'id'>>(testimonialsQuery);
+
   const services = [
     {
       icon: Code,
@@ -166,30 +194,61 @@ const Home = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[1, 2, 3].map((idx) => (
-              <Card key={idx} className="bg-card/50 backdrop-blur-sm border-border/50">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <CheckCircle key={star} className="h-5 w-5 text-secondary fill-secondary" />
-                    ))}
+          <Carousel
+            opts={{ align: "start", loop: true }}
+            plugins={[ Autoplay({ delay: 5000, stopOnInteraction: true }) ]}
+            className="w-full max-w-5xl mx-auto"
+          >
+            <CarouselContent>
+              {testimonialsLoading && [...Array(3)].map((_, idx) => (
+                <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-1">
+                    <Card className="bg-card/50 backdrop-blur-sm border-border/50 h-full">
+                       <CardContent className="p-6 space-y-4 flex flex-col items-center text-center h-full">
+                         <Skeleton className="w-24 h-24 rounded-full" />
+                         <div className="space-y-2">
+                           <Skeleton className="h-5 w-32" />
+                           <Skeleton className="h-4 w-24" />
+                         </div>
+                         <Skeleton className="h-4 w-full" />
+                         <Skeleton className="h-4 w-4/5" />
+                       </CardContent>
+                    </Card>
                   </div>
-                  <p className="text-muted-foreground">
-                    "Outstanding work! Professional, timely, and exceeded all expectations.
-                    Highly recommended for any business project."
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-primary rounded-full"></div>
-                    <div>
-                      <p className="font-semibold">Happy Client</p>
-                      <p className="text-sm text-muted-foreground">Business Owner</p>
-                    </div>
+                </CarouselItem>
+              ))}
+              {testimonials?.map((testimonial) => (
+                <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-1 h-full">
+                    <Card className="bg-card/50 backdrop-blur-sm border-border/50 h-full flex flex-col">
+                      <CardContent className="p-6 space-y-4 flex flex-col items-center text-center flex-grow">
+                        <Avatar className="w-24 h-24 mb-4 border-4 border-primary/20">
+                          <AvatarImage src={testimonial.imageUrl} alt={testimonial.name} />
+                          <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-grow">
+                          <p className="text-muted-foreground italic">
+                            "{testimonial.message}"
+                          </p>
+                        </div>
+                        <div className="flex gap-1 mt-4">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`h-5 w-5 ${i < testimonial.rating ? 'text-secondary fill-secondary' : 'text-muted/40'}`} />
+                          ))}
+                        </div>
+                        <div className="mt-auto pt-4">
+                          <p className="font-semibold">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.position}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+          </Carousel>
         </div>
       </section>
 
