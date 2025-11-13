@@ -81,19 +81,6 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       
-      {/* Robot Video Overlay */}
-      <div className="fixed bottom-0 left-0 z-[60] w-64 h-64 pointer-events-none mix-blend-lighten md:block hidden">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-        >
-          <source src="/robot.mp4" type="video/mp4" />
-        </video>
-      </div>
-
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
@@ -266,39 +253,55 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24 relative">
         <div className="container mx-auto px-4">
-          <Card className="bg-gradient-hero border-0 shadow-strong">
-            <CardContent className="p-8 md:p-12 text-center space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
-                Ready to Start Your Project?
-              </h2>
-              <p className="text-primary-foreground/90 max-w-2xl mx-auto">
-                Let's discuss how I can help bring your vision to life with professional
-                development and design services.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/contact">
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="w-full sm:w-auto"
-                  >
-                    Get in Touch
-                  </Button>
-                </Link>
-                <Link href="/about">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full sm:w-auto bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
-                  >
-                    Learn More About Me
-                  </Button>
-                </Link>
+          <div className="grid md:grid-cols-2 items-center gap-8">
+            <div className="hidden md:flex justify-center items-center">
+              <div className="w-64 h-64 pointer-events-none mix-blend-lighten">
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                >
+                  <source src="/robot.mp4" type="video/mp4" />
+                </video>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            
+            <Card className="bg-gradient-hero border-0 shadow-strong">
+              <CardContent className="p-8 md:p-12 text-center space-y-6">
+                <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
+                  Ready to Start Your Project?
+                </h2>
+                <p className="text-primary-foreground/90 max-w-2xl mx-auto">
+                  Let's discuss how I can help bring your vision to life with professional
+                  development and design services.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/contact">
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      className="w-full sm:w-auto"
+                    >
+                      Get in Touch
+                    </Button>
+                  </Link>
+                  <Link href="/about">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
+                    >
+                      Learn More About Me
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
     </div>
