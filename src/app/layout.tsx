@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import "./globals.css";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import WelcomeMat from "@/components/welcome-mat";
+import FloatingChatWidget from "@/components/chat/FloatingChatWidget";
 
 export const metadata: Metadata = {
   title: "R.M.T Vishwa Vidarshana | Web Developer & Designer",
@@ -26,6 +27,7 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <FloatingChatWidget />
           <Toaster />
           <SonnerToaster />
         </FirebaseClientProvider>
