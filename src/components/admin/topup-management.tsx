@@ -1,9 +1,9 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useStorage } from '@/firebase';
 import { collection, query, orderBy, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,7 +25,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Gem, Image as ImageIcon, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Gem, Image as ImageIcon, PlusCircle, Edit, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
@@ -42,6 +43,7 @@ const packageCategories = ['Gems', 'Membership', 'Other'] as const;
 
 export default function TopupManagement() {
   const firestore = useFirestore();
+  const storage = useStorage();
   const packagesCollection = useMemoFirebase(() => collection(firestore, 'topupPackages'), [firestore]);
   const packagesQuery = useMemoFirebase(() => query(packagesCollection, orderBy('order')), [packagesCollection]);
   const { data: packages, isLoading, error } = useCollection<Omit<TopupPackage, 'id'>>(packagesQuery);
@@ -57,8 +59,13 @@ export default function TopupManagement() {
     order: 0,
   });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
   const handleOpenDialog = (pkg: TopupPackage | null = null) => {
     setEditingPackage(pkg);
+    setSelectedFile(null);
+    setUploadProgress(null);
     if (pkg) {
       setFormData({
         name: pkg.name,
@@ -89,26 +96,62 @@ export default function TopupManagement() {
       setFormData(prev => ({ ...prev, category: value }));
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleFileUpload = async (): Promise<string | null> => {
+    if (!selectedFile) return formData.imageUrl || null;
+    
+    return new Promise((resolve, reject) => {
+        const storageRef = ref(storage, `topup-icons/${Date.now()}-${selectedFile.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, selectedFile);
+
+        uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(progress);
+            },
+            (error) => {
+                toast.error(`Upload failed: ${error.message}`);
+                console.error("Upload error:", error);
+                setUploadProgress(null);
+                reject(error);
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                setUploadProgress(null);
+                resolve(downloadURL);
+            }
+        );
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    const dataToSave = {
-      name: formData.name,
-      price: parseFloat(formData.price),
-      category: formData.category,
-      imageUrl: formData.imageUrl,
-      order: Number(formData.order),
-      updatedAt: serverTimestamp(),
-    };
-
-    if (isNaN(dataToSave.price) || isNaN(dataToSave.order)) {
-        toast.error("Price and Order must be valid numbers.");
-        setIsSubmitting(false);
-        return;
-    }
-
     try {
+        const imageUrl = await handleFileUpload();
+
+        const dataToSave = {
+          name: formData.name,
+          price: parseFloat(formData.price),
+          category: formData.category,
+          imageUrl: imageUrl || '',
+          order: Number(formData.order),
+          updatedAt: serverTimestamp(),
+        };
+
+        if (isNaN(dataToSave.price) || isNaN(dataToSave.order)) {
+            toast.error("Price and Order must be valid numbers.");
+            setIsSubmitting(false);
+            return;
+        }
+
       if (editingPackage) {
         // Update existing package
         const packageDoc = doc(firestore, 'topupPackages', editingPackage.id);
@@ -220,8 +263,12 @@ export default function TopupManagement() {
                 </div>
                 {formData.category !== 'Gems' && (
                     <div className="space-y-2">
-                        <Label htmlFor="imageUrl">Image URL</Label>
-                        <Input id="imageUrl" name="imageUrl" value={formData.imageUrl} onChange={handleFormChange} placeholder="https://example.com/image.png" />
+                        <Label htmlFor="image">Icon Image</Label>
+                        <div className="flex items-center gap-4">
+                            {formData.imageUrl && <Image src={formData.imageUrl} alt="Current Icon" width={40} height={40} className="rounded-md" />}
+                            <Input id="image" type="file" onChange={handleFileChange} accept="image/*" />
+                        </div>
+                        {uploadProgress !== null && <Progress value={uploadProgress} className="w-full" />}
                     </div>
                 )}
                  <div className="space-y-2">
@@ -232,7 +279,9 @@ export default function TopupManagement() {
                     <DialogClose asChild>
                         <Button type="button" variant="secondary">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save Package'}</Button>
+                    <Button type="submit" disabled={isSubmitting || uploadProgress !== null}>
+                        {isSubmitting ? 'Saving...' : (uploadProgress !== null ? `Uploading... ${Math.round(uploadProgress)}%` : 'Save Package')}
+                    </Button>
                 </DialogFooter>
             </form>
         </DialogContent>
@@ -240,5 +289,3 @@ export default function TopupManagement() {
     </div>
   );
 }
-
-    
