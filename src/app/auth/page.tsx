@@ -37,9 +37,9 @@ export default function AuthPage() {
           </div>
        </div>
 
-       <div className="flex items-center justify-center p-4 md:p-8">
-         <div className="mx-auto grid w-[350px] gap-6">
-             <div className="grid gap-2 text-center">
+       <div className="flex items-center justify-center p-4 md:p-8 bg-background">
+         <div className="mx-auto w-full max-w-sm p-8 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-lg shadow-strong">
+             <div className="grid gap-2 text-center mb-6">
                <Link href="/" className="flex justify-center items-center gap-2">
                    <Image src="/lg.png" alt="Logo" width={48} height={48} className="h-12 w-12" />
                </Link>
