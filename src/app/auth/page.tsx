@@ -20,17 +20,35 @@ function AuthPageSkeleton() {
 
 export default function AuthPage() {
   return (
-    <div className="w-full min-h-screen flex items-center justify-center p-4">
-        <div className="mx-auto grid w-[350px] gap-6">
-            <div className="grid gap-2 text-center">
-              <Link href="/" className="flex justify-center items-center gap-2">
-                  <Image src="/lg.png" alt="Logo" width={48} height={48} className="h-12 w-12" />
-              </Link>
+    <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 p-0">
+       <div className="hidden lg:flex flex-col items-center justify-center bg-muted p-10 relative">
+          <div className="absolute inset-0">
+             <Image
+                src="/lgn.png"
+                alt="ESystemLK Logo"
+                fill
+                className="object-contain p-20"
+             />
           </div>
-           <Suspense fallback={<AuthPageSkeleton />}>
-            <AuthForms />
-          </Suspense>
-        </div>
+          <div className="relative z-10 text-center mt-auto">
+             <h1 className="text-3xl font-bold text-foreground">ESystemLK</h1>
+             <p className="text-muted-foreground mt-2">The best and the most professional service provider</p>
+             <p className="text-xs text-muted-foreground mt-20">© ESystemLK. All rights reserved</p>
+          </div>
+       </div>
+
+       <div className="flex items-center justify-center p-4 md:p-8">
+         <div className="mx-auto grid w-[350px] gap-6">
+             <div className="grid gap-2 text-center">
+               <Link href="/" className="flex justify-center items-center gap-2">
+                   <Image src="/lg.png" alt="Logo" width={48} height={48} className="h-12 w-12" />
+               </Link>
+           </div>
+            <Suspense fallback={<AuthPageSkeleton />}>
+             <AuthForms />
+           </Suspense>
+         </div>
+       </div>
     </div>
   );
 }
