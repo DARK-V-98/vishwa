@@ -14,14 +14,24 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 const About = () => {
-  const skills = [
-    { icon: Code2, name: "Web Development", level: 95 },
-    { icon: Palette, name: "UI/UX Design", level: 90 },
-    { icon: Database, name: "Firebase & Backend", level: 85 },
-    { icon: Globe, name: "Full-Stack Solutions", level: 92 },
-  ];
+  const [animatedSkills, setAnimatedSkills] = useState([
+    { icon: Code2, name: "Web Development", level: 95, currentLevel: 0 },
+    { icon: Palette, name: "UI/UX Design", level: 90, currentLevel: 0 },
+    { icon: Database, name: "Firebase & Backend", level: 85, currentLevel: 0 },
+    { icon: Globe, name: "Full-Stack Solutions", level: 92, currentLevel: 0 },
+  ]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        setAnimatedSkills(prevSkills => 
+            prevSkills.map(skill => ({ ...skill, currentLevel: skill.level }))
+        );
+    }, 100); // Start animation shortly after component mounts
+    return () => clearTimeout(timer);
+  }, []);
 
   const timeline = [
     {
@@ -132,7 +142,7 @@ const About = () => {
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
-              {skills.map((skill, idx) => (
+              {animatedSkills.map((skill, idx) => (
                 <Card key={idx} className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-medium transition-all">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center gap-4">
@@ -141,10 +151,10 @@ const About = () => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold mb-2">{skill.name}</h3>
-                        <div className="w-full bg-muted rounded-full h-2">
+                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                           <div
-                            className="bg-gradient-primary h-2 rounded-full transition-all duration-1000"
-                            style={{ width: `${skill.level}%` }}
+                            className="bg-gradient-primary h-2 rounded-full transition-all duration-1000 ease-out"
+                            style={{ width: `${skill.currentLevel}%` }}
                           ></div>
                         </div>
                       </div>

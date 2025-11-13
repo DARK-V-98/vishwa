@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, MessageSquarePlus, Robot } from 'lucide-react';
+import { Send, MessageSquarePlus, BrainCircuit } from 'lucide-react';
 import { formatRelative } from 'date-fns';
 
 interface Message {
@@ -104,7 +104,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
                   <Avatar className={`${showAvatar ? 'visible' : 'invisible'} border`}>
                     {isSenderAdmin ? (
                       <div className="flex items-center justify-center h-full w-full bg-muted">
-                        <Robot className="h-6 w-6 text-foreground" />
+                        <BrainCircuit className="h-6 w-6 text-foreground" />
                       </div>
                     ) : (
                       <AvatarFallback>{getInitials(msg.senderId)}</AvatarFallback>
@@ -125,7 +125,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
                   <Avatar className={`${showAvatar ? 'visible' : 'invisible'} border`}>
                      {isSenderAdmin ? (
                       <div className="flex items-center justify-center h-full w-full bg-muted">
-                        <Robot className="h-6 w-6 text-foreground" />
+                        <BrainCircuit className="h-6 w-6 text-foreground" />
                       </div>
                     ) : (
                       <AvatarFallback>{getInitials(currentUser?.displayName || currentUser?.email || 'Me')}</AvatarFallback>
