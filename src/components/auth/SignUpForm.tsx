@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useFirestore } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { Checkbox } from "../ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
@@ -48,21 +48,17 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         displayName: `${firstName} ${lastName}`.trim(),
       });
       
-      const batch = writeBatch(firestore);
-
       const userDocRef = doc(firestore, "users", user.uid);
-      batch.set(userDocRef, {
+      await setDoc(userDocRef, {
         id: user.uid,
         firstName: firstName,
         lastName: lastName,
-        username: `${firstName.toLowerCase()}${lastName.toLowerCase()}`.trim(), // simple username generation
+        username: `${firstName.toLowerCase()}${lastName.toLowerCase()}`.trim(),
         email: user.email,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         roles: ['customer']
       });
-
-      await batch.commit();
 
       toast.success("Account created successfully!");
       router.push("/dashboard");
@@ -165,3 +161,5 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
     </>
   );
 }
+
+    

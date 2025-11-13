@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,17 +19,30 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { doc } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface UserProfile {
+  roles?: string[];
+}
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const router = useRouter();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, "users", user.uid);
+  }, [user, firestore]);
+  
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/auth");
     }
   }, [user, isUserLoading, router]);
-
 
   const handleSignOut = () => {
     const auth = getAuth();
@@ -38,6 +51,10 @@ export default function DashboardPage() {
     });
   };
   
+  const isAdmin = useMemo(() => {
+    return userProfile?.roles?.includes('admin') || user?.email === 'tikfese@gmail.com';
+  }, [userProfile, user?.email]);
+
   const menuItems = useMemo(() => {
     const items = [
       { id: 'orders', label: 'My Orders', icon: ShoppingBag, href: '/my-orders', description: 'View your top-up history' },
@@ -46,18 +63,25 @@ export default function DashboardPage() {
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
     ];
     
-    // A simple role check - in a real app, you'd use custom claims.
-    if (user?.email === 'tikfese@gmail.com') {
+    if (isAdmin) {
         items.push({ id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' });
     }
 
     return items;
-  }, [user]);
+  }, [isAdmin]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || isProfileLoading || !user) {
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <p>Loading...</p>
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] pt-24 pb-12">
+            <main className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-8">
+                <div className="text-center mb-12">
+                    <Skeleton className="h-10 w-1/2 mx-auto mb-4" />
+                    <Skeleton className="h-6 w-3/4 mx-auto" />
+                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+                 </div>
+            </main>
         </div>
     );
   }
@@ -71,7 +95,9 @@ export default function DashboardPage() {
                     This is your central hub. Manage projects, appointments, and more.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                    <Badge variant="secondary"><UserIcon className="h-4 w-4 mr-1" /> User</Badge>
+                    {userProfile?.roles?.map(role => (
+                        <Badge key={role} variant="secondary" className="capitalize"><UserIcon className="h-4 w-4 mr-1" /> {role}</Badge>
+                    ))}
                 </div>
             </div>
 
@@ -106,3 +132,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

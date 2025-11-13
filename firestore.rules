@@ -7,6 +7,7 @@
  * @dataStructure The database is structured with top-level collections for `users`, `services`, and `products`. User-specific data (designOrders, appointments, quotationRequests) is stored in subcollections under each user's document.
  * @keySecurityDecisions
  *   - Listing all users is disallowed.
+ *   - Users can read their own profile.
  *   - Read access is public for the `services` and `products` collections.
  *   - Write access to `products` is restricted to the owner (seller). The `products` documents have an `sellerId` field for owner validation.
  * @denormalizationForAuthorization The `products` collection uses the `sellerId` field to denormalize ownership, enabling secure write rules without additional `get()` calls.
@@ -19,18 +20,19 @@ service cloud.firestore {
     /**
      * @description Protects the user profiles collection.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user can create their own profile if the userId matches their auth.uid.
-     * @allow (get) - Not applicable, as listing is denied.
+     * @allow (get) - Authenticated user can read their own profile.
+     * @allow (create) - Authenticated user can create their own profile.
      * @allow (list) - Denied, as listing all users is not permitted.
-     * @allow (update) - Authenticated user can update their own profile if the userId matches their auth.uid.
-     * @allow (delete) - Authenticated user can delete their own profile if the userId matches their auth.uid.
+     * @allow (update) - Authenticated user can update their own profile.
+     * @allow (delete) - Authenticated user can delete their own profile.
+     * @deny (get) - If the user is not the owner.
      * @deny (create) - If the user is not authenticated.
      * @deny (update) - If the user is not the owner.
      * @deny (delete) - If the user is not the owner.
-     * @principle Enforces document ownership for writes.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      allow get: if false;
+      allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
       allow update: if isSignedIn() && isOwner(userId) && resource.data.id == userId;
