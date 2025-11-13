@@ -206,7 +206,7 @@ export default function FreefireTopupPage() {
                         >
                             <CardContent className="p-0 text-center relative flex flex-col h-full">
                                 <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2 z-10 bg-black/50 border-white/50" />
-                                <div className="aspect-video w-full flex items-center justify-center mb-2 relative bg-black/10">
+                                <div className="aspect-[16/9] w-full flex items-center justify-center mb-2 relative bg-black/10">
                                   {pkg.imageUrl ? (
                                       <Image src={pkg.imageUrl} alt={pkg.name} layout="fill" className="object-cover" />
                                   ) : (

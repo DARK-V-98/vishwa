@@ -100,12 +100,18 @@ export default function TopupManagement() {
     e.preventDefault();
     setIsSubmitting(true);
     
+    if (!formData.imageUrl) {
+        toast.error("Please select an icon for the package.");
+        setIsSubmitting(false);
+        return;
+    }
+
     try {
         const dataToSave = {
           name: formData.name,
           price: parseFloat(formData.price),
           category: formData.category,
-          imageUrl: formData.imageUrl || '',
+          imageUrl: formData.imageUrl,
           order: Number(formData.order),
           updatedAt: serverTimestamp(),
         };
@@ -233,7 +239,7 @@ export default function TopupManagement() {
                         className="grid grid-cols-4 md:grid-cols-6 gap-4"
                     >
                         {availableIcons.map(icon => (
-                            <Label key={icon.path} htmlFor={icon.path} className={`relative flex flex-col items-center justify-center rounded-md border-2 p-2 aspect-square cursor-pointer transition-colors ${formData.imageUrl === icon.path ? 'border-primary' : 'border-muted hover:border-accent'}`}>
+                            <Label key={icon.path} htmlFor={icon.path} className={`relative flex flex-col items-center justify-center rounded-md border-2 p-2 aspect-square cursor-pointer transition-colors ${formData.imageUrl === icon.path ? 'border-primary ring-2 ring-primary' : 'border-muted hover:border-accent'}`}>
                                 <div className="relative w-12 h-12">
                                     <Image src={icon.path} alt={icon.name} fill className="object-contain" />
                                 </div>
