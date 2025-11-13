@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send } from 'lucide-react';
+import { Send, MessageSquarePlus } from 'lucide-react';
 import { formatRelative } from 'date-fns';
 
 interface Message {
@@ -27,6 +27,8 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   const firestore = useFirestore();
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  const isAdmin = currentUser?.email === 'tikfese@gmail.com';
 
   const messagesCollection = useMemoFirebase(() => collection(firestore, 'chats', userId, 'messages'), [firestore, userId]);
   const messagesQuery = useMemoFirebase(() => query(messagesCollection, orderBy('timestamp', 'asc')), [messagesCollection]);
@@ -42,11 +44,9 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     }
   }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !currentUser) return;
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || !currentUser) return;
 
-    const text = newMessage;
     setNewMessage('');
 
     const chatDocRef = doc(firestore, 'chats', userId);
@@ -60,20 +60,37 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     // Update the parent chat doc for sorting and notifications
     await setDoc(chatDocRef, {
         userId: userId,
-        userEmail: currentUser.email, // Assume the user is starting or replying to their own chat
+        userEmail: isAdmin ? messages?.find(m => m.senderId !== currentUser.uid)?.senderId || 'User' : currentUser.email,
         lastMessage: text,
         updatedAt: serverTimestamp(),
-        isReadByAdmin: false,
+        isReadByAdmin: isAdmin,
     }, { merge: true });
+  }
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(newMessage);
   };
   
   const getInitials = (id: string) => id.substring(0, 2).toUpperCase();
+
+  const suggestionMessages = isAdmin
+  ? ["What is your name?", "What is your contact number?"]
+  : ["Hello, my name is "];
+
 
   return (
     <div className="flex flex-col h-full w-full">
       <ScrollArea className="flex-grow pr-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {isLoading && <p>Loading messages...</p>}
+          {messages && messages.length === 0 && !isLoading && (
+             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                <MessageSquarePlus className="h-10 w-10 mb-4" />
+                <p className="font-semibold text-lg">Start the conversation</p>
+                <p className="text-sm">No messages here yet. Send a message or use a suggestion below.</p>
+             </div>
+          )}
           {messages?.map((msg, index) => {
             const isCurrentUser = msg.senderId === currentUser?.uid;
             const previousMessage = messages[index - 1];
@@ -106,6 +123,15 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
           })}
         </div>
       </ScrollArea>
+      {messages && messages.length === 0 && !isLoading && (
+        <div className="py-2 flex flex-wrap gap-2">
+            {suggestionMessages.map(text => (
+                <Button key={text} variant="outline" size="sm" onClick={() => sendMessage(text)}>
+                    {text}
+                </Button>
+            ))}
+        </div>
+      )}
       <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
         <Input
           value={newMessage}
@@ -120,5 +146,3 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     </div>
   );
 }
-
-    
