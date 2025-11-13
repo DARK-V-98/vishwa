@@ -254,54 +254,50 @@ const Home = () => {
 
       {/* CTA Section */}
       <section className="py-16 md:py-24 relative">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 items-center gap-8">
-            <div className="hidden md:flex justify-center items-center">
-              <div className="w-64 h-64 pointer-events-none mix-blend-lighten">
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover"
-                >
-                  <source src="/robot.mp4" type="video/mp4" />
-                </video>
-              </div>
-            </div>
-            
-            <Card className="bg-gradient-hero border-0 shadow-strong">
-              <CardContent className="p-8 md:p-12 text-center space-y-6">
-                <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
-                  Ready to Start Your Project?
-                </h2>
-                <p className="text-primary-foreground/90 max-w-2xl mx-auto">
-                  Let's discuss how I can help bring your vision to life with professional
-                  development and design services.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/contact">
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      Get in Touch
-                    </Button>
-                  </Link>
-                  <Link href="/about">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
-                    >
-                      Learn More About Me
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="hidden md:block absolute left-0 -bottom-16 w-64 h-64 pointer-events-none mix-blend-lighten z-20">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            >
+              <source src="/robot.mp4" type="video/mp4" />
+            </video>
           </div>
+          
+          <Card className="bg-gradient-hero border-0 shadow-strong max-w-4xl mx-auto">
+            <CardContent className="p-8 md:p-12 text-center space-y-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
+                Ready to Start Your Project?
+              </h2>
+              <p className="text-primary-foreground/90 max-w-2xl mx-auto">
+                Let's discuss how I can help bring your vision to life with professional
+                development and design services.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/contact">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    Get in Touch
+                  </Button>
+                </Link>
+                <Link href="/about">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
+                  >
+                    Learn More About Me
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>
