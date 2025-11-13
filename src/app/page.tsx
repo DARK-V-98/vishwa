@@ -253,22 +253,22 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 relative">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="hidden md:block absolute left-0 -bottom-16 w-64 h-64 pointer-events-none mix-blend-lighten z-20">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-            >
-              <source src="/robot.mp4" type="video/mp4" />
-            </video>
-          </div>
-          
-          <Card className="bg-gradient-hero border-0 shadow-strong max-w-4xl mx-auto">
-            <CardContent className="p-8 md:p-12 text-center space-y-6">
+      <section className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <Card className="bg-gradient-hero border-0 shadow-strong max-w-4xl mx-auto relative overflow-hidden">
+            <div className="hidden md:block absolute -left-8 -bottom-16 w-64 h-64 pointer-events-none mix-blend-lighten opacity-80 z-20">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              >
+                <source src="/robot.mp4" type="video/mp4" />
+              </video>
+            </div>
+
+            <CardContent className="p-8 md:p-12 text-center space-y-6 relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground">
                 Ready to Start Your Project?
               </h2>
