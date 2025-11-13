@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc, useUser, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,10 +16,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Gem, ShieldCheck, Zap, Image as ImageIcon } from 'lucide-react';
+import { Gem, ShieldCheck, Zap, Image as ImageIcon, Banknote, CreditCard } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface TopupPackage {
   id: string;
@@ -30,17 +31,28 @@ interface TopupPackage {
   order: number;
 }
 
+interface PaymentSettings {
+    onlinePaymentEnabled: boolean;
+    bankTransferEnabled: boolean;
+}
 
 export default function FreefireTopupPage() {
   const firestore = useFirestore();
+  const { user } = useUser();
+
   const packagesCollection = useMemoFirebase(() => collection(firestore, 'topupPackages'), [firestore]);
   const packagesQuery = useMemoFirebase(() => query(packagesCollection, orderBy('order')), [packagesCollection]);
-  const { data: packages, isLoading, error } = useCollection<Omit<TopupPackage, 'id'>>(packagesQuery);
+  const { data: packages, isLoading: packagesLoading, error: packagesError } = useCollection<Omit<TopupPackage, 'id'>>(packagesQuery);
+  
+  const paymentSettingsDoc = useMemoFirebase(() => doc(firestore, 'settings', 'payment'), [firestore]);
+  const { data: paymentSettings, isLoading: settingsLoading } = useDoc<PaymentSettings>(paymentSettingsDoc);
 
   const [playerId, setPlayerId] = useState('');
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'online' | 'bank' | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleTopUp = () => {
+  const handlePlaceOrder = async () => {
     if (!playerId) {
       toast.error('Please enter your Player ID.');
       return;
@@ -49,11 +61,48 @@ export default function FreefireTopupPage() {
       toast.error('Please select a package.');
       return;
     }
-    const pkg = packages?.find(p => p.id === selectedPackageId);
-    toast.success(
-      `Top-up successful! "${pkg?.name}" will be sent to Player ID: ${playerId}.`
-    );
+    if (!paymentMethod) {
+      toast.error('Please select a payment method.');
+      return;
+    }
+
+    const selectedPackage = packages?.find(p => p.id === selectedPackageId);
+    if (!selectedPackage) {
+        toast.error('Selected package not found.');
+        return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+        const ordersCollection = collection(firestore, 'topupOrders');
+        await addDoc(ordersCollection, {
+            userId: user?.uid || null,
+            userEmail: user?.email || null,
+            playerId,
+            packageId: selectedPackage.id,
+            packageName: selectedPackage.name,
+            packagePrice: selectedPackage.price,
+            paymentMethod,
+            status: 'pending',
+            createdAt: serverTimestamp(),
+        });
+
+        toast.success(
+          `Your order for "${selectedPackage.name}" has been placed successfully! We will process it shortly.`
+        );
+        // Reset form
+        setPlayerId('');
+        setSelectedPackageId(null);
+        setPaymentMethod(null);
+    } catch (err: any) {
+        toast.error(`Failed to place order: ${err.message}`);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
+
+  const isLoading = packagesLoading || settingsLoading;
 
   return (
     <div className="min-h-screen bg-gradient-subtle relative overflow-hidden">
@@ -94,14 +143,14 @@ export default function FreefireTopupPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Gem className="text-primary" />
-                  Select Your Top-up
+                  Create Your Order
                 </CardTitle>
                 <CardDescription>
-                  Choose a package and enter your Player ID.
+                  Complete the steps below to place your top-up order.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
-                {/* Player ID Input */}
+                {/* Step 1: Player ID */}
                 <div className="space-y-2">
                   <Label htmlFor="playerId" className="text-lg font-semibold">
                     Step 1: Enter Player ID
@@ -116,7 +165,7 @@ export default function FreefireTopupPage() {
                   />
                 </div>
 
-                {/* Diamond Packages */}
+                {/* Step 2: Diamond Packages */}
                 <div className="space-y-4">
                    <Label className="text-lg font-semibold">
                     Step 2: Choose a Package
@@ -126,7 +175,7 @@ export default function FreefireTopupPage() {
                         {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
                      </div>
                   )}
-                  {error && <p className="text-destructive">Could not load packages. Please try again later.</p>}
+                  {packagesError && <p className="text-destructive">Could not load packages. Please try again later.</p>}
                   {!isLoading && packages && (
                     <RadioGroup
                         value={selectedPackageId || ''}
@@ -164,17 +213,62 @@ export default function FreefireTopupPage() {
                     </RadioGroup>
                   )}
                 </div>
+
+                {/* Step 3: Payment Method */}
+                <div className="space-y-4">
+                    <Label className="text-lg font-semibold">
+                        Step 3: Select Payment Method
+                    </Label>
+                    {isLoading && <Skeleton className="h-24 w-full" />}
+                    {!isLoading && (!paymentSettings || (!paymentSettings.onlinePaymentEnabled && !paymentSettings.bankTransferEnabled)) && (
+                        <Alert variant="destructive">
+                           <AlertTitle>No Payment Methods Available</AlertTitle>
+                           <AlertDescription>The admin has not enabled any payment methods. Please check back later.</AlertDescription>
+                        </Alert>
+                    )}
+                    {!isLoading && paymentSettings && (
+                        <RadioGroup
+                            value={paymentMethod || ''}
+                            onValueChange={(val: 'online' | 'bank') => setPaymentMethod(val)}
+                            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                        >
+                            {paymentSettings.onlinePaymentEnabled && (
+                                <Card className={`cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-primary ring-2 ring-primary' : 'hover:shadow-medium'}`} onClick={() => setPaymentMethod('online')}>
+                                    <CardContent className="p-4 flex items-center gap-4">
+                                        <CreditCard className="h-6 w-6 text-primary" />
+                                        <div>
+                                            <p className="font-semibold">Online Payment</p>
+                                            <p className="text-sm text-muted-foreground">Pay securely with your card.</p>
+                                        </div>
+                                        <RadioGroupItem value="online" className="ml-auto" />
+                                    </CardContent>
+                                </Card>
+                            )}
+                            {paymentSettings.bankTransferEnabled && (
+                                 <Card className={`cursor-pointer transition-all ${paymentMethod === 'bank' ? 'border-primary ring-2 ring-primary' : 'hover:shadow-medium'}`} onClick={() => setPaymentMethod('bank')}>
+                                    <CardContent className="p-4 flex items-center gap-4">
+                                        <Banknote className="h-6 w-6 text-primary" />
+                                        <div>
+                                            <p className="font-semibold">Bank Transfer</p>
+                                            <p className="text-sm text-muted-foreground">Manual bank deposit.</p>
+                                        </div>
+                                        <RadioGroupItem value="bank" className="ml-auto" />
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </RadioGroup>
+                    )}
+                </div>
               </CardContent>
               <CardFooter>
                  <Button
                   size="lg"
                   className="w-full text-lg py-7"
                   variant="hero"
-                  onClick={handleTopUp}
-                  disabled={!playerId || !selectedPackageId || isLoading}
+                  onClick={handlePlaceOrder}
+                  disabled={!playerId || !selectedPackageId || !paymentMethod || isLoading || isSubmitting}
                 >
-                  <Zap className="mr-2" />
-                  Top-up Now
+                  {isSubmitting ? 'Placing Order...' : 'Top-up Now'}
                 </Button>
               </CardFooter>
             </Card>
@@ -265,3 +359,5 @@ export default function FreefireTopupPage() {
     </div>
   );
 }
+
+    

@@ -4,6 +4,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListingManagement } from "@/components/admin/listing-management";
 import TopupManagement from "@/components/admin/topup-management";
+import TopupOrderManagement from "@/components/admin/topup-order-management";
+import PaymentSettings from "@/components/admin/payment-settings";
 import { useUser } from "@/firebase";
 
 export default function AdminPage() {
@@ -34,16 +36,24 @@ export default function AdminPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="listings" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="topup-orders" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
+          <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
+          <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
-          <TabsTrigger value="topup">Top-up Packages</TabsTrigger>
         </TabsList>
+        <TabsContent value="topup-orders">
+            <TopupOrderManagement />
+        </TabsContent>
+        <TabsContent value="topup-packages">
+            <TopupManagement />
+        </TabsContent>
+        <TabsContent value="payment-settings">
+            <PaymentSettings />
+        </TabsContent>
         <TabsContent value="listings">
             <ListingManagement />
-        </TabsContent>
-        <TabsContent value="topup">
-            <TopupManagement />
         </TabsContent>
       </Tabs>
     </div>

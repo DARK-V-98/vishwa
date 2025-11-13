@@ -237,15 +237,19 @@
         "category": {
           "type": "string",
           "description": "The category of the package.",
-          "enum": ["Gems", "Membership", "Other"]
+          "enum": [
+            "Gems",
+            "Membership",
+            "Other"
+          ]
         },
         "imageUrl": {
           "type": "string",
           "description": "URL for the package image, if not a gem package."
         },
         "order": {
-            "type": "number",
-            "description": "The display order of the package."
+          "type": "number",
+          "description": "The display order of the package."
         }
       },
       "required": [
@@ -255,6 +259,91 @@
         "category",
         "order"
       ]
+    },
+    "TopupOrder": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TopupOrder",
+      "type": "object",
+      "description": "Represents a top-up order placed by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who placed the order (if logged in)."
+        },
+        "userEmail": {
+          "type": "string",
+          "description": "The email of the user (if available)."
+        },
+        "playerId": {
+          "type": "string",
+          "description": "The in-game Player ID for the top-up."
+        },
+        "packageId": {
+          "type": "string",
+          "description": "The ID of the selected top-up package."
+        },
+        "packageName": {
+          "type": "string",
+          "description": "The name of the selected top-up package."
+        },
+        "packagePrice": {
+          "type": "number",
+          "description": "The price of the package at the time of order."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": [
+            "online",
+            "bank"
+          ],
+          "description": "The selected payment method."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "processing",
+            "completed",
+            "cancelled"
+          ],
+          "description": "The current status of the order."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the order was created."
+        }
+      },
+      "required": [
+        "id",
+        "playerId",
+        "packageId",
+        "packageName",
+        "packagePrice",
+        "paymentMethod",
+        "status",
+        "createdAt"
+      ]
+    },
+    "PaymentSettings": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PaymentSettings",
+      "type": "object",
+      "description": "Stores the settings for available payment methods.",
+      "properties": {
+        "onlinePaymentEnabled": {
+          "type": "boolean",
+          "description": "Whether online payments are enabled."
+        },
+        "bankTransferEnabled": {
+          "type": "boolean",
+          "description": "Whether bank transfers are enabled."
+        }
+      }
     }
   },
   "auth": {
@@ -388,10 +477,36 @@
             }
           ]
         }
+      },
+      {
+        "path": "/topupOrders/{orderId}",
+        "definition": {
+          "entityName": "TopupOrder",
+          "schema": {
+            "$ref": "#/backend/entities/TopupOrder"
+          },
+          "description": "Stores all top-up orders placed by users.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/settings/payment",
+        "definition": {
+          "entityName": "PaymentSettings",
+          "schema": {
+            "$ref": "#/backend/entities/PaymentSettings"
+          },
+          "description": "Stores global payment method settings.",
+          "params": []
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders` and `settings` are added to handle the new functionality."
   }
 }
-
     

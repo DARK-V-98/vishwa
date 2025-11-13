@@ -151,6 +151,28 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true || request.auth.token.email == 'tikfese@gmail.com');
     }
+    
+    /**
+     * @description Manages top-up orders.
+     * @path /topupOrders/{orderId}
+     * @allow (create) - Anyone can create a new order.
+     * @allow (read, update, delete) - Admin-only access.
+     */
+    match /topupOrders/{orderId} {
+      allow create: if true;
+      allow read, update, delete: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true || request.auth.token.email == 'tikfese@gmail.com');
+    }
+
+    /**
+     * @description Manages platform settings like payment options.
+     * @path /settings/payment
+     * @allow (read) - Public read access for all.
+     * @allow (write) - Admin-only write access.
+     */
+    match /settings/payment {
+        allow read: if true;
+        allow write: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true || request.auth.token.email == 'tikfese@gmail.com');
+    }
   }
 
   function isSignedIn() {
@@ -165,3 +187,5 @@ service cloud.firestore {
     return isOwner(userId) && resource != null;
   }
 }
+
+    
