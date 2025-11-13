@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "update:cors": "firebase storage:buckets:update gs://studio-8072496389-b03d4.appspot.com --cors-file=cors.json"
+    "update:cors": "firebase storage:buckets:set gs://studio-8072496389-b03d4.appspot.com cors.json"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
