@@ -137,9 +137,21 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-sm text-muted-foreground">
-            © {currentYear} Vishwa Vidarshana. All rights reserved.
-          </p>
+          <div className="text-sm text-muted-foreground text-center md:text-left">
+            <p>© {currentYear} Vishwa Vidarshana. All rights reserved.</p>
+            <p>
+              Powered & Hosted by{' '}
+              <a 
+                href="https://www.esystemlk.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                ESystemLK
+              </a>
+              .
+            </p>
+          </div>
           <div className="flex space-x-6">
             <Link
               href="/privacy"
