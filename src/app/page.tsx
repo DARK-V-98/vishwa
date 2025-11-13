@@ -81,6 +81,19 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       
+      {/* Robot Video Overlay */}
+      <div className="fixed bottom-0 left-0 z-50 w-64 h-64 pointer-events-none mix-blend-screen md:block hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source src="/robot.mp4" type="video/mp4" />
+        </video>
+      </div>
+
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
