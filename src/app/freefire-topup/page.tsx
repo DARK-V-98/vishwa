@@ -60,11 +60,10 @@ export default function FreefireTopupPage() {
       {/* Background Image */}
       <div className="absolute inset-0 z-0 opacity-10">
         <Image
-          src="https://picsum.photos/seed/freefire-bg/1920/1080"
-          alt="Free Fire Background"
+          src="/tp.png"
+          alt="Free Fire Top-up Background"
           fill
           className="object-cover"
-          data-ai-hint="game character action"
         />
       </div>
 
