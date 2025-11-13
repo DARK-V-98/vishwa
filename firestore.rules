@@ -1,3 +1,4 @@
+
 /**
  * @file Firestore Security Rules
  * @version 2
@@ -141,14 +142,14 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows public read access to top-up packages but restricts write access to admins.
+     * @description Allows public read access to top-up packages but restricts write access to admins or the specific owner.
      * @path /topupPackages/{packageId}
      * @allow (read) - Public read access for all.
-     * @allow (write) - Admin-only write access.
+     * @allow (write) - Admin-only write access, or the app owner.
      */
     match /topupPackages/{packageId} {
       allow read: if true;
-      allow write: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true);
+      allow write: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true || request.auth.token.email == 'tikfese@gmail.com');
     }
   }
 
@@ -164,5 +165,3 @@ service cloud.firestore {
     return isOwner(userId) && resource != null;
   }
 }
-
-    
