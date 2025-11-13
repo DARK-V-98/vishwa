@@ -1,12 +1,11 @@
 
 import { Suspense } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import AuthForms from '@/components/auth/AuthForms';
 
 function AuthPageSkeleton() {
     return (
-        <div className="w-full h-full flex flex-col justify-center text-foreground">
+        <div className="w-full h-full flex flex-col justify-center text-foreground p-8">
             <div className="h-10 bg-muted rounded w-1/2 mb-2 animate-pulse"></div>
             <div className="h-6 bg-muted rounded w-3/4 mb-8 animate-pulse"></div>
             <div className="space-y-6">
@@ -17,37 +16,44 @@ function AuthPageSkeleton() {
     )
 }
 
-
 export default function AuthPage() {
   return (
-    <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2 p-0">
-       <div className="hidden lg:flex flex-col items-center justify-center bg-muted p-10 relative">
-          <div className="absolute inset-0">
-             <Image
-                src="/lgn.png"
-                alt="ESystemLK Logo"
-                fill
-                className="object-contain p-20"
-             />
+    <div className="min-h-screen bg-muted/40 flex items-center justify-center p-4">
+       <div className="w-full max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 bg-card rounded-2xl shadow-strong overflow-hidden">
+          {/* Left Panel */}
+          <div className="hidden md:flex flex-col items-center justify-between bg-primary text-primary-foreground p-10 relative">
+             <div className="absolute inset-0 opacity-10">
+                <Image 
+                    src="/lgn.png"
+                    alt="Background"
+                    fill
+                    className="object-cover"
+                />
+             </div>
+             <div className="relative z-10 w-full">
+                <div className="flex items-center gap-2">
+                    <Image
+                        src="/lg.png"
+                        alt="Vishwa Vidarshana Logo"
+                        width={40}
+                        height={40}
+                        className="rounded-lg"
+                    />
+                    <span className="text-lg font-bold">Vishwa Vidarshana</span>
+                </div>
+             </div>
+             <div className="relative z-10 text-center">
+                <h2 className="text-3xl font-bold">Welcome to the Platform</h2>
+                <p className="text-primary-foreground/80 mt-2">Your one-stop solution for digital excellence.</p>
+             </div>
           </div>
-          <div className="relative z-10 text-center mt-auto">
-             <h1 className="text-3xl font-bold text-foreground">ESystemLK</h1>
-             <p className="text-muted-foreground mt-2">The best and the most professional service provider</p>
-             <p className="text-xs text-muted-foreground mt-20">© ESystemLK. All rights reserved</p>
+          
+          {/* Right Panel */}
+          <div className="flex items-center justify-center p-8">
+             <Suspense fallback={<AuthPageSkeleton />}>
+                <AuthForms />
+             </Suspense>
           </div>
-       </div>
-
-       <div className="flex items-center justify-center p-4 md:p-8 bg-background">
-         <div className="mx-auto w-full max-w-sm p-8 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-lg shadow-strong">
-             <div className="grid gap-2 text-center mb-6">
-               <Link href="/" className="flex justify-center items-center gap-2">
-                   <Image src="/lg.png" alt="Logo" width={48} height={48} className="h-12 w-12" />
-               </Link>
-           </div>
-            <Suspense fallback={<AuthPageSkeleton />}>
-             <AuthForms />
-           </Suspense>
-         </div>
        </div>
     </div>
   );

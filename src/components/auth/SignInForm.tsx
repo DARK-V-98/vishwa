@@ -176,7 +176,6 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="bg-background border-border"
           />
         </div>
 
@@ -189,7 +188,6 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-background border-border"
               placeholder="Enter your password"
             />
             <Button
@@ -204,7 +202,7 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
           </div>
         </div>
 
-        <Button type="submit" className="w-full !mt-10 bg-primary hover:bg-primary/90 text-primary-foreground text-md py-6">
+        <Button type="submit" className="w-full !mt-10" variant="hero">
           Sign In
         </Button>
       </form>
