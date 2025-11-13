@@ -22,6 +22,11 @@ export default function AuthPage() {
   return (
     <div className="w-full min-h-screen flex items-center justify-center p-4">
         <div className="mx-auto grid w-[350px] gap-6">
+            <div className="grid gap-2 text-center">
+              <Link href="/" className="flex justify-center items-center gap-2">
+                  <Image src="/lg.png" alt="Logo" width={48} height={48} className="h-12 w-12" />
+              </Link>
+          </div>
            <Suspense fallback={<AuthPageSkeleton />}>
             <AuthForms />
           </Suspense>
