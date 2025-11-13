@@ -34,7 +34,7 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "About Me", path: "/about" },
     { name: "ESystemLK", path: "/esystemlk" },
-    { name: "Marketplace", path: "/marketplace" },
+    { name: "Game Top-up", path: "/freefire-topup" },
     { name: "Design Services", path: "/design-services" },
     { name: "Get a Quote", path: "/quotation-generator" },
     { name: "Contact", path: "/contact" },

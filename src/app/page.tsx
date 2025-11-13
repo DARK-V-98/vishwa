@@ -13,6 +13,7 @@ import {
   Zap,
   Shield,
   Users,
+  Gamepad2,
 } from "lucide-react";
 
 const Home = () => {
@@ -30,10 +31,10 @@ const Home = () => {
       link: "/design-services",
     },
     {
-      icon: ShoppingBag,
-      title: "Online Marketplace",
-      description: "Buy and sell products in our secure marketplace platform",
-      link: "/marketplace",
+      icon: Gamepad2,
+      title: "Game Top-up",
+      description: "Instantly top up your favorite games like Free Fire",
+      link: "/freefire-topup",
     },
     {
       icon: Building2,
