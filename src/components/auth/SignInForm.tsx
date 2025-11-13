@@ -141,19 +141,25 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
         router.push("/dashboard");
       }
     } catch (error: any) {
+      // Don't show a toast if the user closes the popup
+      if (error.code === 'auth/popup-closed-by-user') {
+        return;
+      }
       toast.error(error.message);
     }
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-center text-foreground">
-      <h2 className="text-3xl font-bold mb-2">Sign in</h2>
-      <p className="text-muted-foreground mb-8">
-        Don't have an account?{" "}
-        <Button variant="link" onClick={onToggle} className="p-0 h-auto text-primary">
-          Sign up
-        </Button>
-      </p>
+    <div className="w-full h-full flex flex-col justify-center text-foreground p-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold mb-2">Welcome Back!</h2>
+        <p className="text-muted-foreground">
+          Don't have an account?{" "}
+          <Button variant="link" onClick={onToggle} className="p-0 h-auto text-primary">
+            Sign up
+          </Button>
+        </p>
+      </div>
 
       <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
         <GoogleIcon />
