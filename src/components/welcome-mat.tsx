@@ -64,7 +64,7 @@ export default function WelcomeMat() {
   };
 
   if (isUserLoading) {
-    return <LoadingSpinner />;
+    return null;
   }
 
   return (
