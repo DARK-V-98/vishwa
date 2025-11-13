@@ -128,12 +128,6 @@ export default function TopupManagement() {
             finalImageUrl = await uploadImage(selectedFile);
         }
 
-        if (!finalImageUrl) {
-            toast.error("An image is required for the package.");
-            setIsSubmitting(false);
-            return;
-        }
-        
         const dataToSave = {
           name: formData.name,
           price: parseFloat(formData.price),
@@ -181,6 +175,10 @@ export default function TopupManagement() {
         toast.error(`Failed to delete package: ${err.message}`);
     }
   }
+  
+  const isValidUrl = (url: string | undefined): url is string => {
+    return typeof url === 'string' && (url.startsWith('http') || url.startsWith('/'));
+  }
 
   return (
     <div>
@@ -209,7 +207,7 @@ export default function TopupManagement() {
             <Card key={pkg.id} className="flex flex-col">
               <CardHeader className="text-center">
                  <div className="mx-auto w-20 h-20 flex items-center justify-center rounded-lg bg-muted mb-2 relative">
-                    {pkg.imageUrl ? (
+                    {isValidUrl(pkg.imageUrl) ? (
                         <Image src={pkg.imageUrl} alt={pkg.name} width={64} height={64} className="object-contain" />
                     ) : (
                         <ImageIcon className="h-8 w-8 text-muted-foreground" />
@@ -269,7 +267,7 @@ export default function TopupManagement() {
                     <Label htmlFor="image">Package Image</Label>
                     <div className="flex items-center gap-4">
                         <div className="w-24 h-24 rounded-md border border-dashed flex items-center justify-center bg-muted relative">
-                           {imagePreview ? (
+                           {isValidUrl(imagePreview) ? (
                              <Image src={imagePreview} alt="Preview" fill className="object-contain rounded-md" />
                            ) : (
                             <div className="text-center text-muted-foreground">
