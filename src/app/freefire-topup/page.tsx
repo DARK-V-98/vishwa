@@ -206,14 +206,14 @@ export default function FreefireTopupPage() {
                         >
                             <CardContent className="p-0 text-center relative flex flex-col h-full">
                                 <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2 z-10 bg-black/50 border-white/50" />
-                                <div className="aspect-[16/9] w-full flex items-center justify-center mb-2 relative bg-black/10">
+                                <div className="h-32 w-full flex items-center justify-center p-2 relative bg-black/10">
                                   {pkg.imageUrl ? (
-                                      <Image src={pkg.imageUrl} alt={pkg.name} layout="fill" className="object-cover" />
+                                      <Image src={pkg.imageUrl} alt={pkg.name} layout="fill" className="object-contain p-2" />
                                   ) : (
                                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                   )}
                                 </div>
-                                <div className="p-4 pt-0 space-y-1 flex-grow flex flex-col justify-between">
+                                <div className="p-4 pt-2 space-y-1 flex-grow flex flex-col justify-between">
                                   <p className="text-base font-bold flex-grow">{pkg.name}</p>
                                   <p className="text-md text-primary font-semibold">
                                     LKR {pkg.price.toLocaleString()}
