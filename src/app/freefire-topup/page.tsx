@@ -182,6 +182,34 @@ export default function FreefireTopupPage() {
           
           {/* Info Panel */}
           <div className="space-y-6 sticky top-24">
+             <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-strong">
+                <CardHeader>
+                    <CardTitle>Membership Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm text-muted-foreground">
+                    <p>Weekly/Monthly Memberships offer an abundance of instant and daily rewards.</p>
+                    
+                    <div className="space-y-2">
+                        <p><strong className="text-foreground">Weekly Membership Lite:</strong> An affordable choice, valid for 7 days.</p>
+                        <p><strong className="text-foreground">Weekly Rewards:</strong> Offers instant and daily rewards, valid for 7 days.</p>
+                        <p><strong className="text-foreground">Monthly Membership:</strong> Offers instant and daily rewards, valid for 30 days.</p>
+                    </div>
+
+                    <div>
+                        <h4 className="font-semibold text-foreground">Membership Bonus Diamonds</h4>
+                        <p>100 Bonus diamonds are provided when you subscribe for the first time. This offer is available only once for a specific membership purchase.</p>
+                    </div>
+                     <div>
+                        <h4 className="font-semibold text-foreground">Daily Check-in</h4>
+                        <ul className="list-disc list-inside space-y-1">
+                            <li>Daily rewards can be claimed every day within the validity of the subscription.</li>
+                            <li>If you logged in but missed that day’s check-in reward, you can reclaim it within 7 days via your mail.</li>
+                            <li>If you did not log in on a particular day, you can use Gold to make up for it and reclaim the check-in reward within 7 days.</li>
+                        </ul>
+                    </div>
+                </CardContent>
+            </Card>
+            
             <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-strong">
                 <CardHeader>
                     <CardTitle>How to find your Player ID?</CardTitle>
