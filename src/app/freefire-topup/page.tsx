@@ -317,12 +317,11 @@ export default function FreefireTopupPage() {
                     </ol>
                     <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                        <Image 
-                         src="https://picsum.photos/seed/ff-profile/400/225"
+                         src="/hf.png"
                          alt="Free Fire Profile Example"
                          width={400}
                          height={225}
                          className="rounded-md object-cover"
-                         data-ai-hint="game profile screenshot"
                        />
                     </div>
                 </CardContent>
@@ -359,5 +358,3 @@ export default function FreefireTopupPage() {
     </div>
   );
 }
-
-    
