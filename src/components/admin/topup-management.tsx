@@ -177,7 +177,7 @@ export default function TopupManagement() {
               <CardHeader className="text-center">
                  <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-lg bg-muted mb-2 relative">
                     {pkg.imageUrl ? (
-                        <Image src={pkg.imageUrl} alt={pkg.name} fill className="object-contain p-2" />
+                        <Image src={pkg.imageUrl} alt={pkg.name} width={48} height={48} className="object-contain" />
                     ) : (
                         <ImageIcon className="h-8 w-8 text-muted-foreground" />
                     )}
@@ -234,7 +234,9 @@ export default function TopupManagement() {
                     >
                         {availableIcons.map(icon => (
                             <Label key={icon.path} htmlFor={icon.path} className={`relative flex flex-col items-center justify-center rounded-md border-2 p-2 aspect-square cursor-pointer transition-colors ${formData.imageUrl === icon.path ? 'border-primary' : 'border-muted hover:border-accent'}`}>
-                                <Image src={icon.path} alt={icon.name} fill className="object-contain p-2" />
+                                <div className="relative w-12 h-12">
+                                    <Image src={icon.path} alt={icon.name} fill className="object-contain" />
+                                </div>
                                 <RadioGroupItem value={icon.path} id={icon.path} className="sr-only" />
                             </Label>
                         ))}

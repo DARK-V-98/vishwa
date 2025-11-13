@@ -208,7 +208,7 @@ export default function FreefireTopupPage() {
                                 <RadioGroupItem value={pkg.id} id={pkg.id} className="absolute top-2 right-2" />
                                 <div className="mx-auto w-16 h-16 flex items-center justify-center mb-2 relative">
                                   {pkg.imageUrl ? (
-                                      <Image src={pkg.imageUrl} alt={pkg.name} fill className="object-contain p-1" />
+                                      <Image src={pkg.imageUrl} alt={pkg.name} width={48} height={48} className="object-contain" />
                                   ) : (
                                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                   )}
