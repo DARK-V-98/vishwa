@@ -22,12 +22,12 @@ export default function GamesPage() {
             
             <h1 className="text-4xl md:text-6xl font-bold">
               <span className="bg-gradient-hero bg-clip-text text-transparent">
-                Esports Point Calculator
+                E-Sports Point Calculator
               </span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Create a tournament, add your teams, and track their points in real-time with this manual point calculator.
+                A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results as professional-looking images.
             </p>
           </div>
         </div>
@@ -35,11 +35,10 @@ export default function GamesPage() {
 
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
             <PointCalculator />
-          </div>
         </div>
       </section>
     </div>
   );
 }
+
