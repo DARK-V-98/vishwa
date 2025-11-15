@@ -11,6 +11,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import AdminChat from "@/components/admin/admin-chat";
 import TestimonialManagement from "@/components/admin/testimonial-management";
 import { doc } from "firebase/firestore";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface UserProfile {
   roles?: string[];
@@ -61,15 +62,18 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="chat" className="w-full">
-        <div className="w-full overflow-x-auto pb-2">
-            <TabsList className="whitespace-nowrap">
-              <TabsTrigger value="chat">Chat</TabsTrigger>
-              <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
-              <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
-              <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-              <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
-              <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
-            </TabsList>
+        <div className="w-full pb-2">
+            <ScrollArea className="w-full whitespace-nowrap rounded-md">
+              <TabsList className="inline-flex">
+                <TabsTrigger value="chat">Chat</TabsTrigger>
+                <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
+                <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
+                <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+                <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
+                <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
+              </TabsList>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
         </div>
         <TabsContent value="chat" className="mt-6 h-[75vh]">
             <AdminChat />

@@ -24,6 +24,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserProfile {
   roles?: string[];
+  username?: string;
+  email?: string;
 }
 
 export default function DashboardPage() {
@@ -51,9 +53,10 @@ export default function DashboardPage() {
     });
   };
   
-  const isAdmin = useMemo(() => {
-    return userProfile?.roles?.includes('admin') || user?.email === 'tikfese@gmail.com';
-  }, [userProfile, user?.email]);
+  const isAdminOrDeveloper = useMemo(() => {
+    if (!userProfile?.roles) return false;
+    return userProfile.roles.includes('admin') || userProfile.roles.includes('developer');
+  }, [userProfile]);
 
   const menuItems = useMemo(() => {
     const items = [
@@ -63,12 +66,12 @@ export default function DashboardPage() {
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },
     ];
     
-    if (isAdmin) {
+    if (isAdminOrDeveloper) {
         items.push({ id: 'admin', label: 'Admin Panel', icon: Shield, href: '/admin', description: 'Manage users and site data' });
     }
 
     return items;
-  }, [isAdmin]);
+  }, [isAdminOrDeveloper]);
 
   if (isUserLoading || isProfileLoading || !user) {
     return (
@@ -90,7 +93,7 @@ export default function DashboardPage() {
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] pt-24 pb-12">
         <main className="flex-1 w-full max-w-5xl mx-auto p-4 md:p-8">
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold">Welcome, {user.displayName || user.email}!</h1>
+                <h1 className="text-4xl font-bold">Welcome, {user.displayName || userProfile?.username || user.email}!</h1>
                 <p className="text-muted-foreground max-w-xl mx-auto">
                     This is your central hub. Manage projects, appointments, and more.
                 </p>
@@ -98,6 +101,7 @@ export default function DashboardPage() {
                     {userProfile?.roles?.map(role => (
                         <Badge key={role} variant="secondary" className="capitalize"><UserIcon className="h-4 w-4 mr-1" /> {role}</Badge>
                     ))}
+                    {isAdminOrDeveloper && <Badge variant="destructive">Admin Access</Badge>}
                 </div>
             </div>
 
@@ -132,5 +136,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
