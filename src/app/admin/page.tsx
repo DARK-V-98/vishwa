@@ -62,8 +62,8 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="chat" className="w-full">
-        <ScrollArea className="w-full whitespace-nowrap">
-            <TabsList className="w-max">
+        <ScrollArea className="w-full whitespace-nowrap rounded-lg border">
+            <TabsList className="w-max p-2">
               <TabsTrigger value="chat">Chat</TabsTrigger>
               <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
               <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
@@ -72,22 +72,22 @@ export default function AdminPage() {
               <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
             </TabsList>
         </ScrollArea>
-        <TabsContent value="chat">
+        <TabsContent value="chat" className="mt-6">
             <AdminChat />
         </TabsContent>
-        <TabsContent value="topup-orders">
+        <TabsContent value="topup-orders" className="mt-6">
             <TopupOrderManagement />
         </TabsContent>
-        <TabsContent value="topup-packages">
+        <TabsContent value="topup-packages" className="mt-6">
             <TopupManagement />
         </TabsContent>
-         <TabsContent value="testimonials">
+         <TabsContent value="testimonials" className="mt-6">
             <TestimonialManagement />
         </TabsContent>
-        <TabsContent value="payment-settings">
+        <TabsContent value="payment-settings" className="mt-6">
             <PaymentSettings />
         </TabsContent>
-        <TabsContent value="listings">
+        <TabsContent value="listings" className="mt-6">
             <ListingManagement />
         </TabsContent>
       </Tabs>
