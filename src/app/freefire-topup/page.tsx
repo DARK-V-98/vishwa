@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFirestore, useCollection, useDoc, useUser, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, addDoc, serverTimestamp, doc } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,18 +37,23 @@ interface PaymentSettings {
     bankTransferEnabled: boolean;
 }
 
+interface UserProfile {
+    username?: string;
+}
+
 export default function FreefireTopupPage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const router = useRouter();
 
   const packagesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
     const packagesCollection = collection(firestore, 'topupPackages');
     return query(packagesCollection, orderBy('order'));
   }, [firestore]);
   const { data: packages, isLoading: packagesLoading, error: packagesError } = useCollection<Omit<TopupPackage, 'id'>>(packagesQuery);
   
-  const paymentSettingsDoc = useMemoFirebase(() => doc(firestore, 'settings', 'payment'), [firestore]);
+  const paymentSettingsDoc = useMemoFirebase(() => firestore ? doc(firestore, 'settings', 'payment') : null, [firestore]);
   const { data: paymentSettings, isLoading: settingsLoading } = useDoc<PaymentSettings>(paymentSettingsDoc);
 
   const [playerId, setPlayerId] = useState('');
@@ -57,7 +62,7 @@ export default function FreefireTopupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePlaceOrder = async () => {
-    if (!user) {
+    if (!user || !firestore) {
       toast.error('You must create an account to place an order.', {
         action: {
           label: "Sign Up / Log In",
@@ -66,6 +71,22 @@ export default function FreefireTopupPage() {
       });
       return;
     }
+
+    // Check if user profile is complete
+    const userDocRef = doc(firestore, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (!userDoc.exists() || !userDoc.data()?.username) {
+        toast.error("Please complete your profile to place an order.", {
+            description: "You'll be redirected to complete your profile.",
+            action: {
+                label: "Complete Profile",
+                onClick: () => router.push('/auth/complete-profile'),
+            }
+        });
+        router.push('/auth/complete-profile');
+        return;
+    }
+
 
     if (!playerId) {
       toast.error('Please enter your Player ID.');

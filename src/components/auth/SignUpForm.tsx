@@ -53,15 +53,15 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         id: user.uid,
         firstName: firstName,
         lastName: lastName,
-        username: `${firstName.toLowerCase()}${lastName.toLowerCase()}`.trim(),
         email: user.email,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         roles: ['customer']
+        // We are not setting a username here anymore.
       });
 
-      toast.success("Account created successfully!");
-      router.push("/auth/complete-profile");
+      toast.success("Account created successfully! Welcome.");
+      router.push("/dashboard");
     } catch (error: any) {
       toast.error(error.message);
     }
