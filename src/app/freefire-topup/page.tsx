@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
+import type { Metadata } from 'next';
 
 interface TopupPackage {
   id: string;
