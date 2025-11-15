@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -71,6 +72,7 @@ export default function PointCalculator() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [matchCount, setMatchCount] = useState(1);
   const [teamNameInput, setTeamNameInput] = useState('');
+  const [activeTab, setActiveTab] = useState('match-0');
   
   // UI State
   const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
@@ -80,6 +82,24 @@ export default function PointCalculator() {
     try {
       const savedTeams = localStorage.getItem('esportsTeams');
       const savedMatchCount = localStorage.getItem('esportsMatchCount');
+      const savedPreset = localStorage.getItem('esportsPreset');
+      const savedKillPoints = localStorage.getItem('esportsKillPoints');
+      const savedPlacementPoints = localStorage.getItem('esportsPlacementPoints');
+      const savedUseDefault = localStorage.getItem('esportsUseDefault');
+
+      if (savedPreset) setGamePreset(savedPreset);
+      const useDefault = savedUseDefault ? JSON.parse(savedUseDefault) : true;
+      setUseDefaultPlacement(useDefault);
+
+      if (useDefault) {
+          const presetKey = (savedPreset || 'freefire') as keyof typeof GAME_PRESETS;
+          setKillPointValue(GAME_PRESETS[presetKey].killPointValue);
+          setPlacementPoints(GAME_PRESETS[presetKey].placementPoints);
+      } else {
+          if(savedKillPoints) setKillPointValue(JSON.parse(savedKillPoints));
+          if(savedPlacementPoints) setPlacementPoints(JSON.parse(savedPlacementPoints));
+      }
+
       if (savedTeams) {
         const parsedTeams: Team[] = JSON.parse(savedTeams);
         const count = savedMatchCount ? parseInt(savedMatchCount, 10) : 1;
@@ -90,6 +110,8 @@ export default function PointCalculator() {
                 for (let i = team.matchScores.length; i < count; i++) {
                     team.matchScores.push({ kills: 0, placement: 25, bonus: 0 });
                 }
+            } else if (team.matchScores.length > count) {
+                team.matchScores = team.matchScores.slice(0, count);
             }
         });
 
@@ -107,10 +129,14 @@ export default function PointCalculator() {
     try {
         localStorage.setItem('esportsTeams', JSON.stringify(teams));
         localStorage.setItem('esportsMatchCount', String(matchCount));
+        localStorage.setItem('esportsPreset', gamePreset);
+        localStorage.setItem('esportsKillPoints', JSON.stringify(killPointValue));
+        localStorage.setItem('esportsPlacementPoints', JSON.stringify(placementPoints));
+        localStorage.setItem('esportsUseDefault', JSON.stringify(useDefaultPlacement));
     } catch (error) {
         console.error("Failed to save data to localStorage", error);
     }
-  }, [teams, matchCount]);
+  }, [teams, matchCount, gamePreset, killPointValue, placementPoints, useDefaultPlacement]);
 
   useEffect(() => {
     if (useDefaultPlacement) {
@@ -166,11 +192,33 @@ export default function PointCalculator() {
   };
   
   const handleAddMatch = () => {
-    setMatchCount(prev => prev + 1);
-    setTeams(prev => prev.map(team => ({
-        ...team,
-        matchScores: [...team.matchScores, { kills: 0, placement: 25, bonus: 0 }]
-    })))
+    setMatchCount(prev => {
+        const newCount = prev + 1;
+        setTeams(prevTeams => prevTeams.map(team => ({
+            ...team,
+            matchScores: [...team.matchScores, { kills: 0, placement: 25, bonus: 0 }]
+        })))
+        setActiveTab(`match-${newCount - 1}`);
+        return newCount;
+    });
+  };
+
+  const handleRemoveMatch = () => {
+    if (matchCount <= 1) return;
+    setMatchCount(prev => {
+        const newCount = prev - 1;
+        setTeams(prevTeams => prevTeams.map(team => ({
+            ...team,
+            matchScores: team.matchScores.slice(0, newCount)
+        })));
+        
+        // If active tab was the one being removed, switch to the new last match or overall
+        if (activeTab === `match-${newCount}`) {
+            setActiveTab(`match-${newCount - 1}`);
+        }
+        
+        return newCount;
+    });
   };
   
   const handleManualPlacementPointChange = (index: number, value: string) => {
@@ -199,6 +247,7 @@ export default function PointCalculator() {
   const clearLeaderboard = () => {
     setTeams([]);
     setMatchCount(1);
+    setActiveTab('match-0');
   };
 
   return (
@@ -221,8 +270,23 @@ export default function PointCalculator() {
               <div className="space-y-2">
                 <Label>Matches</Label>
                  <div className="flex items-center gap-2">
-                    <p className="text-muted-foreground text-sm">Total Matches: {matchCount}</p>
+                    <p className="text-muted-foreground text-sm">Total: {matchCount}</p>
                     <Button size="sm" variant="outline" onClick={handleAddMatch}>Add Match</Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="destructive" disabled={matchCount <= 1}>Remove Last</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove Last Match?</AlertDialogTitle>
+                          <AlertDialogDescription>This will permanently delete all scores for Match {matchCount}. This action cannot be undone.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleRemoveMatch}>Yes, remove it</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </div>
               </div>
             </CardContent>
@@ -296,7 +360,7 @@ export default function PointCalculator() {
               </AlertDialog>
             </CardHeader>
             <CardContent>
-                <Tabs defaultValue="match-0">
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="grid w-full grid-cols-5 mb-4">
                         {Array.from({length: matchCount}, (_, i) => (
                              <TabsTrigger key={i} value={`match-${i}`}>Match {i + 1}</TabsTrigger>
@@ -433,3 +497,5 @@ const OverallLeaderboard = ({ leaderboard, onDelete, onEdit }: { leaderboard: Ca
         </div>
     )
 }
+
+    
