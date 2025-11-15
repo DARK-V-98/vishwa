@@ -1,226 +1,103 @@
 
-/**
- * @file Firestore Security Rules
- * @version 2
- *
- * @corePhilosophy This ruleset enforces a strict user-ownership model for private data and allows public read access for certain collections like "services" and "products". User-specific data is stored under the /users/{userId} path.
- * @dataStructure The database is structured with top-level collections for `users`, `services`, and `products`. User-specific data (designOrders, appointments, quotationRequests) is stored in subcollections under each user's document.
- * @keySecurityDecisions
- *   - Listing all users is disallowed.
- *   - Users can read their own profile.
- *   - Read access is public for the `services` and `products` collections.
- *   - Write access to `products` is restricted to the owner (seller). The `products` documents have an `sellerId` field for owner validation.
- * @denormalizationForAuthorization The `products` collection uses the `sellerId` field to denormalize ownership, enabling secure write rules without additional `get()` calls.
- * @structuralSegregation User-specific data is stored under the `/users/{userId}` path, ensuring clear separation of private data.
- */
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Protects the user profiles collection.
-     * @path /users/{userId}
-     * @allow (get) - Authenticated user can read their own profile.
-     * @allow (create) - Authenticated user can create their own profile.
-     * @allow (list) - Denied, as listing all users is not permitted.
-     * @allow (update) - Authenticated user can update their own profile.
-     * @allow (delete) - Authenticated user can delete their own profile.
-     * @deny (get) - If the user is not the owner.
-     * @deny (create) - If the user is not authenticated.
-     * @deny (update) - If the user is not the owner.
-     * @deny (delete) - If the user is not the owner.
-     * @principle Enforces document ownership for all operations.
-     */
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // Check for primary admin email OR if the user has a specific custom role in their user document.
+      return request.auth.token.email == 'tikfese@gmail.com'
+             || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+                 && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']));
+    }
+
+    // User profiles can only be read/written by their owner.
+    // List access is denied to protect user privacy.
     match /users/{userId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isSignedIn() && isOwner(userId) && resource.data.id == userId;
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow read, update, delete: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn(); // Any signed-in user can create their own doc
+      allow list: if false; // Never allow listing all users
     }
 
-    /**
-     * @description Protects the design orders subcollection under a user's profile.
-     * @path /users/{userId}/designOrders/{designOrderId}
-     * @allow (create) - Authenticated user can create a design order under their own profile.
-     * @allow (get) - Authenticated user can get a design order under their own profile.
-     * @allow (list) - Authenticated user can list design orders under their own profile.
-     * @allow (update) - Authenticated user can update a design order under their own profile.
-     * @allow (delete) - Authenticated user can delete a design order under their own profile.
-     * @deny (create) - If the user is not authenticated or trying to create under another user's profile.
-     * @deny (update) - If the user is not the owner or the design order doesn't exist.
-     * @deny (delete) - If the user is not the owner or the design order doesn't exist.
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/designOrders/{designOrderId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isSignedIn() && isOwner(userId) && resource.data.userId == userId && resource != null;
-      allow delete: if isSignedIn() && isExistingOwner(userId) && resource.data.userId == userId;
-    }
-
-    /**
-     * @description Protects the appointments subcollection under a user's profile.
-     * @path /users/{userId}/appointments/{appointmentId}
-     * @allow (create) - Authenticated user can create an appointment under their own profile.
-     * @allow (get) - Authenticated user can get an appointment under their own profile.
-     * @allow (list) - Authenticated user can list appointments under their own profile.
-     * @allow (update) - Authenticated user can update an appointment under their own profile.
-     * @allow (delete) - Authenticated user can delete an appointment under their own profile.
-     * @deny (create) - If the user is not authenticated or trying to create under another user's profile.
-     * @deny (update) - If the user is not the owner or the appointment doesn't exist.
-     * @deny (delete) - If the user is not the owner or the appointment doesn't exist.
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/appointments/{appointmentId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isSignedIn() && isOwner(userId) && resource.data.userId == userId && resource != null;
-      allow delete: if isSignedIn() && isExistingOwner(userId) && resource.data.userId == userId;
-    }
-
-    /**
-     * @description Protects the quotation requests subcollection under a user's profile.
-     * @path /users/{userId}/quotationRequests/{quotationRequestId}
-     * @allow (create) - Authenticated user can create a quotation request under their own profile.
-     * @allow (get) - Authenticated user can get a quotation request under their own profile.
-     * @allow (list) - Authenticated user can list quotation requests under their own profile.
-     * @allow (update) - Authenticated user can update a quotation request under their own profile.
-     * @allow (delete) - Authenticated user can delete a quotation request under their own profile.
-     * @deny (create) - If the user is not authenticated or trying to create under another user's profile.
-     * @deny (update) - If the user is not the owner or the quotation request doesn't exist.
-     * @deny (delete) - If the user is not the owner or the quotation request doesn't exist.
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/quotationRequests/{quotationRequestId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isSignedIn() && isOwner(userId) && resource.data.userId == userId && resource != null;
-      allow delete: if isSignedIn() && isExistingOwner(userId) && resource.data.userId == userId;
-    }
-
-    /**
-     * @description Allows public read access to services and restricts write access.
-     * @path /services/{serviceId}
-     * @allow (create) - Not allowed.
-     * @allow (get) - Public read access.
-     * @allow (list) - Public read access.
-     * @allow (update) - Not allowed.
-     * @allow (delete) - Not allowed.
-     * @principle Provides public read access with no write access.
-     */
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    /**
-     * @description Allows public read access to products but restricts write access to the seller.
-     * @path /products/{productId}
-     * @allow (create) - Authenticated user can create a product if they are the seller.
-     * @allow (get) - Public read access.
-     * @allow (list) - Public read access.
-     * @allow (update) - Authenticated user can update a product if they are the seller and the product exists.
-     * @allow (delete) - Authenticated user can delete a product if they are the seller and the product exists.
-     *
-     * @allow (create) - Example: An authenticated user with uid "user123" can create a product with `data.sellerId` set to "user123".
-     * @deny (create) - Example: An unauthenticated user cannot create a product.
-     * @deny (update) - Example: A user with uid "user456" cannot update a product where `data.sellerId` is "user123".
-     *
-     * @principle Enforces public read access and owner-only writes, with validation for relational integrity (sellerId).
-     */
-    match /products/{productId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn() && request.resource.data.sellerId == request.auth.uid;
-      allow update: if isSignedIn() && isOwner(resource.data.sellerId) && resource != null;
-      allow delete: if isSignedIn() && isExistingOwner(resource.data.sellerId);
-    }
-
-    /**
-     * @description Allows public read access to top-up packages but restricts write access to admins or the specific owner.
-     * @path /topupPackages/{packageId}
-     * @allow (read) - Public read access for all.
-     * @allow (write) - Admin-only write access, or the app owner.
-     */
-    match /topupPackages/{packageId} {
-      allow read: if true;
-      allow write: if isSignedIn() && (isAdmin());
+    // User-specific subcollections are only accessible by their owner.
+    match /users/{userId}/{subcollection}/{docId} {
+      allow read, list, create, update, delete: if isSignedIn() && isOwner(userId);
     }
     
-    /**
-     * @description Manages top-up orders.
-     * @path /topupOrders/{orderId}
-     * @allow (create) - Anyone can create a new order.
-     * @allow (read, update, delete) - Admin-only access.
-     */
+    // Design Orders collection for admin management
+    match /designOrders/{orderId} {
+        allow read, list, update: if isSignedIn() && isAdmin();
+        allow create: if isSignedIn();
+    }
+    
+    // Projects collection for quotation generator
+    match /projects/{projectId} {
+        allow read, list, update: if isSignedIn() && isAdmin();
+        allow create: if isSignedIn();
+    }
+
+    // Services are public to read, but only admins can write.
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isAdmin();
+    }
+    
+    // Products are public to read.
+    // Writes are restricted to the product's seller or an admin.
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (isOwner(resource.data.sellerId) || isAdmin());
+    }
+
+    // Top-up packages are public to read, but only admins can write.
+    match /topupPackages/{packageId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isAdmin();
+    }
+    
+    // Anyone can create a top-up order.
+    // Only the user who created it or an admin can read it.
+    // Only admins can update/delete it.
     match /topupOrders/{orderId} {
       allow create: if true;
-      allow read: if isSignedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow read: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
       allow update, delete: if isSignedIn() && isAdmin();
     }
 
-    /**
-     * @description Manages platform settings like payment options.
-     * @path /settings/payment
-     * @allow (read) - Public read access for all.
-     * @allow (write) - Admin-only write access.
-     */
-    match /settings/payment {
+    // Global settings are public to read, but only admins can write.
+    match /settings/{settingId} {
         allow read: if true;
         allow write: if isSignedIn() && isAdmin();
     }
 
-    /**
-     * @description Manages chat threads. Only admins can list all chats.
-     * Users can read/write their own chat document.
-     * @path /chats
-     */
+    // Chat documents can only be accessed by their owner or an admin.
+    // Only an admin can list all chats for the admin panel.
     match /chats/{userId} {
-        allow list: if isSignedIn() && isAdmin();
         allow get, create, update: if isSignedIn() && (isOwner(userId) || isAdmin());
-    }
+        allow list: if isSignedIn() && isAdmin();
 
-    /**
-     * @description Manages chat messages within a thread.
-     * @path /chats/{userId}/messages/{messageId}
-     */
-    match /chats/{userId}/messages/{messageId} {
-        allow read, list: if isSignedIn() && (isOwner(userId) || isAdmin());
-        allow create: if isSignedIn() && (isOwner(userId) || isAdmin()) && request.resource.data.senderId == request.auth.uid;
+        // Messages within a chat can be read by the user or an admin.
+        // Messages can only be created by the sender.
+        match /messages/{messageId} {
+            allow read, list: if isSignedIn() && (isOwner(userId) || isAdmin());
+            allow create: if isSignedIn() && isOwner(request.resource.data.senderId);
+        }
     }
     
-    /**
-     * @description Manages testimonials.
-     * @path /testimonials/{testimonialId}
-     * @allow (read) - Publicly readable by anyone.
-     * @allow (write) - Admin-only write access.
-     */
+    // Testimonials are public to read, but only admins can write.
     match /testimonials/{testimonialId} {
         allow read: if true;
         allow write: if isSignedIn() && isAdmin();
     }
   }
-
-  function isSignedIn() {
-    return request.auth != null;
-  }
-
-  function isOwner(userId) {
-    return request.auth.uid == userId;
-  }
-
-  function isExistingOwner(userId) {
-    return isOwner(userId) && resource != null;
-  }
-
-  function isAdmin() {
-      // Check for the primary admin email OR if the user has an 'admin' or 'developer' role via custom claims.
-      return request.auth.token.email == 'tikfese@gmail.com' || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']));
-  }
 }
-
-    
