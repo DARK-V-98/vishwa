@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,6 +10,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import ChatInterface from '@/components/chat/chat-interface';
+import { cn } from '@/lib/utils';
+import { MessageSquare } from 'lucide-react';
 
 interface Chat {
   id: string;
@@ -23,15 +26,11 @@ export default function AdminChat() {
   const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
 
   const chatsQuery = useMemoFirebase(() => {
-    // This query will only be created if firestore is available.
-    // The useCollection hook will handle the null case and wait.
     if (!firestore) return null;
     const chatsCollection = collection(firestore, 'chats');
     return query(chatsCollection, orderBy('updatedAt', 'desc'));
   }, [firestore]);
 
-  // The hook will now only run the query if `chatsQuery` is not null.
-  // Security rules on the backend will ensure only admins can actually get the data.
   const { data: chats, isLoading: chatsLoading, error: chatsError } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
   
   const getInitials = (email: string) => email ? email.substring(0, 2).toUpperCase() : '??';
@@ -48,7 +47,7 @@ export default function AdminChat() {
   };
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col shadow-strong">
       <CardHeader className="flex-shrink-0">
         <CardTitle>Customer Chats</CardTitle>
         <CardDescription>
@@ -57,7 +56,10 @@ export default function AdminChat() {
       </CardHeader>
       <CardContent className="flex-grow grid md:grid-cols-3 gap-6 overflow-hidden">
         {/* Chat List */}
-        <div className="md:col-span-1 border-r pr-4 flex flex-col h-full">
+        <div className={cn(
+          "md:col-span-1 border-r pr-4 flex flex-col h-full transition-transform duration-300 ease-in-out",
+          selectedChatUserId ? "hidden md:flex" : "flex"
+        )}>
           <h3 className="text-lg font-semibold mb-4 flex-shrink-0">Conversations</h3>
           {chatsLoading && (
             <div className="space-y-3">
@@ -71,10 +73,13 @@ export default function AdminChat() {
                 <button
                   key={chat.id}
                   onClick={() => handleSelectChat(chat.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${selectedChatUserId === chat.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
+                  className={cn(
+                    "w-full text-left p-3 rounded-lg transition-colors",
+                    selectedChatUserId === chat.id ? 'bg-muted' : 'hover:bg-muted/50'
+                  )}
                 >
                   <div className="flex items-center gap-3">
-                      <Avatar>
+                      <Avatar className="border">
                           <AvatarFallback>{getInitials(chat.userEmail)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-grow truncate">
@@ -90,11 +95,15 @@ export default function AdminChat() {
         </div>
 
         {/* Chat Window */}
-        <div className="md:col-span-2 flex flex-col h-full overflow-hidden">
+        <div className={cn(
+          "md:col-span-2 flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out",
+          selectedChatUserId ? "flex" : "hidden md:flex"
+        )}>
           {selectedChatUserId ? (
-            <ChatInterface userId={selectedChatUserId} />
+            <ChatInterface userId={selectedChatUserId} onBack={() => setSelectedChatUserId(null)} />
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center bg-muted rounded-lg">
+                <MessageSquare className="h-12 w-12 text-muted-foreground mb-4"/>
               <p className="text-lg font-semibold">Select a conversation</p>
               <p className="text-sm text-muted-foreground">Choose a chat from the left to start messaging.</p>
             </div>

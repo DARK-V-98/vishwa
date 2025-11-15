@@ -33,7 +33,7 @@ export default function MessagesPage() {
                 <p className="text-muted-foreground">Chat directly with our support team.</p>
             </div>
 
-            <Card className="flex-grow flex flex-col overflow-hidden">
+            <Card className="flex-grow flex flex-col overflow-hidden shadow-strong">
                 <CardHeader className="flex-shrink-0">
                     <CardTitle>Admin Chat</CardTitle>
                     <CardDescription>Ask questions about your orders or our services.</CardDescription>

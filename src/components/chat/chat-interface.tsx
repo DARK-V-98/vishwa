@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, MessageSquarePlus, BrainCircuit } from 'lucide-react';
 import { formatRelative } from 'date-fns';
+import { Skeleton } from '../ui/skeleton';
 
 interface Message {
   id: string;
@@ -20,17 +21,20 @@ interface Message {
 
 interface ChatInterfaceProps {
   userId: string;
+  onBack?: () => void; // Optional: for mobile view in admin panel
 }
 
-export default function ChatInterface({ userId }: ChatInterfaceProps) {
+export default function ChatInterface({ userId, onBack }: ChatInterfaceProps) {
   const { user: currentUser } = useUser();
   const firestore = useFirestore();
   const [newMessage, setNewMessage] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
+  // This is a placeholder for admin identification. A robust solution would use custom claims.
   const isAdminView = currentUser?.email === 'tikfese@gmail.com';
 
   const messagesQuery = useMemoFirebase(() => {
+    if (!firestore || !userId) return null;
     const messagesCollection = collection(firestore, 'chats', userId, 'messages');
     return query(messagesCollection, orderBy('timestamp', 'asc'));
   }, [firestore, userId]);
@@ -44,10 +48,10 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
         viewport.scrollTop = viewport.scrollHeight;
       }, 100);
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || !currentUser) return;
+    if (!text.trim() || !currentUser || !firestore) return;
 
     const textToSend = text;
     setNewMessage('');
@@ -55,28 +59,32 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     const messagesCollection = collection(firestore, 'chats', userId, 'messages');
     const chatDocRef = doc(firestore, 'chats', userId);
 
-    await addDoc(messagesCollection, {
-      text: textToSend,
-      senderId: currentUser.uid,
-      timestamp: serverTimestamp(),
-    });
-    
-    const updateData: any = {
-        lastMessage: textToSend,
-        updatedAt: serverTimestamp(),
-    };
+    try {
+        await addDoc(messagesCollection, {
+            text: textToSend,
+            senderId: currentUser.uid,
+            timestamp: serverTimestamp(),
+        });
+        
+        const updateData: any = {
+            lastMessage: textToSend,
+            updatedAt: serverTimestamp(),
+        };
 
-    if (isAdminView) {
-        updateData.isReadByAdmin = true;
-    } else {
-        updateData.isReadByAdmin = false;
-        if (currentUser.email) {
-          updateData.userEmail = currentUser.email;
-          updateData.userId = currentUser.uid;
+        if (isAdminView) {
+            updateData.isReadByAdmin = true;
+        } else {
+            updateData.isReadByAdmin = false;
+            if (currentUser.email) {
+              updateData.userEmail = currentUser.email;
+              updateData.userId = currentUser.uid;
+            }
         }
+        
+        await setDoc(chatDocRef, updateData, { merge: true });
+    } catch (e) {
+        console.error("Failed to send message: ", e);
     }
-    
-    await setDoc(chatDocRef, updateData, { merge: true });
   }
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -85,9 +93,6 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   };
   
   const getInitials = (id: string) => (id || 'U').substring(0, 2).toUpperCase();
-  
-  // This is a placeholder for admin identification. A robust solution would use custom claims.
-  const isSenderAdmin = (senderId: string) => senderId === 'gS5p2W02a2PSZ8J3a3aRLe3HxyE3';
 
   const suggestionMessages = isAdminView
   ? ["Can you please provide your order ID?", "How can I assist you today?"]
@@ -95,9 +100,20 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
 
   return (
     <div className="flex flex-col h-full w-full bg-background rounded-b-lg">
+       {onBack && (
+        <div className="p-2 border-b md:hidden">
+            <Button variant="ghost" onClick={onBack}>&larr; Back to conversations</Button>
+        </div>
+      )}
       <ScrollArea className="flex-grow pr-4 -mr-4" ref={scrollAreaRef}>
         <div className="space-y-4 p-4">
-          {isLoading && <p className="text-center text-muted-foreground">Loading messages...</p>}
+          {isLoading && (
+              <div className="space-y-4">
+                  <div className="flex items-end gap-2"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-12 w-2/3" /></div>
+                  <div className="flex items-end gap-2 justify-end"><Skeleton className="h-12 w-1/2" /><Skeleton className="h-10 w-10 rounded-full" /></div>
+                  <div className="flex items-end gap-2"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-8 w-1/3" /></div>
+              </div>
+          )}
           {messages && messages.length === 0 && !isLoading && (
              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
                 <MessageSquarePlus className="h-10 w-10 mb-4" />
@@ -114,13 +130,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
               <div key={msg.id} className={`flex items-end gap-2.5 ${isCurrentUserMsg ? 'justify-end' : ''}`}>
                 {!isCurrentUserMsg && (
                   <Avatar className={`${showAvatar ? 'visible' : 'invisible'} border`}>
-                    {isSenderAdmin(msg.senderId) ? (
-                      <div className="flex items-center justify-center h-full w-full bg-muted">
-                        <BrainCircuit className="h-6 w-6 text-foreground" />
-                      </div>
-                    ) : (
-                      <AvatarFallback>{getInitials(userId)}</AvatarFallback>
-                    )}
+                    <AvatarFallback>{getInitials(userId)}</AvatarFallback>
                   </Avatar>
                 )}
                 <div className={`flex flex-col gap-1 max-w-[70%]`}>
@@ -143,7 +153,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
           })}
         </div>
       </ScrollArea>
-      <div className="flex-shrink-0 p-4 border-t">
+      <div className="flex-shrink-0 p-4 border-t bg-background">
         {!isLoading && (
           <div className="pb-2 flex flex-wrap gap-2">
               {suggestionMessages.map(text => (
