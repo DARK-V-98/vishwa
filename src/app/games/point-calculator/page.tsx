@@ -1,8 +1,7 @@
-
 import PointCalculator from "@/components/games/point-calculator";
 import { Gamepad2 } from "lucide-react";
 
-export default function GamesPage() {
+export default function PointCalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <section className="pt-24 pb-12 md:pt-32 md:pb-16">

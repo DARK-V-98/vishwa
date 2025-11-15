@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -9,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, Trash2, Crown, Medal, Trophy, ArrowDown, ArrowUp, RefreshCw, Edit, Save, X, Settings, Download, Share2, Info } from 'lucide-react';
+import { PlusCircle, Trash2, Crown, Medal, Trophy, RefreshCw, Edit, Save, X, Settings, Download, Info } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,7 +25,7 @@ interface Team {
   totalPoints: number;
 }
 
-const DEFAULT_PLACEMENT_POINTS = [15, 12, 10, 8, 6, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0];
+const DEFAULT_PLACEMENT_POINTS = [15, 12, 10, 8, 6, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const RankIcon = ({ rank }: { rank: number }) => {
   if (rank === 1) return <Crown className="h-5 w-5 text-yellow-500" />;
@@ -77,7 +76,7 @@ export default function PointCalculator() {
   }, [leaderboard]);
 
   const sortedLeaderboard = useMemo(() => {
-    return [...leaderboard].sort((a, b) => b.totalPoints - a.totalPoints);
+    return [...leaderboard].sort((a, b) => b.totalPoints - a.totalPoints || b.kills - a.kills);
   }, [leaderboard]);
 
   const handleManualPlacementPointChange = (index: number, value: string) => {
@@ -91,10 +90,11 @@ export default function PointCalculator() {
     if (!teamName.trim()) return;
 
     const placePoints = useDefaultPlacement
-      ? DEFAULT_PLACEMENT_POINTS[placement - 1]
-      : manualPlacementPoints[placement - 1];
+      ? DEFAULT_PLACEMENT_POINTS[placement - 1] ?? 0
+      : manualPlacementPoints[placement - 1] ?? 0;
       
-    const totalPoints = (kills * killPointValue) + placePoints + bonusPoints;
+    const killPointsTotal = kills * killPointValue;
+    const totalPoints = killPointsTotal + placePoints + bonusPoints;
 
     setCalculatedResult({
       id: Date.now(),
@@ -102,7 +102,7 @@ export default function PointCalculator() {
       kills,
       placement,
       bonus: bonusPoints,
-      killPoints: kills * killPointValue,
+      killPoints: killPointsTotal,
       placePoints,
       totalPoints
     });
@@ -112,21 +112,19 @@ export default function PointCalculator() {
     if (calculatedResult) {
       const existingTeamIndex = leaderboard.findIndex(t => t.name.toLowerCase() === calculatedResult.name.toLowerCase());
       if(existingTeamIndex > -1){
-        // Update existing team
         const updatedLeaderboard = [...leaderboard];
+        const existingTeam = updatedLeaderboard[existingTeamIndex];
         updatedLeaderboard[existingTeamIndex] = {
-          ...updatedLeaderboard[existingTeamIndex],
-          kills: updatedLeaderboard[existingTeamIndex].kills + calculatedResult.kills,
-          bonus: updatedLeaderboard[existingTeamIndex].bonus + calculatedResult.bonus,
-          killPoints: updatedLeaderboard[existingTeamIndex].killPoints + calculatedResult.killPoints,
-          placePoints: updatedLeaderboard[existingTeamIndex].placePoints + calculatedResult.placePoints,
-          totalPoints: updatedLeaderboard[existingTeamIndex].totalPoints + calculatedResult.totalPoints,
-          // Placement is not aggregated, so we might just keep the last one
+          ...existingTeam,
+          kills: existingTeam.kills + calculatedResult.kills,
+          bonus: existingTeam.bonus + calculatedResult.bonus,
+          killPoints: existingTeam.killPoints + calculatedResult.killPoints,
+          placePoints: existingTeam.placePoints + calculatedResult.placePoints,
+          totalPoints: existingTeam.totalPoints + calculatedResult.totalPoints,
           placement: calculatedResult.placement,
         }
         setLeaderboard(updatedLeaderboard);
       } else {
-        // Add new team
         setLeaderboard(prev => [...prev, calculatedResult]);
       }
       resetForm();
@@ -157,8 +155,9 @@ export default function PointCalculator() {
   const exportResultAsImage = () => {
     if (resultCardRef.current) {
         html2canvas(resultCardRef.current, { 
-            backgroundColor: null, // Transparent background
-            useCORS: true 
+            backgroundColor: null,
+            useCORS: true, 
+            scale: 2 
         }).then(canvas => {
             const link = document.createElement('a');
             link.download = `result-${calculatedResult?.name || 'team'}.png`;
@@ -171,7 +170,6 @@ export default function PointCalculator() {
   return (
     <TooltipProvider>
       <div className="grid lg:grid-cols-3 gap-8 items-start">
-        {/* Left Panels: Calculator & Settings */}
         <div className="lg:col-span-1 space-y-8 sticky top-24">
           <Card className="shadow-strong border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
@@ -202,30 +200,31 @@ export default function PointCalculator() {
                   <Label htmlFor="bonusPoints">Bonus Points (Optional)</Label>
                   <Input id="bonusPoints" type="number" value={bonusPoints} onChange={e => setBonusPoints(parseInt(e.target.value) || 0)} />
                 </div>
-                <Button type="submit" className="w-full">Calculate Points</Button>
+                <Button type="submit" className="w-full" variant="hero">Calculate Points</Button>
               </form>
             </CardContent>
           </Card>
 
           {calculatedResult && (
-             <Card className="shadow-strong border-primary/50 bg-gradient-to-br from-primary/10 to-primary/20" id="result-card">
-                 <div ref={resultCardRef} className="p-6 bg-transparent">
+             <Card className="shadow-strong border-primary/50 bg-card/70 backdrop-blur-sm" id="result-card">
+                 <div ref={resultCardRef} className="p-6 bg-transparent relative">
+                    <div className="absolute inset-0 bg-black/50 -z-10"></div>
                     <CardHeader className="text-center p-0 mb-4">
-                        <CardDescription>Match Result</CardDescription>
-                        <CardTitle className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent">{calculatedResult.name}</CardTitle>
+                        <CardDescription className="text-primary">Match Result</CardDescription>
+                        <CardTitle className="text-3xl font-bold text-white">{calculatedResult.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="text-center p-0">
-                        <div className="text-6xl font-bold text-primary mb-4">{calculatedResult.totalPoints} <span className="text-2xl text-muted-foreground">PTS</span></div>
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                            <div className="bg-card/50 p-2 rounded-md"><div className="font-bold">{calculatedResult.kills}</div><div className="text-muted-foreground">Kills</div></div>
-                            <div className="bg-card/50 p-2 rounded-md"><div className="font-bold">#{calculatedResult.placement}</div><div className="text-muted-foreground">Place</div></div>
-                            <div className="bg-card/50 p-2 rounded-md"><div className="font-bold">{calculatedResult.bonus}</div><div className="text-muted-foreground">Bonus</div></div>
+                        <div className="text-6xl font-bold text-primary mb-4">{calculatedResult.totalPoints} <span className="text-2xl text-white/80">PTS</span></div>
+                        <div className="grid grid-cols-3 gap-2 text-sm text-white">
+                            <div className="bg-white/10 p-2 rounded-md"><div className="font-bold text-lg">{calculatedResult.killPoints}</div><div className="text-white/60">Kill Pts</div></div>
+                            <div className="bg-white/10 p-2 rounded-md"><div className="font-bold text-lg">{calculatedResult.placePoints}</div><div className="text-white/60">Place Pts</div></div>
+                            <div className="bg-white/10 p-2 rounded-md"><div className="font-bold text-lg">{calculatedResult.bonus}</div><div className="text-white/60">Bonus</div></div>
                         </div>
                     </CardContent>
                 </div>
-                <CardContent className="p-6 pt-0">
+                <CardContent className="p-6 pt-4">
                     <div className="flex gap-2 mt-4">
-                        <Button className="w-full" onClick={addToLeaderboard}><PlusCircle className="mr-2 h-4 w-4"/> Add to Leaderboard</Button>
+                        <Button className="w-full" onClick={addToLeaderboard} variant="secondary"><PlusCircle className="mr-2 h-4 w-4"/> Add to Leaderboard</Button>
                         <Button variant="outline" onClick={exportResultAsImage}><Download className="mr-2 h-4 w-4"/> Export</Button>
                         <Button variant="ghost" onClick={resetForm}><RefreshCw className="h-4 w-4"/></Button>
                     </div>
@@ -240,7 +239,7 @@ export default function PointCalculator() {
             <CardContent className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="killPointValue" className="flex items-center gap-2">Points per Kill 
-                      <Tooltip><TooltipTrigger><Info className="h-4 w-4 text-muted-foreground"/></TooltipTrigger><TooltipContent>Set the number of points awarded for each kill.</TooltipContent></Tooltip>
+                      <Tooltip><TooltipTrigger type="button"><Info className="h-4 w-4 text-muted-foreground"/></TooltipTrigger><TooltipContent>Set the number of points awarded for each kill.</TooltipContent></Tooltip>
                     </Label>
                     <Input id="killPointValue" type="number" min="0" value={killPointValue} onChange={e => setKillPointValue(parseInt(e.target.value) || 0)} />
                 </div>
@@ -266,13 +265,12 @@ export default function PointCalculator() {
           </Card>
         </div>
 
-        {/* Right Panel: Leaderboard */}
         <div className="lg:col-span-2">
           <Card className="shadow-strong border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Tournament Leaderboard</CardTitle>
-                <CardDescription>Teams are ranked by total points.</CardDescription>
+                <CardDescription>Teams are ranked by total points, then kills.</CardDescription>
               </div>
                <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -297,7 +295,7 @@ export default function PointCalculator() {
                     <TableRow>
                       <TableHead className="w-[50px]">Rank</TableHead>
                       <TableHead>Team</TableHead>
-                      <TableHead className="text-center">Total Kills</TableHead>
+                      <TableHead className="text-center">Kills</TableHead>
                       <TableHead className="text-center">Total Pts</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -321,7 +319,15 @@ export default function PointCalculator() {
                           <TableCell className="text-right">
                             <div className="flex justify-end items-center gap-2">
                               <Button size="icon" variant="ghost" onClick={() => setEditingRowId(team.id)}><Edit className="h-4 w-4" /></Button>
-                              <Button size="icon" variant="ghost" className="text-destructive" onClick={() => deleteLeaderboardRow(team.id)}><Trash2 className="h-4 w-4" /></Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader><AlertDialogTitle>Delete {team.name}?</AlertDialogTitle><AlertDialogDescription>This will permanently remove the team and their score from the leaderboard.</AlertDialogDescription></AlertDialogHeader>
+                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deleteLeaderboardRow(team.id)}>Delete</AlertDialogAction></AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </TableCell>
                         </TableRow>
