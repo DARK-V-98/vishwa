@@ -30,63 +30,59 @@ export default function AdminChat() {
   const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[75vh] flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <CardTitle>Customer Chats</CardTitle>
         <CardDescription>
           Select a chat from the sidebar to view the conversation and respond.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid md:grid-cols-3 gap-6 h-[70vh]">
-          {/* Chat List */}
-          <div className="md:col-span-1 border-r pr-4">
-            <h3 className="text-lg font-semibold mb-4">Conversations</h3>
-            {chatsLoading && (
-              <div className="space-y-3">
-                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
-              </div>
-            )}
-            {chatsError && <p className="text-destructive text-sm">Failed to load chats.</p>}
-            <ScrollArea className="h-full">
-              <div className="space-y-2">
-                {chats?.map(chat => (
-                  <button
-                    key={chat.id}
-                    onClick={() => setSelectedChatUserId(chat.id)}
-                    className={`w-full text-left p-3 rounded-lg transition-colors ${selectedChatUserId === chat.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
-                  >
-                    <div className="flex items-center gap-3">
-                        <Avatar>
-                            <AvatarFallback>{getInitials(chat.userEmail)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-grow truncate">
-                            <p className="font-semibold truncate">{chat.userEmail}</p>
-                            <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
-                        </div>
-                        {!chat.isReadByAdmin && <Badge variant="destructive">New</Badge>}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
+      <CardContent className="flex-grow grid md:grid-cols-3 gap-6 overflow-hidden">
+        {/* Chat List */}
+        <div className="md:col-span-1 border-r pr-4 flex flex-col">
+          <h3 className="text-lg font-semibold mb-4 flex-shrink-0">Conversations</h3>
+          {chatsLoading && (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+            </div>
+          )}
+          {chatsError && <p className="text-destructive text-sm">Failed to load chats.</p>}
+          <ScrollArea className="flex-grow">
+            <div className="space-y-2">
+              {chats?.map(chat => (
+                <button
+                  key={chat.id}
+                  onClick={() => setSelectedChatUserId(chat.id)}
+                  className={`w-full text-left p-3 rounded-lg transition-colors ${selectedChatUserId === chat.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
+                >
+                  <div className="flex items-center gap-3">
+                      <Avatar>
+                          <AvatarFallback>{getInitials(chat.userEmail)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-grow truncate">
+                          <p className="font-semibold truncate">{chat.userEmail}</p>
+                          <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
+                      </div>
+                      {!chat.isReadByAdmin && <Badge variant="destructive">New</Badge>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
 
-          {/* Chat Window */}
-          <div className="md:col-span-2 flex flex-col h-full">
-            {selectedChatUserId ? (
-              <ChatInterface userId={selectedChatUserId} />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center bg-muted rounded-lg">
-                <p className="text-lg font-semibold">Select a conversation</p>
-                <p className="text-sm text-muted-foreground">Choose a chat from the left to start messaging.</p>
-              </div>
-            )}
-          </div>
+        {/* Chat Window */}
+        <div className="md:col-span-2 flex flex-col h-full">
+          {selectedChatUserId ? (
+            <ChatInterface userId={selectedChatUserId} />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center bg-muted rounded-lg">
+              <p className="text-lg font-semibold">Select a conversation</p>
+              <p className="text-sm text-muted-foreground">Choose a chat from the left to start messaging.</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   );
 }
-
-    

@@ -36,11 +36,11 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
 
   // Auto-scroll to bottom
   useEffect(() => {
-    if (scrollAreaRef.current) {
-        const scrollableView = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
-        if(scrollableView) {
-            scrollableView.scrollTop = scrollableView.scrollHeight;
-        }
+    const viewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      setTimeout(() => {
+        viewport.scrollTop = viewport.scrollHeight;
+      }, 100);
     }
   }, [messages]);
 
@@ -57,10 +57,12 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
       timestamp: serverTimestamp(),
     });
 
+    const userOnOtherSide = chats?.find(c => c.id === userId);
+
     // Update the parent chat doc for sorting and notifications
     await setDoc(chatDocRef, {
         userId: userId,
-        userEmail: isAdminView ? messages?.find(m => m.senderId !== currentUser.uid)?.senderId || 'User' : currentUser.email,
+        userEmail: isAdminView ? userOnOtherSide?.userEmail || 'User' : currentUser.email,
         lastMessage: text,
         updatedAt: serverTimestamp(),
         isReadByAdmin: isAdminView,
@@ -75,21 +77,27 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   const getInitials = (id: string) => id.substring(0, 2).toUpperCase();
   
   const isAdminMessage = (senderId: string) => {
-      // In a real app, this should be based on roles, but for now we'll use a hardcoded admin UID
-      // This is a placeholder UID for the admin account
-      return senderId === 'H2y0nKq3esS3dY3NcdiVymL9XQ23';
+    // THIS IS A PLACEHOLDER. In a real app, use custom claims.
+    return senderId === 'gS5p2W02a2PSZ8J3a3aRLe3HxyE3';
   }
 
   const suggestionMessages = isAdminView
-  ? ["What is your name?", "What is your contact number?"]
+  ? ["Please provide your name.", "What is your contact number?"]
   : ["Hello, I have a question about my order."];
 
+  const chatsCollection = useMemoFirebase(() => collection(firestore, 'chats'), [firestore]);
+  const chatsQuery = useMemoFirebase(() => query(chatsCollection, orderBy('updatedAt', 'desc')), [chatsCollection]);
+  const { data: chats } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
+  interface Chat {
+    id: string;
+    userEmail: string;
+  }
 
   return (
     <div className="flex flex-col h-full w-full">
-      <ScrollArea className="flex-grow pr-4" ref={scrollAreaRef}>
-        <div className="space-y-4">
-          {isLoading && <p>Loading messages...</p>}
+      <ScrollArea className="flex-grow pr-4 -mr-4" ref={scrollAreaRef}>
+        <div className="space-y-4 pr-4">
+          {isLoading && <p className="text-center text-muted-foreground">Loading messages...</p>}
           {messages && messages.length === 0 && !isLoading && (
              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
                 <MessageSquarePlus className="h-10 w-10 mb-4" />
@@ -121,7 +129,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
                         <p className="text-sm">{msg.text}</p>
                     </div>
                     {msg.timestamp && (
-                        <span className={`text-xs text-muted-foreground ${isCurrentUserMsg ? 'text-right' : 'text-left'}`}>
+                        <span className={`text-xs text-muted-foreground px-1 ${isCurrentUserMsg ? 'text-right' : 'text-left'}`}>
                             {formatRelative(new Date(msg.timestamp.seconds * 1000), new Date())}
                         </span>
                     )}
@@ -142,26 +150,28 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
           })}
         </div>
       </ScrollArea>
-      {messages && messages.length === 0 && !isLoading && (
-        <div className="py-2 flex flex-wrap gap-2">
-            {suggestionMessages.map(text => (
-                <Button key={text} variant="outline" size="sm" onClick={() => sendMessage(text)}>
-                    {text}
-                </Button>
-            ))}
-        </div>
-      )}
-      <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
-        <Input
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          autoComplete="off"
-        />
-        <Button type="submit" size="icon" disabled={!newMessage.trim()}>
-          <Send className="h-4 w-4" />
-        </Button>
-      </form>
+      <div className="flex-shrink-0 pt-4">
+        {messages && messages.length === 0 && !isLoading && (
+          <div className="pb-2 flex flex-wrap gap-2">
+              {suggestionMessages.map(text => (
+                  <Button key={text} variant="outline" size="sm" onClick={() => sendMessage(text)}>
+                      {text}
+                  </Button>
+              ))}
+          </div>
+        )}
+        <form onSubmit={handleSendMessage} className="flex gap-2">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            autoComplete="off"
+          />
+          <Button type="submit" size="icon" disabled={!newMessage.trim()}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
