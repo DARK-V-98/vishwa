@@ -71,7 +71,6 @@ export default function AdminPage() {
       return <div className="container py-12 pt-24">You do not have permission to view this page.</div>
   }
 
-
   return (
     <div className="container py-12 pt-24">
       <div className="text-center mb-12">
@@ -84,34 +83,35 @@ export default function AdminPage() {
       <Tabs defaultValue="chat" className="w-full">
         <ScrollArea className="w-full pb-2">
           <div className="overflow-x-auto whitespace-nowrap">
-                <TabsList>
-                    <TabsTrigger value="chat">Chat</TabsTrigger>
-                    <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
-                    <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
-                    <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-                    <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
-                    <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
-                </TabsList>
-            </div>
+            <TabsList>
+              <TabsTrigger value="chat">Chat</TabsTrigger>
+              <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
+              <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
+              <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+              <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
+              <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
+            </TabsList>
+          </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
+        
         <TabsContent value="chat" className="mt-6 h-[75vh]">
-            <AdminChat />
+          <AdminChat />
         </TabsContent>
         <TabsContent value="topup-orders" className="mt-6">
-            <TopupOrderManagement />
+          <TopupOrderManagement />
         </TabsContent>
         <TabsContent value="topup-packages" className="mt-6">
-            <TopupManagement />
+          <TopupManagement />
         </TabsContent>
-         <TabsContent value="testimonials" className="mt-6">
-            <TestimonialManagement />
+        <TabsContent value="testimonials" className="mt-6">
+          <TestimonialManagement />
         </TabsContent>
         <TabsContent value="payment-settings" className="mt-6">
-            <PaymentSettings />
+          <PaymentSettings />
         </TabsContent>
         <TabsContent value="listings" className="mt-6">
-            <ListingManagement />
+          <ListingManagement />
         </TabsContent>
       </Tabs>
     </div>
