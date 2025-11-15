@@ -178,11 +178,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Manages chat threads.
+     * @description Manages chat threads. A user can read/write their own chat document. Admins can read/write any chat document.
      * @path /chats/{userId}
      */
     match /chats/{userId} {
-        allow get, list, create, update: if isSignedIn() && (isOwner(userId) || isAdmin());
+        allow get, create, update: if isSignedIn() && (isOwner(userId) || isAdmin());
+        // Only admins can list all chats for the admin panel
+        allow list: if isSignedIn() && isAdmin();
     }
 
     /**
@@ -219,6 +221,7 @@ service cloud.firestore {
   }
 
   function isAdmin() {
-      return request.auth.token.email == 'tikfese@gmail.com';
+      // Check for the primary admin email OR if the user has an 'admin' or 'developer' role via custom claims.
+      return request.auth.token.email == 'tikfese@gmail.com' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
   }
 }
