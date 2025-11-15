@@ -21,7 +21,7 @@ export default function DesignStudioPage() {
         Bring your vision to life. Order custom logos and posts, manage feedback, and schedule previews all in one place.
       </p>
 
-      <div className="grid md:grid-cols-2 gap-12">
+      <div className="grid lg:grid-cols-2 gap-12 items-start">
         <DesignOrderForm />
 
         <div className="space-y-8">
@@ -81,5 +81,3 @@ export default function DesignStudioPage() {
     </div>
   );
 }
-
-    

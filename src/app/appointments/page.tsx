@@ -112,7 +112,7 @@ export default function AppointmentPage() {
                     <FormItem className="space-y-3">
                       <FormLabel>Meeting Type</FormLabel>
                       <FormControl>
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col sm:flex-row gap-4">
                           <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="online" /></FormControl>
                             <FormLabel className="font-normal">Online Meeting</FormLabel>

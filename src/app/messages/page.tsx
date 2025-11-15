@@ -27,13 +27,13 @@ export default function MessagesPage() {
     }
 
     return (
-        <div className="container py-12 pt-24" style={{ height: 'calc(100vh - 4rem)'}}>
+        <div className="container py-12 pt-24 h-screen max-h-[calc(100vh-4rem)] flex flex-col">
             <div className="mb-8 flex-shrink-0">
                 <h1 className="text-4xl font-bold mb-2">Messages</h1>
                 <p className="text-muted-foreground">Chat directly with our support team.</p>
             </div>
 
-            <Card className="flex-grow flex flex-col h-[calc(100%-10rem)]">
+            <Card className="flex-grow flex flex-col overflow-hidden">
                 <CardHeader className="flex-shrink-0">
                     <CardTitle>Admin Chat</CardTitle>
                     <CardDescription>Ask questions about your orders or our services.</CardDescription>

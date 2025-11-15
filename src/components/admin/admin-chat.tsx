@@ -46,7 +46,7 @@ export default function AdminChat() {
       </CardHeader>
       <CardContent className="flex-grow grid md:grid-cols-3 gap-6 overflow-hidden">
         {/* Chat List */}
-        <div className="md:col-span-1 border-r pr-4 flex flex-col">
+        <div className="md:col-span-1 border-r pr-4 flex flex-col h-full">
           <h3 className="text-lg font-semibold mb-4 flex-shrink-0">Conversations</h3>
           {chatsLoading && (
             <div className="space-y-3">
@@ -54,7 +54,7 @@ export default function AdminChat() {
             </div>
           )}
           {chatsError && <p className="text-destructive text-sm">Failed to load chats.</p>}
-          <ScrollArea className="flex-grow">
+          <ScrollArea className="flex-grow -mr-4 pr-4">
             <div className="space-y-2">
               {chats?.map(chat => (
                 <button
