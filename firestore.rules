@@ -113,11 +113,8 @@ service cloud.firestore {
      * @principle Provides public read access with no write access.
      */
     match /services/{serviceId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow write: if false;
     }
 
     /**
@@ -151,7 +148,7 @@ service cloud.firestore {
      */
     match /topupPackages/{packageId} {
       allow read: if true;
-      allow write: if isSignedIn() && (request.auth.token.admin == true || request.auth.token.developer == true || request.auth.token.email == 'tikfese@gmail.com');
+      allow write: if isSignedIn() && (isAdmin());
     }
     
     /**
@@ -178,13 +175,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Manages chat threads. A user can read/write their own chat document. Admins can read/write any chat document.
-     * @path /chats/{userId}
+     * @description Manages chat threads. Only admins can list all chats.
+     * Users can read/write their own chat document.
+     * @path /chats
      */
     match /chats/{userId} {
-        allow get, create, update: if isSignedIn() && (isOwner(userId) || isAdmin());
-        // Only admins can list all chats for the admin panel
         allow list: if isSignedIn() && isAdmin();
+        allow get, create, update: if isSignedIn() && (isOwner(userId) || isAdmin());
     }
 
     /**
@@ -222,6 +219,8 @@ service cloud.firestore {
 
   function isAdmin() {
       // Check for the primary admin email OR if the user has an 'admin' or 'developer' role via custom claims.
-      return request.auth.token.email == 'tikfese@gmail.com' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
+      return request.auth.token.email == 'tikfese@gmail.com' || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']));
   }
 }
+
+    
