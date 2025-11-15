@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -8,11 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, MessageSquarePlus, BrainCircuit, Sparkles } from 'lucide-react';
+import { Send, MessageSquarePlus } from 'lucide-react';
 import { formatRelative } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { toast } from 'sonner';
-import { generateChatSuggestion, type ChatSuggestionInput } from '@/ai/flows/chat-suggestion-flow';
 
 interface Message {
   id: string;
@@ -30,7 +28,6 @@ export default function ChatInterface({ userId, onBack }: ChatInterfaceProps) {
   const { user: currentUser } = useUser();
   const firestore = useFirestore();
   const [newMessage, setNewMessage] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   // This is a placeholder for admin identification. A robust solution would use custom claims.
@@ -96,28 +93,6 @@ export default function ChatInterface({ userId, onBack }: ChatInterfaceProps) {
     sendMessage(newMessage);
   };
   
-  const handleAiSuggestion = async () => {
-    if (!messages || messages.length === 0) {
-      toast.info("Cannot generate a suggestion for an empty chat.");
-      return;
-    }
-    setIsAiLoading(true);
-    try {
-      const chatHistory = messages.map(m => ({
-        role: m.senderId === currentUser?.uid ? 'admin' : 'user',
-        text: m.text,
-      }));
-
-      const result = await generateChatSuggestion({ history: chatHistory });
-      setNewMessage(result.suggestion);
-
-    } catch(err: any) {
-      toast.error("Could not get AI suggestion: " + err.message);
-    } finally {
-      setIsAiLoading(false);
-    }
-  }
-
   const getInitials = (id: string) => (id || 'U').substring(0, 2).toUpperCase();
 
   const suggestionMessages = isAdminView
@@ -187,12 +162,6 @@ export default function ChatInterface({ userId, onBack }: ChatInterfaceProps) {
                       {text}
                   </Button>
               ))}
-              {isAdminView && (
-                <Button variant="outline" size="sm" onClick={handleAiSuggestion} disabled={isAiLoading}>
-                  {isAiLoading ? <Sparkles className="mr-2 h-4 w-4 animate-spin" /> : <BrainCircuit className="mr-2 h-4 w-4" />}
-                  AI Suggestion
-                </Button>
-              )}
           </div>
         )}
         <form onSubmit={handleSendMessage} className="flex gap-2">
