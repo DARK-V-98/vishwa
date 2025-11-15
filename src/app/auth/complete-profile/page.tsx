@@ -77,5 +77,3 @@ export default function CompleteProfilePage() {
     </div>
   );
 }
-
-    

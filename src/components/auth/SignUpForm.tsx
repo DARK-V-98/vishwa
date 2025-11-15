@@ -61,7 +61,7 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
       });
 
       toast.success("Account created successfully!");
-      router.push("/dashboard");
+      router.push("/auth/complete-profile");
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -161,5 +161,3 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
     </>
   );
 }
-
-    
