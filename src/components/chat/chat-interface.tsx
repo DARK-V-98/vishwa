@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, addDoc, serverTimestamp, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -58,18 +58,19 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
       timestamp: serverTimestamp(),
     });
     
-    // Simplification: We may not know the other user's email here without an extra query.
-    // Let's rely on the information we have. If an admin is sending, they are updating the doc.
-    // If a user is sending, they update their own doc.
     const updateData: any = {
         lastMessage: textToSend,
         updatedAt: serverTimestamp(),
-        isReadByAdmin: isAdminView,
     };
 
-    if (!isAdminView && currentUser.email) {
-      updateData.userEmail = currentUser.email;
-      updateData.userId = currentUser.uid;
+    if (isAdminView) {
+        updateData.isReadByAdmin = true;
+    } else {
+        updateData.isReadByAdmin = false;
+        if (currentUser.email) {
+          updateData.userEmail = currentUser.email;
+          updateData.userId = currentUser.uid;
+        }
     }
     
     await setDoc(chatDocRef, updateData, { merge: true });
@@ -82,17 +83,15 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   
   const getInitials = (id: string) => (id || 'U').substring(0, 2).toUpperCase();
   
-  const isAdminMessage = (senderId: string) => {
-    // THIS IS A PLACEHOLDER. In a real app, use custom claims.
-    return senderId === 'gS5p2W02a2PSZ8J3a3aRLe3HxyE3';
-  }
+  // This is a placeholder for admin identification. A robust solution would use custom claims.
+  const isSenderAdmin = (senderId: string) => senderId === 'gS5p2W02a2PSZ8J3a3aRLe3HxyE3';
 
   const suggestionMessages = isAdminView
-  ? ["Please provide your name.", "What is your contact number?"]
-  : ["Hello, I have a question about my order."];
+  ? ["Can you please provide your order ID?", "How can I assist you today?"]
+  : ["Hello, I have a question about my order.", "I need help with a payment."];
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full bg-background p-4 rounded-b-lg">
       <ScrollArea className="flex-grow pr-4 -mr-4" ref={scrollAreaRef}>
         <div className="space-y-4 pr-4">
           {isLoading && <p className="text-center text-muted-foreground">Loading messages...</p>}
@@ -107,13 +106,12 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
             const isCurrentUserMsg = msg.senderId === currentUser?.uid;
             const previousMessage = messages[index - 1];
             const showAvatar = !previousMessage || previousMessage.senderId !== msg.senderId;
-            const isSenderAdmin = isAdminMessage(msg.senderId);
 
             return (
               <div key={msg.id} className={`flex items-end gap-2.5 ${isCurrentUserMsg ? 'justify-end' : ''}`}>
                 {!isCurrentUserMsg && (
                   <Avatar className={`${showAvatar ? 'visible' : 'invisible'} border`}>
-                    {isSenderAdmin ? (
+                    {isSenderAdmin(msg.senderId) ? (
                       <div className="flex items-center justify-center h-full w-full bg-muted">
                         <BrainCircuit className="h-6 w-6 text-foreground" />
                       </div>
@@ -122,7 +120,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
                     )}
                   </Avatar>
                 )}
-                <div className={`flex flex-col gap-1 max-w-xs`}>
+                <div className={`flex flex-col gap-1 max-w-[70%]`}>
                     <div className={`p-3 rounded-lg ${isCurrentUserMsg ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'}`}>
                         <p className="text-sm">{msg.text}</p>
                     </div>
@@ -134,13 +132,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
                 </div>
                  {isCurrentUserMsg && (
                   <Avatar className={`${showAvatar ? 'visible' : 'invisible'} border`}>
-                     {isSenderAdmin ? (
-                      <div className="flex items-center justify-center h-full w-full bg-muted">
-                        <BrainCircuit className="h-6 w-6 text-foreground" />
-                      </div>
-                    ) : (
-                      <AvatarFallback>{getInitials(currentUser?.displayName || currentUser?.email || 'Me')}</AvatarFallback>
-                    )}
+                    <AvatarFallback>{getInitials(currentUser?.displayName || currentUser?.email || 'Me')}</AvatarFallback>
                   </Avatar>
                 )}
               </div>
@@ -149,7 +141,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
         </div>
       </ScrollArea>
       <div className="flex-shrink-0 pt-4">
-        {messages && messages.length === 0 && !isLoading && (
+        {!isLoading && (
           <div className="pb-2 flex flex-wrap gap-2">
               {suggestionMessages.map(text => (
                   <Button key={text} variant="outline" size="sm" onClick={() => sendMessage(text)}>
@@ -164,8 +156,9 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
             autoComplete="off"
+            disabled={!currentUser}
           />
-          <Button type="submit" size="icon" disabled={!newMessage.trim()}>
+          <Button type="submit" size="icon" disabled={!newMessage.trim() || !currentUser}>
             <Send className="h-4 w-4" />
           </Button>
         </form>

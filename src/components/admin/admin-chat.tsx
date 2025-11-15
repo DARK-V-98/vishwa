@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -28,6 +28,13 @@ export default function AdminChat() {
   const { data: chats, isLoading: chatsLoading, error: chatsError } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
   
   const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
+  
+  const handleSelectChat = async (userId: string) => {
+    setSelectedChatUserId(userId);
+    // Mark chat as read
+    const chatDocRef = doc(firestore, 'chats', userId);
+    await updateDoc(chatDocRef, { isReadByAdmin: true });
+  };
 
   return (
     <Card className="h-[75vh] flex flex-col">
@@ -52,7 +59,7 @@ export default function AdminChat() {
               {chats?.map(chat => (
                 <button
                   key={chat.id}
-                  onClick={() => setSelectedChatUserId(chat.id)}
+                  onClick={() => handleSelectChat(chat.id)}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${selectedChatUserId === chat.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
                 >
                   <div className="flex items-center gap-3">
@@ -63,7 +70,7 @@ export default function AdminChat() {
                           <p className="font-semibold truncate">{chat.userEmail}</p>
                           <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
                       </div>
-                      {!chat.isReadByAdmin && <Badge variant="destructive">New</Badge>}
+                      {!chat.isReadByAdmin && <Badge variant="destructive" className="animate-pulse">New</Badge>}
                   </div>
                 </button>
               ))}

@@ -38,15 +38,18 @@ export default function AdminPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="topup-orders" className="w-full">
+      <Tabs defaultValue="chat" className="w-full">
         <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
           <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
-          <TabsTrigger value="chat">Chat</TabsTrigger>
           <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
         </TabsList>
+        <TabsContent value="chat">
+            <AdminChat />
+        </TabsContent>
         <TabsContent value="topup-orders">
             <TopupOrderManagement />
         </TabsContent>
@@ -58,9 +61,6 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="payment-settings">
             <PaymentSettings />
-        </TabsContent>
-        <TabsContent value="chat">
-            <AdminChat />
         </TabsContent>
         <TabsContent value="listings">
             <ListingManagement />
