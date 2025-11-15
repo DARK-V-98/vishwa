@@ -79,7 +79,7 @@ export default function AdminChat() {
         </div>
 
         {/* Chat Window */}
-        <div className="md:col-span-2 flex flex-col h-full">
+        <div className="md:col-span-2 flex flex-col h-full overflow-hidden">
           {selectedChatUserId ? (
             <ChatInterface userId={selectedChatUserId} />
           ) : (

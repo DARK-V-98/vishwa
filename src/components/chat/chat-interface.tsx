@@ -91,9 +91,9 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   : ["Hello, I have a question about my order.", "I need help with a payment."];
 
   return (
-    <div className="flex flex-col h-full w-full bg-background p-4 rounded-b-lg">
+    <div className="flex flex-col h-full w-full bg-background rounded-b-lg">
       <ScrollArea className="flex-grow pr-4 -mr-4" ref={scrollAreaRef}>
-        <div className="space-y-4 pr-4">
+        <div className="space-y-4 p-4">
           {isLoading && <p className="text-center text-muted-foreground">Loading messages...</p>}
           {messages && messages.length === 0 && !isLoading && (
              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
@@ -140,7 +140,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
           })}
         </div>
       </ScrollArea>
-      <div className="flex-shrink-0 pt-4">
+      <div className="flex-shrink-0 p-4 border-t">
         {!isLoading && (
           <div className="pb-2 flex flex-wrap gap-2">
               {suggestionMessages.map(text => (
