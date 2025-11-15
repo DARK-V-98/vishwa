@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,11 +28,6 @@ const Navbar = () => {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -45,7 +40,7 @@ const Navbar = () => {
     { name: "Contact", path: "/contact" },
   ];
 
-  const isActive = (path: string) => isClient && pathname === path;
+  const isActive = (path: string) => pathname === path;
 
   const handleSignOut = () => {
     const auth = getAuth();
