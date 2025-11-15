@@ -40,7 +40,14 @@ const Navbar = () => {
     { name: "Contact", path: "/contact" },
   ];
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => {
+    // For the root path, we want an exact match.
+    // For other paths, we can check if the current path starts with it.
+    if (path === "/") {
+      return pathname === path;
+    }
+    return pathname.startsWith(path);
+  };
 
   const handleSignOut = () => {
     const auth = getAuth();
