@@ -1,29 +1,51 @@
 
 'use client';
 
+import { useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListingManagement } from "@/components/admin/listing-management";
 import TopupManagement from "@/components/admin/topup-management";
 import TopupOrderManagement from "@/components/admin/topup-order-management";
 import PaymentSettings from "@/components/admin/payment-settings";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import AdminChat from "@/components/admin/admin-chat";
 import TestimonialManagement from "@/components/admin/testimonial-management";
+import { doc } from "firebase/firestore";
+
+interface UserProfile {
+  roles?: string[];
+}
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
-  if (isUserLoading) {
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, "users", user.uid);
+  }, [user, firestore]);
+  
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
+
+  const isAdmin = useMemo(() => {
+    if (!user) return false;
+    // The primary admin email
+    if (user.email === 'tikfese@gmail.com') return true;
+    // Check for roles from the user's profile
+    if (userProfile?.roles) {
+      return userProfile.roles.includes('admin') || userProfile.roles.includes('developer');
+    }
+    return false;
+  }, [userProfile, user]);
+
+  if (isUserLoading || isProfileLoading) {
     return <div className="container py-12 pt-24">Loading...</div>
   }
 
   if (!user) {
     return <div className="container py-12 pt-24">You must be logged in to view this page.</div>
   }
-
-  // A simple role check - in a real app, you'd use custom claims.
-  const isAdmin = user.email === 'tikfese@gmail.com';
-
+  
   if (!isAdmin) {
       return <div className="container py-12 pt-24">You do not have permission to view this page.</div>
   }
