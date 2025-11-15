@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -24,11 +23,15 @@ export default function AdminChat() {
   const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
 
   const chatsQuery = useMemoFirebase(() => {
+    // This query will only be created if firestore is available.
+    // The useCollection hook will handle the null case and wait.
     if (!firestore) return null;
     const chatsCollection = collection(firestore, 'chats');
     return query(chatsCollection, orderBy('updatedAt', 'desc'));
   }, [firestore]);
 
+  // The hook will now only run the query if `chatsQuery` is not null.
+  // Security rules on the backend will ensure only admins can actually get the data.
   const { data: chats, isLoading: chatsLoading, error: chatsError } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
   
   const getInitials = (email: string) => email ? email.substring(0, 2).toUpperCase() : '??';
@@ -36,12 +39,10 @@ export default function AdminChat() {
   const handleSelectChat = async (userId: string) => {
     if (!firestore) return;
     setSelectedChatUserId(userId);
-    // Mark chat as read
     const chatDocRef = doc(firestore, 'chats', userId);
     try {
       await updateDoc(chatDocRef, { isReadByAdmin: true });
     } catch (e) {
-      // It's okay if this fails, e.g., if the document doesn't exist yet.
       console.warn("Could not mark chat as read:", e);
     }
   };

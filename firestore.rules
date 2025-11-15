@@ -14,24 +14,24 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Check for primary admin email OR if the user has a specific custom role in their user document.
+      // Primary admin email has ultimate power.
       let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com';
-      let hasAdminRole;
-      try {
-        hasAdminRole = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
-      } catch (e) {
-        hasAdminRole = false;
-      }
+      
+      // Check for 'admin' or 'developer' role in the user's document.
+      // Use exists() for a safe check before accessing .data
+      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
+                         
       return isPrimaryAdmin || hasAdminRole;
     }
 
-    // User profiles can be created by any signed-in user for their own UID.
+    // User profiles can be created by the user themselves.
     // They can only be read/updated by their owner or an admin.
     match /users/{userId} {
       allow create: if isSignedIn() && isOwner(userId);
       allow get, update: if (isSignedIn() && isOwner(userId)) || isAdmin();
-      allow delete: if isAdmin();
-      allow list: if isAdmin();
+      // Only admins can list all users or delete a user.
+      allow list, delete: if isAdmin();
     }
 
     // User-specific subcollections are only accessible by their owner or an admin.
@@ -39,16 +39,16 @@ service cloud.firestore {
       allow read, write: if (isSignedIn() && isOwner(userId)) || isAdmin();
     }
     
-    // Design Orders collection for admin management
+    // Design Orders can be created by any signed-in user, but only managed by admins.
     match /designOrders/{orderId} {
-        allow read, list, update: if isAdmin();
         allow create: if isSignedIn();
+        allow read, list, update: if isAdmin();
     }
     
     // Projects collection for quotation generator
     match /projects/{projectId} {
-        allow read, list, update: if isAdmin();
         allow create: if isSignedIn();
+        allow read, list, update: if isAdmin();
     }
 
     // Services are public to read, but only admins can write.
@@ -60,8 +60,7 @@ service cloud.firestore {
     // Products are public to read.
     // Writes are restricted to the product's seller or an admin.
     match /products/{productId} {
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
       allow create: if isSignedIn();
       allow update, delete: if isSignedIn() && (isOwner(resource.data.sellerId) || isAdmin());
     }
@@ -73,11 +72,12 @@ service cloud.firestore {
     }
     
     // Anyone can create a top-up order.
-    // Only the user who created it or an admin can read it.
+    // Only the user who created it or an admin can read/list their own orders.
     // Only admins can update/delete it.
     match /topupOrders/{orderId} {
       allow create: if true;
-      allow get, list: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow get: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow list: if isAdmin();
       allow update, delete: if isAdmin();
     }
 
@@ -87,19 +87,21 @@ service cloud.firestore {
         allow write: if isAdmin();
     }
 
-    // Chat document access rules
-    match /chats/{userId} {
-        // Users can create/update their own chat document. Admins can access any.
-        allow get, create, update: if (isSignedIn() && isOwner(userId)) || isAdmin();
-        // Admins can list all chats for the admin panel.
+    // CHAT RULES
+    match /chats/{chatId} {
+        // Admins can list all chat documents to populate the admin panel.
         allow list: if isAdmin();
-    }
-    
-    // Messages within a chat can be read by the user or an admin.
-    // Messages can only be created by the sender.
-    match /chats/{userId}/messages/{messageId} {
-        allow read, list: if (isSignedIn() && isOwner(userId)) || isAdmin();
-        allow create: if isSignedIn() && isOwner(request.resource.data.senderId);
+
+        // A user can read/write their own chat document. An admin can access any.
+        allow get, create, update: if (isSignedIn() && isOwner(chatId)) || isAdmin();
+
+        // Rules for the messages subcollection within each chat
+        match /messages/{messageId} {
+          // The user who owns the chat or an admin can read the messages.
+          allow read, list: if (isSignedIn() && isOwner(chatId)) || isAdmin();
+          // A message can only be created by the authenticated sender.
+          allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+        }
     }
     
     // Testimonials are public to read, but only admins can write.
