@@ -37,7 +37,7 @@ const Navbar = () => {
     { name: "Game Top-up", path: "/freefire-topup" },
     { name: "Design Services", path: "/design-services" },
     { name: "Get a Quote", path: "/quotation-generator" },
-    { name: "Games", path: "/games" },
+    { name: "Games", path: "/games/point-calculator" },
     { name: "Contact", path: "/contact" },
   ];
 

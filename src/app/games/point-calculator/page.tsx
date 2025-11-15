@@ -1,8 +1,6 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Gamepad2, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import PointCalculator from "@/components/games/point-calculator";
+import { Gamepad2 } from "lucide-react";
 
 export default function GamesPage() {
   return (
@@ -24,34 +22,20 @@ export default function GamesPage() {
             
             <h1 className="text-4xl md:text-6xl font-bold">
               <span className="bg-gradient-hero bg-clip-text text-transparent">
-                Game Center
+                E-Sports Point Calculator
               </span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                A collection of tools and utilities to enhance your gaming and tournament experience.
+                A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results as professional-looking images.
             </p>
           </div>
         </div>
       </section>
 
       <section className="py-12 md:py-16">
-        <div className="container mx-auto px-4 max-w-2xl">
-            <Card className="hover:shadow-strong transition-shadow duration-300">
-                <CardHeader>
-                    <CardTitle>E-Sports Point Calculator</CardTitle>
-                    <CardDescription>
-                        A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Link href="/games/point-calculator">
-                        <Button className="w-full" variant="hero">
-                            Go to Calculator <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    </Link>
-                </CardContent>
-            </Card>
+        <div className="container mx-auto px-4">
+            <PointCalculator />
         </div>
       </section>
     </div>
