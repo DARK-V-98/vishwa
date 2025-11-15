@@ -64,7 +64,9 @@ const ConversationItem = ({ chat, onSelect, isSelected }: { chat: Chat, onSelect
                     <AvatarFallback>{getInitials(userName)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow truncate">
-                    <p className="font-semibold truncate">{userName || <Skeleton className="h-5 w-32"/>}</p>
+                    <div className="font-semibold truncate">
+                        {userName ? userName : <Skeleton className="h-5 w-32"/>}
+                    </div>
                     <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
                 </div>
                 {!chat.isReadByAdmin && <Badge variant="destructive" className="animate-pulse">New</Badge>}
