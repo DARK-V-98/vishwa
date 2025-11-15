@@ -8,24 +8,49 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, Trash2, Crown, Medal, Trophy, RefreshCw, Edit, Save, X, Settings, Download, Info } from 'lucide-react';
+import { PlusCircle, Trash2, Crown, Medal, Trophy, RefreshCw, Edit, Save, X, Settings, Download, Info, Gamepad2, Swords } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import html2canvas from 'html2canvas';
+import { Separator } from '../ui/separator';
 
-interface Team {
-  id: number;
-  name: string;
+interface MatchScore {
   kills: number;
   placement: number;
   bonus: number;
-  killPoints: number;
-  placePoints: number;
-  totalPoints: number;
 }
 
-const DEFAULT_PLACEMENT_POINTS = [15, 12, 10, 8, 6, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+interface Team {
+  id: number;
+  name:string;
+  matchScores: MatchScore[];
+}
+
+interface CalculatedTeam extends Team {
+    totalPoints: number;
+    totalKills: number;
+}
+
+const GAME_PRESETS = {
+    'custom': {
+        killPointValue: 1,
+        placementPoints: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    },
+    'freefire': {
+        killPointValue: 1,
+        placementPoints: [12, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    'pubg': {
+        killPointValue: 1,
+        placementPoints: [15, 12, 10, 8, 6, 4, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+     'apex': {
+        killPointValue: 1,
+        placementPoints: [12, 9, 7, 5, 4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+};
 
 const RankIcon = ({ rank }: { rank: number }) => {
   if (rank === 1) return <Crown className="h-5 w-5 text-yellow-500" />;
@@ -34,137 +59,146 @@ const RankIcon = ({ rank }: { rank: number }) => {
   return <span className="font-mono text-sm w-5 text-center">{rank}</span>;
 };
 
+
 export default function PointCalculator() {
   // Scoring Settings
-  const [killPointValue, setKillPointValue] = useState(1);
+  const [gamePreset, setGamePreset] = useState('freefire');
+  const [killPointValue, setKillPointValue] = useState(GAME_PRESETS.freefire.killPointValue);
+  const [placementPoints, setPlacementPoints] = useState<number[]>(GAME_PRESETS.freefire.placementPoints);
   const [useDefaultPlacement, setUseDefaultPlacement] = useState(true);
-  const [manualPlacementPoints, setManualPlacementPoints] = useState<number[]>(DEFAULT_PLACEMENT_POINTS);
 
-  // Team Input
-  const [teamName, setTeamName] = useState('');
-  const [kills, setKills] = useState(0);
-  const [placement, setPlacement] = useState(1);
-  const [bonusPoints, setBonusPoints] = useState(0);
-
-  // Result
-  const [calculatedResult, setCalculatedResult] = useState<Team | null>(null);
-
-  // Leaderboard
-  const [leaderboard, setLeaderboard] = useState<Team[]>([]);
-  const [editingRowId, setEditingRowId] = useState<number | null>(null);
-
-  // Refs
-  const resultCardRef = useRef<HTMLDivElement>(null);
+  // Tournament State
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [matchCount, setMatchCount] = useState(1);
+  const [teamNameInput, setTeamNameInput] = useState('');
+  
+  // UI State
+  const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
+  const [editingTeamData, setEditingTeamData] = useState<Team | null>(null);
 
   useEffect(() => {
     try {
-      const savedLeaderboard = localStorage.getItem('esportsLeaderboard');
-      if (savedLeaderboard) {
-        setLeaderboard(JSON.parse(savedLeaderboard));
+      const savedTeams = localStorage.getItem('esportsTeams');
+      const savedMatchCount = localStorage.getItem('esportsMatchCount');
+      if (savedTeams) {
+        const parsedTeams: Team[] = JSON.parse(savedTeams);
+        const count = savedMatchCount ? parseInt(savedMatchCount, 10) : 1;
+        
+        // Ensure data integrity
+        parsedTeams.forEach(team => {
+            if (team.matchScores.length < count) {
+                for (let i = team.matchScores.length; i < count; i++) {
+                    team.matchScores.push({ kills: 0, placement: 25, bonus: 0 });
+                }
+            }
+        });
+
+        setTeams(parsedTeams);
+      }
+      if (savedMatchCount) {
+        setMatchCount(parseInt(savedMatchCount, 10));
       }
     } catch (error) {
-      console.error("Failed to load leaderboard from localStorage", error);
+      console.error("Failed to load data from localStorage", error);
     }
   }, []);
 
   useEffect(() => {
     try {
-        localStorage.setItem('esportsLeaderboard', JSON.stringify(leaderboard));
+        localStorage.setItem('esportsTeams', JSON.stringify(teams));
+        localStorage.setItem('esportsMatchCount', String(matchCount));
     } catch (error) {
-        console.error("Failed to save leaderboard to localStorage", error);
+        console.error("Failed to save data to localStorage", error);
     }
-  }, [leaderboard]);
+  }, [teams, matchCount]);
 
-  const sortedLeaderboard = useMemo(() => {
-    return [...leaderboard].sort((a, b) => b.totalPoints - a.totalPoints || b.kills - a.kills);
-  }, [leaderboard]);
+  useEffect(() => {
+    if (useDefaultPlacement) {
+        const preset = GAME_PRESETS[gamePreset as keyof typeof GAME_PRESETS] || GAME_PRESETS.custom;
+        setPlacementPoints(preset.placementPoints);
+        setKillPointValue(preset.killPointValue);
+    }
+  }, [gamePreset, useDefaultPlacement]);
 
-  const handleManualPlacementPointChange = (index: number, value: string) => {
-    const newPoints = [...manualPlacementPoints];
-    newPoints[index] = parseInt(value, 10) || 0;
-    setManualPlacementPoints(newPoints);
-  };
+  const calculatedLeaderboard = useMemo((): CalculatedTeam[] => {
+    return teams.map(team => {
+      let totalPoints = 0;
+      let totalKills = 0;
 
-  const calculatePoints = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!teamName.trim()) return;
+      team.matchScores.forEach(score => {
+        const placePts = placementPoints[score.placement - 1] ?? 0;
+        const killPts = score.kills * killPointValue;
+        totalPoints += placePts + killPts + score.bonus;
+        totalKills += score.kills;
+      });
 
-    const placePoints = useDefaultPlacement
-      ? DEFAULT_PLACEMENT_POINTS[placement - 1] ?? 0
-      : manualPlacementPoints[placement - 1] ?? 0;
-      
-    const killPointsTotal = kills * killPointValue;
-    const totalPoints = killPointsTotal + placePoints + bonusPoints;
+      return { ...team, totalPoints, totalKills };
+    }).sort((a, b) => b.totalPoints - a.totalPoints || b.totalKills - a.totalKills);
+  }, [teams, killPointValue, placementPoints]);
 
-    setCalculatedResult({
+
+  const handleAddTeam = () => {
+    if (!teamNameInput.trim()) return;
+    const newTeam: Team = {
       id: Date.now(),
-      name: teamName,
-      kills,
-      placement,
-      bonus: bonusPoints,
-      killPoints: killPointsTotal,
-      placePoints,
-      totalPoints
-    });
+      name: teamNameInput.trim(),
+      matchScores: Array(matchCount).fill(null).map(() => ({
+        kills: 0,
+        placement: 25,
+        bonus: 0,
+      })),
+    };
+    setTeams(prev => [...prev, newTeam]);
+    setTeamNameInput('');
   };
 
-  const addToLeaderboard = () => {
-    if (calculatedResult) {
-      const existingTeamIndex = leaderboard.findIndex(t => t.name.toLowerCase() === calculatedResult.name.toLowerCase());
-      if(existingTeamIndex > -1){
-        const updatedLeaderboard = [...leaderboard];
-        const existingTeam = updatedLeaderboard[existingTeamIndex];
-        updatedLeaderboard[existingTeamIndex] = {
-          ...existingTeam,
-          kills: existingTeam.kills + calculatedResult.kills,
-          bonus: existingTeam.bonus + calculatedResult.bonus,
-          killPoints: existingTeam.killPoints + calculatedResult.killPoints,
-          placePoints: existingTeam.placePoints + calculatedResult.placePoints,
-          totalPoints: existingTeam.totalPoints + calculatedResult.totalPoints,
-          placement: calculatedResult.placement,
-        }
-        setLeaderboard(updatedLeaderboard);
-      } else {
-        setLeaderboard(prev => [...prev, calculatedResult]);
-      }
-      resetForm();
-    }
+  const handleUpdateTeamScore = (teamId: number, matchIndex: number, field: keyof MatchScore, value: number) => {
+    setTeams(prev => prev.map(team => 
+      team.id === teamId 
+        ? {
+            ...team,
+            matchScores: team.matchScores.map((score, i) => 
+              i === matchIndex ? { ...score, [field]: value } : score
+            )
+          } 
+        : team
+    ));
   };
   
-  const updateLeaderboardRow = (team: Team) => {
-      setLeaderboard(prev => prev.map(t => t.id === team.id ? team : t));
-      setEditingRowId(null);
-  }
-
-  const deleteLeaderboardRow = (id: number) => {
-    setLeaderboard(prev => prev.filter(t => t.id !== id));
-  }
-
-  const resetForm = () => {
-    setTeamName('');
-    setKills(0);
-    setPlacement(1);
-    setBonusPoints(0);
-    setCalculatedResult(null);
+  const handleAddMatch = () => {
+    setMatchCount(prev => prev + 1);
+    setTeams(prev => prev.map(team => ({
+        ...team,
+        matchScores: [...team.matchScores, { kills: 0, placement: 25, bonus: 0 }]
+    })))
   };
+  
+  const handleManualPlacementPointChange = (index: number, value: string) => {
+    const newPoints = [...placementPoints];
+    newPoints[index] = parseInt(value, 10) || 0;
+    setPlacementPoints(newPoints);
+  };
+  
+  const startEditing = (team: Team) => {
+      setEditingTeamId(team.id);
+      setEditingTeamData(JSON.parse(JSON.stringify(team))); // Deep copy for editing
+  };
+  
+  const saveEditing = () => {
+      if (editingTeamData) {
+          setTeams(prev => prev.map(t => t.id === editingTeamId ? editingTeamData : t));
+      }
+      setEditingTeamId(null);
+      setEditingTeamData(null);
+  };
+
+  const deleteTeam = (id: number) => {
+    setTeams(prev => prev.filter(t => t.id !== id));
+  }
 
   const clearLeaderboard = () => {
-    setLeaderboard([]);
-  };
-
-  const exportResultAsImage = () => {
-    if (resultCardRef.current) {
-        html2canvas(resultCardRef.current, { 
-            backgroundColor: null,
-            useCORS: true, 
-            scale: 2 
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `result-${calculatedResult?.name || 'team'}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        });
-    }
+    setTeams([]);
+    setMatchCount(1);
   };
 
   return (
@@ -173,94 +207,67 @@ export default function PointCalculator() {
         <div className="lg:col-span-1 space-y-8 sticky top-24">
           <Card className="shadow-strong border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Point Calculator</CardTitle>
+              <CardTitle>Tournament Setup</CardTitle>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={calculatePoints} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="teamName">Team Name</Label>
-                  <Input id="teamName" placeholder="Enter team name" value={teamName} onChange={e => setTeamName(e.target.value)} required />
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                  <Label htmlFor="teamName">Add New Team</Label>
+                   <div className="flex gap-2">
+                    <Input id="teamName" placeholder="Enter team name" value={teamNameInput} onChange={e => setTeamNameInput(e.target.value)} />
+                    <Button onClick={handleAddTeam}><PlusCircle className="h-4 w-4"/></Button>
+                  </div>
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label>Matches</Label>
+                 <div className="flex items-center gap-2">
+                    <p className="text-muted-foreground text-sm">Total Matches: {matchCount}</p>
+                    <Button size="sm" variant="outline" onClick={handleAddMatch}>Add Match</Button>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="kills">Kills</Label>
-                        <Input id="kills" type="number" min="0" value={kills} onChange={e => setKills(parseInt(e.target.value) || 0)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="placement">Placement</Label>
-                        <Select value={String(placement)} onValueChange={val => setPlacement(parseInt(val))}>
-                            <SelectTrigger id="placement"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {Array.from({ length: 25 }, (_, i) => i + 1).map(p => <SelectItem key={p} value={String(p)}>{p}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bonusPoints">Bonus Points (Optional)</Label>
-                  <Input id="bonusPoints" type="number" value={bonusPoints} onChange={e => setBonusPoints(parseInt(e.target.value) || 0)} />
-                </div>
-                <Button type="submit" className="w-full" variant="hero">Calculate Points</Button>
-              </form>
+              </div>
             </CardContent>
           </Card>
 
-          {calculatedResult && (
-             <Card className="shadow-strong border-primary/50 bg-card/70 backdrop-blur-sm" id="result-card">
-                 <div ref={resultCardRef} className="p-6 bg-transparent relative">
-                    <div className="absolute inset-0 bg-black/50 -z-10"></div>
-                    <CardHeader className="text-center p-0 mb-4">
-                        <CardDescription className="text-primary">Match Result</CardDescription>
-                        <CardTitle className="text-3xl font-bold text-white">{calculatedResult.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center p-0">
-                        <div className="text-6xl font-bold text-primary mb-4">{calculatedResult.totalPoints} <span className="text-2xl text-white/80">PTS</span></div>
-                        <div className="grid grid-cols-3 gap-2 text-sm text-white">
-                            <div className="bg-white/10 p-2 rounded-md"><div className="font-bold text-lg">{calculatedResult.killPoints}</div><div className="text-white/60">Kill Pts</div></div>
-                            <div className="bg-white/10 p-2 rounded-md"><div className="font-bold text-lg">{calculatedResult.placePoints}</div><div className="text-white/60">Place Pts</div></div>
-                            <div className="bg-white/10 p-2 rounded-md"><div className="font-bold text-lg">{calculatedResult.bonus}</div><div className="text-white/60">Bonus</div></div>
-                        </div>
-                    </CardContent>
-                </div>
-                <CardContent className="p-6 pt-4">
-                    <div className="flex gap-2 mt-4">
-                        <Button className="w-full" onClick={addToLeaderboard} variant="secondary"><PlusCircle className="mr-2 h-4 w-4"/> Add to Leaderboard</Button>
-                        <Button variant="outline" onClick={exportResultAsImage}><Download className="mr-2 h-4 w-4"/> Export</Button>
-                        <Button variant="ghost" onClick={resetForm}><RefreshCw className="h-4 w-4"/></Button>
-                    </div>
-                </CardContent>
-             </Card>
-          )}
-
           <Card className="shadow-lg border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Settings /> Scoring Settings</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Settings /> Scoring System</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="killPointValue" className="flex items-center gap-2">Points per Kill 
-                      <Tooltip><TooltipTrigger type="button"><Info className="h-4 w-4 text-muted-foreground"/></TooltipTrigger><TooltipContent>Set the number of points awarded for each kill.</TooltipContent></Tooltip>
-                    </Label>
-                    <Input id="killPointValue" type="number" min="0" value={killPointValue} onChange={e => setKillPointValue(parseInt(e.target.value) || 0)} />
+                    <Label htmlFor="gamePreset" className="flex items-center gap-2">Game Preset</Label>
+                    <Select value={gamePreset} onValueChange={setGamePreset}>
+                        <SelectTrigger id="gamePreset"><SelectValue/></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="freefire">Free Fire</SelectItem>
+                            <SelectItem value="pubg">PUBG / BGMI</SelectItem>
+                            <SelectItem value="apex">Apex Legends</SelectItem>
+                            <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
-                 <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                        <Switch id="placement-mode" checked={useDefaultPlacement} onCheckedChange={setUseDefaultPlacement} />
-                        <Label htmlFor="placement-mode">Use Default Placement Points</Label>
-                    </div>
 
-                    {!useDefaultPlacement && (
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-                            <Label>Manual Placement Points</Label>
-                            {Array.from({ length: 25 }, (_, i) => i).map(i => (
-                                <div key={i} className="flex items-center gap-2">
-                                    <Label htmlFor={`placement-${i+1}`} className="w-12">#{i+1}</Label>
-                                    <Input id={`placement-${i+1}`} type="number" min="0" value={manualPlacementPoints[i]} onChange={e => handleManualPlacementPointChange(i, e.target.value)} />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                 </div>
+                <div className="flex items-center space-x-2">
+                    <Switch id="placement-mode" checked={useDefaultPlacement} onCheckedChange={setUseDefaultPlacement} />
+                    <Label htmlFor="placement-mode">Use Preset Scoring</Label>
+                </div>
+                
+                {!useDefaultPlacement && (
+                    <>
+                    <div className="space-y-2">
+                        <Label htmlFor="killPointValue" className="flex items-center gap-2">Points per Kill</Label>
+                        <Input id="killPointValue" type="number" min="0" value={killPointValue} onChange={e => setKillPointValue(parseInt(e.target.value) || 0)} />
+                    </div>
+                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                        <Label>Manual Placement Points</Label>
+                        {Array.from({ length: 25 }, (_, i) => i).map(i => (
+                            <div key={i} className="flex items-center gap-2">
+                                <Label htmlFor={`placement-${i+1}`} className="w-12">#{i+1}</Label>
+                                <Input id={`placement-${i+1}`} type="number" min="0" value={placementPoints[i] || 0} onChange={e => handleManualPlacementPointChange(i, e.target.value)} />
+                            </div>
+                        ))}
+                    </div>
+                    </>
+                )}
             </CardContent>
           </Card>
         </div>
@@ -274,7 +281,7 @@ export default function PointCalculator() {
               </div>
                <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" disabled={leaderboard.length === 0}><RefreshCw className="mr-2 h-4 w-4"/>Clear All</Button>
+                    <Button variant="destructive" size="sm" disabled={teams.length === 0}><RefreshCw className="mr-2 h-4 w-4"/>Clear All</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -289,58 +296,28 @@ export default function PointCalculator() {
               </AlertDialog>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">Rank</TableHead>
-                      <TableHead>Team</TableHead>
-                      <TableHead className="text-center">Kills</TableHead>
-                      <TableHead className="text-center">Total Pts</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedLeaderboard.length > 0 ? (
-                      sortedLeaderboard.map((team, index) => (
-                        editingRowId === team.id ? (
-                            <EditableRow key={team.id} team={team} onSave={updateLeaderboardRow} onCancel={() => setEditingRowId(null)} />
-                        ) : (
-                        <TableRow key={team.id}>
-                          <TableCell className="font-bold text-center"><RankIcon rank={index + 1} /></TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
-                              <span className="font-medium">{team.name}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">{team.kills}</TableCell>
-                          <TableCell className="text-center font-bold text-lg text-primary">{team.totalPoints}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end items-center gap-2">
-                              <Button size="icon" variant="ghost" onClick={() => setEditingRowId(team.id)}><Edit className="h-4 w-4" /></Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader><AlertDialogTitle>Delete {team.name}?</AlertDialogTitle><AlertDialogDescription>This will permanently remove the team and their score from the leaderboard.</AlertDialogDescription></AlertDialogHeader>
-                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => deleteLeaderboardRow(team.id)}>Delete</AlertDialogAction></AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                        )
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">Leaderboard is empty. Calculate points and add teams.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                <Tabs defaultValue="match-0">
+                    <TabsList className="grid w-full grid-cols-5 mb-4">
+                        {Array.from({length: matchCount}, (_, i) => (
+                             <TabsTrigger key={i} value={`match-${i}`}>Match {i + 1}</TabsTrigger>
+                        ))}
+                        <TabsTrigger value="overall">Overall</TabsTrigger>
+                    </TabsList>
+                    
+                    {Array.from({length: matchCount}, (_, i) => (
+                        <TabsContent key={i} value={`match-${i}`}>
+                            <MatchInputTable 
+                                teams={teams}
+                                matchIndex={i}
+                                onScoreChange={handleUpdateTeamScore}
+                            />
+                        </TabsContent>
+                    ))}
+
+                    <TabsContent value="overall">
+                        <OverallLeaderboard leaderboard={calculatedLeaderboard} onDelete={deleteTeam} onEdit={startEditing} />
+                    </TabsContent>
+                </Tabs>
             </CardContent>
           </Card>
         </div>
@@ -349,32 +326,110 @@ export default function PointCalculator() {
   );
 }
 
-
-function EditableRow({ team, onSave, onCancel }: { team: Team, onSave: (team: Team) => void, onCancel: () => void }) {
-    const [editedTeam, setEditedTeam] = useState(team);
-
-    const handleChange = (field: keyof Team, value: string) => {
-        setEditedTeam(prev => ({...prev, [field]: parseInt(value) || 0}));
-    }
-
+const MatchInputTable = ({ teams, matchIndex, onScoreChange }: { teams: Team[], matchIndex: number, onScoreChange: (teamId: number, matchIndex: number, field: keyof MatchScore, value: number) => void }) => {
     return (
-        <TableRow className="bg-muted/50">
-            <TableCell className="font-bold text-center">-</TableCell>
-            <TableCell>
-                <Input value={editedTeam.name} onChange={(e) => setEditedTeam(prev => ({...prev, name: e.target.value}))} className="h-8"/>
-            </TableCell>
-            <TableCell>
-                 <Input type="number" value={editedTeam.kills} onChange={e => handleChange('kills', e.target.value)} className="h-8 w-20 mx-auto text-center" />
-            </TableCell>
-            <TableCell>
-                 <Input type="number" value={editedTeam.totalPoints} onChange={e => handleChange('totalPoints', e.target.value)} className="h-8 w-20 mx-auto text-center font-bold" />
-            </TableCell>
-            <TableCell className="text-right">
-                <div className="flex justify-end items-center gap-2">
-                    <Button size="icon" variant="ghost" onClick={() => onSave(editedTeam)}><Save className="h-4 w-4 text-primary"/></Button>
-                    <Button size="icon" variant="ghost" onClick={onCancel}><X className="h-4 w-4"/></Button>
-                </div>
-            </TableCell>
-        </TableRow>
+        <div className="overflow-x-auto">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Team</TableHead>
+                        <TableHead className="text-center">Kills</TableHead>
+                        <TableHead className="text-center">Placement</TableHead>
+                        <TableHead className="text-center">Bonus</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                     {teams.map(team => (
+                        <TableRow key={team.id}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                <Avatar><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                                <span className="font-medium">{team.name}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <Input 
+                                    type="number" 
+                                    className="w-20 mx-auto text-center"
+                                    value={team.matchScores[matchIndex]?.kills ?? 0}
+                                    onChange={e => onScoreChange(team.id, matchIndex, 'kills', parseInt(e.target.value) || 0)}
+                                />
+                            </TableCell>
+                             <TableCell>
+                                <Input 
+                                    type="number" 
+                                    className="w-20 mx-auto text-center"
+                                    min="1"
+                                    max="25"
+                                    value={team.matchScores[matchIndex]?.placement ?? 25}
+                                    onChange={e => onScoreChange(team.id, matchIndex, 'placement', parseInt(e.target.value) || 25)}
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <Input 
+                                    type="number" 
+                                    className="w-20 mx-auto text-center"
+                                    value={team.matchScores[matchIndex]?.bonus ?? 0}
+                                    onChange={e => onScoreChange(team.id, matchIndex, 'bonus', parseInt(e.target.value) || 0)}
+                                />
+                            </TableCell>
+                        </TableRow>
+                     ))}
+                </TableBody>
+            </Table>
+        </div>
+    )
+}
+
+const OverallLeaderboard = ({ leaderboard, onDelete, onEdit }: { leaderboard: CalculatedTeam[], onDelete: (id: number) => void, onEdit: (team: Team) => void }) => {
+     return (
+        <div className="overflow-x-auto">
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead className="w-[50px]">Rank</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead className="text-center">Total Kills</TableHead>
+                <TableHead className="text-center">Total Pts</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {leaderboard.length > 0 ? (
+                leaderboard.map((team, index) => (
+                    <TableRow key={team.id}>
+                    <TableCell className="font-bold text-center"><RankIcon rank={index + 1} /></TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                        <Avatar><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                        <span className="font-medium">{team.name}</span>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-center">{team.totalKills}</TableCell>
+                    <TableCell className="text-center font-bold text-lg text-primary">{team.totalPoints}</TableCell>
+                    <TableCell className="text-right">
+                        <div className="flex justify-end items-center gap-2">
+                        {/* <Button size="icon" variant="ghost" onClick={() => onEdit(team)}><Edit className="h-4 w-4" /></Button> */}
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                            <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader><AlertDialogTitle>Delete {team.name}?</AlertDialogTitle><AlertDialogDescription>This will permanently remove the team and all their scores from the tournament.</AlertDialogDescription></AlertDialogHeader>
+                                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => onDelete(team.id)}>Delete</AlertDialogAction></AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                        </div>
+                    </TableCell>
+                    </TableRow>
+                ))
+                ) : (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">Leaderboard is empty. Add teams to get started.</TableCell>
+                </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        </div>
     )
 }
