@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore } from "@/firebase";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getAuth, signOut } from "firebase/auth";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { doc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserProfile {
@@ -33,18 +33,25 @@ export default function DashboardPage() {
   const firestore = useFirestore();
   const router = useRouter();
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, "users", user.uid);
-  }, [user, firestore]);
-  
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push("/auth");
+    } else if (user) {
+        const fetchUserProfile = async () => {
+            setIsProfileLoading(true);
+            const userDocRef = doc(firestore, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                setUserProfile(userDoc.data() as UserProfile);
+            }
+            setIsProfileLoading(false);
+        };
+        fetchUserProfile();
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, firestore]);
 
   const handleSignOut = () => {
     const auth = getAuth();
@@ -54,9 +61,10 @@ export default function DashboardPage() {
   };
   
   const isAdminOrDeveloper = useMemo(() => {
+    if (user?.email === 'tikfese@gmail.com') return true;
     if (!userProfile?.roles) return false;
     return userProfile.roles.includes('admin') || userProfile.roles.includes('developer');
-  }, [userProfile]);
+  }, [userProfile, user]);
 
   const menuItems = useMemo(() => {
     const items = [

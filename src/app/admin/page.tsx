@@ -1,16 +1,16 @@
 
 'use client';
 
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListingManagement } from "@/components/admin/listing-management";
 import TopupManagement from "@/components/admin/topup-management";
 import TopupOrderManagement from "@/components/admin/topup-order-management";
 import PaymentSettings from "@/components/admin/payment-settings";
-import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore } from "@/firebase";
 import AdminChat from "@/components/admin/admin-chat";
 import TestimonialManagement from "@/components/admin/testimonial-management";
-import { doc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface UserProfile {
@@ -20,26 +20,46 @@ interface UserProfile {
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingRole, setIsCheckingRole] = useState(true);
 
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    return doc(firestore, "users", user.uid);
-  }, [user, firestore]);
-  
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
+  useEffect(() => {
+    async function checkUserRole() {
+      if (!user) {
+        setIsCheckingRole(false);
+        return;
+      }
 
-  const isAdmin = useMemo(() => {
-    if (!user) return false;
-    // The primary admin email
-    if (user.email === 'tikfese@gmail.com') return true;
-    // Check for roles from the user's profile
-    if (userProfile?.roles) {
-      return userProfile.roles.includes('admin') || userProfile.roles.includes('developer');
+      // Check for primary admin email first
+      if (user.email === 'tikfese@gmail.com') {
+        setIsAdmin(true);
+        setIsCheckingRole(false);
+        return;
+      }
+      
+      // Then, check Firestore for roles
+      const userDocRef = doc(firestore, "users", user.uid);
+      try {
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const userProfile = userDoc.data() as UserProfile;
+          if (userProfile.roles && (userProfile.roles.includes('admin') || userProfile.roles.includes('developer'))) {
+            setIsAdmin(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      } finally {
+        setIsCheckingRole(false);
+      }
     }
-    return false;
-  }, [userProfile, user]);
 
-  if (isUserLoading || isProfileLoading) {
+    if (!isUserLoading) {
+        checkUserRole();
+    }
+  }, [user, isUserLoading, firestore]);
+
+  if (isUserLoading || isCheckingRole) {
     return <div className="container py-12 pt-24">Loading...</div>
   }
 
@@ -63,7 +83,7 @@ export default function AdminPage() {
 
       <Tabs defaultValue="chat" className="w-full">
         <ScrollArea className="w-full pb-2">
-            <div className="whitespace-nowrap">
+          <div className="overflow-x-auto whitespace-nowrap">
                 <TabsList>
                     <TabsTrigger value="chat">Chat</TabsTrigger>
                     <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
