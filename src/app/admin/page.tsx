@@ -62,7 +62,7 @@ export default function AdminPage() {
 
       <Tabs defaultValue="chat" className="w-full">
         <div className="w-full overflow-x-auto pb-2">
-            <TabsList className="w-max">
+            <TabsList className="whitespace-nowrap">
               <TabsTrigger value="chat">Chat</TabsTrigger>
               <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
               <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
@@ -71,7 +71,7 @@ export default function AdminPage() {
               <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
             </TabsList>
         </div>
-        <TabsContent value="chat" className="mt-6">
+        <TabsContent value="chat" className="mt-6 h-[75vh]">
             <AdminChat />
         </TabsContent>
         <TabsContent value="topup-orders" className="mt-6">
