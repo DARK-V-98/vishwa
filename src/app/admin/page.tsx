@@ -12,6 +12,7 @@ import AdminChat from "@/components/admin/admin-chat";
 import TestimonialManagement from "@/components/admin/testimonial-management";
 import { doc, getDoc } from "firebase/firestore";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import UserManagement from "@/components/admin/user-management";
 
 interface UserProfile {
   roles?: string[];
@@ -25,7 +26,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     async function checkUserRole() {
-      if (!user) {
+      if (!user || !firestore) {
         setIsCheckingRole(false);
         return;
       }
@@ -45,10 +46,15 @@ export default function AdminPage() {
           const userProfile = userDoc.data() as UserProfile;
           if (userProfile.roles && (userProfile.roles.includes('admin') || userProfile.roles.includes('developer'))) {
             setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
           }
+        } else {
+            setIsAdmin(false);
         }
       } catch (error) {
         console.error("Error fetching user role:", error);
+        setIsAdmin(false);
       } finally {
         setIsCheckingRole(false);
       }
@@ -82,17 +88,18 @@ export default function AdminPage() {
 
       <Tabs defaultValue="chat" className="w-full">
         <ScrollArea className="w-full pb-2">
-          <div className="overflow-x-auto whitespace-nowrap">
-            <TabsList>
-              <TabsTrigger value="chat">Chat</TabsTrigger>
-              <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
-              <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
-              <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-              <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
-              <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
-            </TabsList>
-          </div>
-          <ScrollBar orientation="horizontal" />
+            <div className="overflow-x-auto whitespace-nowrap">
+                <TabsList className="inline-flex">
+                  <TabsTrigger value="chat">Chat</TabsTrigger>
+                  <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
+                  <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
+                  <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+                  <TabsTrigger value="user-management">User Management</TabsTrigger>
+                  <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
+                  <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
+                </TabsList>
+            </div>
+            <ScrollBar orientation="horizontal" />
         </ScrollArea>
         
         <TabsContent value="chat" className="mt-6 h-[75vh]">
@@ -106,6 +113,9 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="testimonials" className="mt-6">
           <TestimonialManagement />
+        </TabsContent>
+        <TabsContent value="user-management" className="mt-6">
+            <UserManagement />
         </TabsContent>
         <TabsContent value="payment-settings" className="mt-6">
           <PaymentSettings />

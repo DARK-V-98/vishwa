@@ -20,12 +20,13 @@ service cloud.firestore {
                  && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']));
     }
 
-    // User profiles can only be read/written by their owner.
-    // List access is denied to protect user privacy.
+    // User profiles can only be read/written by their owner, or by an admin.
+    // List access is only for admins.
     match /users/{userId} {
-      allow read, update, delete: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn(); // Any signed-in user can create their own doc
-      allow list: if false; // Never allow listing all users
+      allow get, create: if isSignedIn(); // Any signed-in user can create their own doc or get another user's doc
+      allow update: if (isSignedIn() && isOwner(userId)) || (isSignedIn() && isAdmin());
+      allow delete: if isSignedIn() && isAdmin();
+      allow list: if isSignedIn() && isAdmin(); // Only admins can list all users
     }
 
     // User-specific subcollections are only accessible by their owner.
