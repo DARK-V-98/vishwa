@@ -47,26 +47,32 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   const sendMessage = async (text: string) => {
     if (!text.trim() || !currentUser) return;
 
+    const textToSend = text;
     setNewMessage('');
 
     const chatDocRef = doc(firestore, 'chats', userId);
 
     await addDoc(messagesCollection, {
-      text: text,
+      text: textToSend,
       senderId: currentUser.uid,
       timestamp: serverTimestamp(),
     });
-
-    const userOnOtherSide = chats?.find(c => c.id === userId);
-
-    // Update the parent chat doc for sorting and notifications
-    await setDoc(chatDocRef, {
-        userId: userId,
-        userEmail: isAdminView ? userOnOtherSide?.userEmail || 'User' : currentUser.email,
-        lastMessage: text,
+    
+    // Simplification: We may not know the other user's email here without an extra query.
+    // Let's rely on the information we have. If an admin is sending, they are updating the doc.
+    // If a user is sending, they update their own doc.
+    const updateData: any = {
+        lastMessage: textToSend,
         updatedAt: serverTimestamp(),
         isReadByAdmin: isAdminView,
-    }, { merge: true });
+    };
+
+    if (!isAdminView && currentUser.email) {
+      updateData.userEmail = currentUser.email;
+      updateData.userId = currentUser.uid;
+    }
+    
+    await setDoc(chatDocRef, updateData, { merge: true });
   }
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -74,7 +80,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     sendMessage(newMessage);
   };
   
-  const getInitials = (id: string) => id.substring(0, 2).toUpperCase();
+  const getInitials = (id: string) => (id || 'U').substring(0, 2).toUpperCase();
   
   const isAdminMessage = (senderId: string) => {
     // THIS IS A PLACEHOLDER. In a real app, use custom claims.
@@ -84,14 +90,6 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   const suggestionMessages = isAdminView
   ? ["Please provide your name.", "What is your contact number?"]
   : ["Hello, I have a question about my order."];
-
-  const chatsCollection = useMemoFirebase(() => collection(firestore, 'chats'), [firestore]);
-  const chatsQuery = useMemoFirebase(() => query(chatsCollection, orderBy('updatedAt', 'desc')), [chatsCollection]);
-  const { data: chats } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
-  interface Chat {
-    id: string;
-    userEmail: string;
-  }
 
   return (
     <div className="flex flex-col h-full w-full">
