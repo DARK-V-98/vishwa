@@ -1,0 +1,113 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // Primary admin email has ultimate power.
+      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com';
+      
+      // Check for 'admin' or 'developer' role in the user's document.
+      // Use exists() for a safe check before accessing .data
+      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
+                         
+      return isPrimaryAdmin || hasAdminRole;
+    }
+
+    // User profiles can be created by the user themselves.
+    // They can only be read/updated by their owner or an admin.
+    match /users/{userId} {
+      allow create: if isSignedIn() && isOwner(userId);
+      allow get, update: if (isSignedIn() && isOwner(userId)) || isAdmin();
+      // Only admins can list all users or delete a user.
+      allow list, delete: if isAdmin();
+    }
+
+    // User-specific subcollections are only accessible by their owner or an admin.
+    match /users/{userId}/{subcollection}/{docId} {
+      allow read, write: if (isSignedIn() && isOwner(userId)) || isAdmin();
+    }
+    
+    // Design Orders can be created by any signed-in user, but only managed by admins.
+    match /designOrders/{orderId} {
+        allow create: if isSignedIn();
+        allow read, list, update: if isAdmin();
+    }
+    
+    // Projects collection for quotation generator
+    match /projects/{projectId} {
+        allow create: if isSignedIn();
+        allow read, list, update: if isAdmin();
+    }
+
+    // Services are public to read, but only admins can write.
+    match /services/{serviceId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Products are public to read.
+    // Writes are restricted to the product's seller or an admin.
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (isOwner(resource.data.sellerId) || isAdmin());
+    }
+
+    // Top-up packages are public to read, but only admins can write.
+    match /topupPackages/{packageId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Anyone can create a top-up order.
+    // Only the user who created it or an admin can read/list their own orders.
+    // Only admins can update/delete it.
+    match /topupOrders/{orderId} {
+      allow create: if true;
+      allow get, list: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // Global settings are public to read, but only admins can write.
+    match /settings/{settingId} {
+        allow get: if true;
+        allow write: if isAdmin();
+    }
+
+    // CHAT RULES
+    // Rule for the entire /chats collection
+    match /chats/{chatId} {
+        // Admins can list all chat documents to populate the admin panel.
+        allow list: if isAdmin();
+
+        // A user can read/write their own chat document. An admin can access any.
+        allow get, create, update: if (isSignedIn() && isOwner(chatId)) || isAdmin();
+
+        // Rules for the messages subcollection within each chat
+        match /messages/{messageId} {
+          // The user who owns the chat or an admin can read the messages.
+          allow read, list: if (isSignedIn() && isOwner(chatId)) || isAdmin();
+          // A message can only be created by the authenticated sender.
+          allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+        }
+    }
+    
+    // Testimonials are public to read, but only admins can write.
+    match /testimonials/{testimonialId} {
+        allow get, list: if true;
+        allow create, update, delete: if isAdmin();
+    }
+  }
+}

@@ -24,18 +24,26 @@ export default function AdminChat() {
   const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
 
   const chatsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
     const chatsCollection = collection(firestore, 'chats');
     return query(chatsCollection, orderBy('updatedAt', 'desc'));
   }, [firestore]);
+
   const { data: chats, isLoading: chatsLoading, error: chatsError } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
   
-  const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
+  const getInitials = (email: string) => email ? email.substring(0, 2).toUpperCase() : '??';
   
   const handleSelectChat = async (userId: string) => {
+    if (!firestore) return;
     setSelectedChatUserId(userId);
     // Mark chat as read
     const chatDocRef = doc(firestore, 'chats', userId);
-    await updateDoc(chatDocRef, { isReadByAdmin: true });
+    try {
+      await updateDoc(chatDocRef, { isReadByAdmin: true });
+    } catch (e) {
+      // It's okay if this fails, e.g., if the document doesn't exist yet.
+      console.warn("Could not mark chat as read:", e);
+    }
   };
 
   return (
@@ -55,7 +63,7 @@ export default function AdminChat() {
               {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
             </div>
           )}
-          {chatsError && <p className="text-destructive text-sm">Failed to load chats.</p>}
+          {chatsError && <p className="text-destructive text-sm">Failed to load chats. Ensure you have admin permissions.</p>}
           <ScrollArea className="flex-grow -mr-4 pr-4">
             <div className="space-y-2">
               {chats?.map(chat => (
