@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -14,12 +14,65 @@ import { cn } from '@/lib/utils';
 import { MessageSquare } from 'lucide-react';
 
 interface Chat {
-  id: string;
+  id: string; // This is the userId
   userEmail: string;
+  userName?: string; // Optional: will be fetched
   lastMessage: string;
   updatedAt: { seconds: number };
   isReadByAdmin: boolean;
 }
+
+const ConversationItem = ({ chat, onSelect, isSelected }: { chat: Chat, onSelect: (userId: string) => void, isSelected: boolean }) => {
+    const firestore = useFirestore();
+    const [userName, setUserName] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchUserName = async () => {
+            if (!firestore) return;
+            const userDocRef = doc(firestore, 'users', chat.id);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const name = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+                setUserName(name || chat.userEmail);
+            } else {
+                setUserName(chat.userEmail);
+            }
+        };
+        fetchUserName();
+    }, [firestore, chat.id, chat.userEmail]);
+
+    const getInitials = (name: string | null) => {
+        if (!name) return '??';
+        const parts = name.split(' ');
+        if (parts.length > 1) {
+            return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    return (
+        <button
+            onClick={() => onSelect(chat.id)}
+            className={cn(
+                "w-full text-left p-3 rounded-lg transition-colors",
+                isSelected ? 'bg-muted' : 'hover:bg-muted/50'
+            )}
+        >
+            <div className="flex items-center gap-3">
+                <Avatar className="border">
+                    <AvatarFallback>{getInitials(userName)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-grow truncate">
+                    <p className="font-semibold truncate">{userName || <Skeleton className="h-5 w-32"/>}</p>
+                    <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
+                </div>
+                {!chat.isReadByAdmin && <Badge variant="destructive" className="animate-pulse">New</Badge>}
+            </div>
+        </button>
+    );
+};
+
 
 export default function AdminChat() {
   const firestore = useFirestore();
@@ -32,8 +85,6 @@ export default function AdminChat() {
   }, [firestore]);
 
   const { data: chats, isLoading: chatsLoading, error: chatsError } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
-  
-  const getInitials = (email: string) => email ? email.substring(0, 2).toUpperCase() : '??';
   
   const handleSelectChat = async (userId: string) => {
     if (!firestore) return;
@@ -70,25 +121,12 @@ export default function AdminChat() {
           <ScrollArea className="flex-grow -mr-4 pr-4">
             <div className="space-y-2">
               {chats?.map(chat => (
-                <button
-                  key={chat.id}
-                  onClick={() => handleSelectChat(chat.id)}
-                  className={cn(
-                    "w-full text-left p-3 rounded-lg transition-colors",
-                    selectedChatUserId === chat.id ? 'bg-muted' : 'hover:bg-muted/50'
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                      <Avatar className="border">
-                          <AvatarFallback>{getInitials(chat.userEmail)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-grow truncate">
-                          <p className="font-semibold truncate">{chat.userEmail}</p>
-                          <p className="text-sm text-muted-foreground truncate">{chat.lastMessage}</p>
-                      </div>
-                      {!chat.isReadByAdmin && <Badge variant="destructive" className="animate-pulse">New</Badge>}
-                  </div>
-                </button>
+                <ConversationItem 
+                    key={chat.id}
+                    chat={chat}
+                    onSelect={handleSelectChat}
+                    isSelected={selectedChatUserId === chat.id}
+                />
               ))}
             </div>
           </ScrollArea>
