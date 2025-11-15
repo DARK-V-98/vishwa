@@ -25,11 +25,11 @@ export default function MyOrdersPage() {
     const firestore = useFirestore();
     const router = useRouter();
 
-    const ordersCollection = useMemoFirebase(() => collection(firestore, 'topupOrders'), [firestore]);
     const ordersQuery = useMemoFirebase(() => {
         if (!user) return null;
+        const ordersCollection = collection(firestore, 'topupOrders');
         return query(ordersCollection, where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
-    }, [ordersCollection, user]);
+    }, [firestore, user]);
 
     const { data: orders, isLoading: ordersLoading, error } = useCollection<Omit<TopupOrder, 'id'>>(ordersQuery);
     

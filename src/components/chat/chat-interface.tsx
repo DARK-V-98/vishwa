@@ -30,8 +30,10 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   
   const isAdminView = currentUser?.email === 'tikfese@gmail.com';
 
-  const messagesCollection = useMemoFirebase(() => collection(firestore, 'chats', userId, 'messages'), [firestore, userId]);
-  const messagesQuery = useMemoFirebase(() => query(messagesCollection, orderBy('timestamp', 'asc')), [messagesCollection]);
+  const messagesQuery = useMemoFirebase(() => {
+    const messagesCollection = collection(firestore, 'chats', userId, 'messages');
+    return query(messagesCollection, orderBy('timestamp', 'asc'));
+  }, [firestore, userId]);
   const { data: messages, isLoading } = useCollection<Omit<Message, 'id'>>(messagesQuery);
 
   // Auto-scroll to bottom
@@ -50,6 +52,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
     const textToSend = text;
     setNewMessage('');
 
+    const messagesCollection = collection(firestore, 'chats', userId, 'messages');
     const chatDocRef = doc(firestore, 'chats', userId);
 
     await addDoc(messagesCollection, {

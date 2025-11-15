@@ -41,8 +41,10 @@ interface Testimonial {
 
 const Home = () => {
   const firestore = useFirestore();
-  const testimonialsCollection = useMemoFirebase(() => collection(firestore, 'testimonials'), [firestore]);
-  const testimonialsQuery = useMemoFirebase(() => query(testimonialsCollection, orderBy('createdAt', 'desc')), [testimonialsCollection]);
+  const testimonialsQuery = useMemoFirebase(() => {
+    const testimonialsCollection = collection(firestore, 'testimonials');
+    return query(testimonialsCollection, orderBy('createdAt', 'desc'));
+  }, [firestore]);
   const { data: testimonials, isLoading: testimonialsLoading } = useCollection<Omit<Testimonial, 'id'>>(testimonialsQuery);
 
   const services = [

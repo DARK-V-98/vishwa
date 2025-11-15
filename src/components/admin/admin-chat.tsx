@@ -23,8 +23,10 @@ export default function AdminChat() {
   const firestore = useFirestore();
   const [selectedChatUserId, setSelectedChatUserId] = useState<string | null>(null);
 
-  const chatsCollection = useMemoFirebase(() => collection(firestore, 'chats'), [firestore]);
-  const chatsQuery = useMemoFirebase(() => query(chatsCollection, orderBy('updatedAt', 'desc')), [chatsCollection]);
+  const chatsQuery = useMemoFirebase(() => {
+    const chatsCollection = collection(firestore, 'chats');
+    return query(chatsCollection, orderBy('updatedAt', 'desc'));
+  }, [firestore]);
   const { data: chats, isLoading: chatsLoading, error: chatsError } = useCollection<Omit<Chat, 'id'>>(chatsQuery);
   
   const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
@@ -37,7 +39,7 @@ export default function AdminChat() {
   };
 
   return (
-    <Card className="h-[75vh] flex flex-col">
+    <Card className="h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
         <CardTitle>Customer Chats</CardTitle>
         <CardDescription>

@@ -63,17 +63,19 @@ export default function AdminPage() {
 
       <Tabs defaultValue="chat" className="w-full">
         <ScrollArea className="w-full pb-2">
-          <TabsList>
-            <TabsTrigger value="chat">Chat</TabsTrigger>
-            <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
-            <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
-            <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-            <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
-            <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
-          </TabsList>
+            <div className="whitespace-nowrap">
+                <TabsList>
+                    <TabsTrigger value="chat">Chat</TabsTrigger>
+                    <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
+                    <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
+                    <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+                    <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
+                    <TabsTrigger value="listings">Marketplace Listings</TabsTrigger>
+                </TabsList>
+            </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
-        <TabsContent value="chat" className="mt-6">
+        <TabsContent value="chat" className="mt-6 h-[75vh]">
             <AdminChat />
         </TabsContent>
         <TabsContent value="topup-orders" className="mt-6">

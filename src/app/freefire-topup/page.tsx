@@ -42,8 +42,10 @@ export default function FreefireTopupPage() {
   const { user } = useUser();
   const router = useRouter();
 
-  const packagesCollection = useMemoFirebase(() => collection(firestore, 'topupPackages'), [firestore]);
-  const packagesQuery = useMemoFirebase(() => query(packagesCollection, orderBy('order')), [packagesCollection]);
+  const packagesQuery = useMemoFirebase(() => {
+    const packagesCollection = collection(firestore, 'topupPackages');
+    return query(packagesCollection, orderBy('order'));
+  }, [firestore]);
   const { data: packages, isLoading: packagesLoading, error: packagesError } = useCollection<Omit<TopupPackage, 'id'>>(packagesQuery);
   
   const paymentSettingsDoc = useMemoFirebase(() => doc(firestore, 'settings', 'payment'), [firestore]);
