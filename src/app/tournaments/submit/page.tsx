@@ -24,6 +24,9 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import type { Metadata } from 'next';
 
+// This metadata is now for a client component and will not be rendered on the server.
+// The primary SEO for this page comes from the global layout.tsx
+// However, it's kept here for potential future use if this page becomes a server component.
 export const metadata: Metadata = {
     title: 'Submit E-Sports Tournament | Sri Lanka',
     description: 'Become a tournament organizer in Sri Lanka. Submit your Free Fire, PUBG, or Valorant tournament details to our public listing and reach more players.',

@@ -14,6 +14,9 @@ import { format } from 'date-fns';
 import { ArrowRight, Trophy } from 'lucide-react';
 import type { Metadata } from 'next';
 
+// This metadata is now for a client component and will not be rendered on the server.
+// The primary SEO for this page comes from the global layout.tsx
+// However, it's kept here for potential future use if this page becomes a server component.
 export const metadata: Metadata = {
     title: 'Upcoming E-Sports Tournaments in Sri Lanka',
     description: 'Find and join upcoming e-sports tournaments in Sri Lanka. Browse events for games like Free Fire, PUBG, and Valorant submitted by tournament organizers.',

@@ -15,6 +15,13 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'About Vishwa Vidarshana | Web Developer, Designer, Entrepreneur',
+    description: 'Learn more about R.M.T Vishwa Vidarshana, a professional web developer, creative designer, and the founder of ESystemLK. Discover my skills, experience, and journey in the tech industry.',
+};
+
 
 const About = () => {
   const [animatedSkills, setAnimatedSkills] = useState([
