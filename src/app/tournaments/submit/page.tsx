@@ -22,6 +22,12 @@ import { CalendarIcon, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Submit E-Sports Tournament | Sri Lanka',
+    description: 'Become a tournament organizer in Sri Lanka. Submit your Free Fire, PUBG, or Valorant tournament details to our public listing and reach more players.',
+};
 
 const tournamentSchema = z.object({
     tournamentName: z.string().min(5, "Tournament name is required."),

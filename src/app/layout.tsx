@@ -10,8 +10,9 @@ import WelcomeMat from "@/components/welcome-mat";
 import FloatingChatWidget from "@/components/chat/FloatingChatWidget";
 
 export const metadata: Metadata = {
-  title: "R.M.T Vishwa Vidarshana | Web Developer & Designer",
-  description: "Professional web development, logo design, and business solutions by Vishwa Vidarshana. 6+ years experience delivering top-tier digital services in Sri Lanka.",
+  title: "Dark Diamond Store | Free Fire Top-Up Center & Tournament Organizer",
+  description: "Official Free Fire top-up center for Singapore (SG) & Sri Lanka. Dark Diamond Store offers instant diamond top-ups, hosts an e-sports tournament point calculator, and lists tournament organizers in Sri Lanka.",
+  keywords: "Free Fire top up, dark diamond store, dark topup, free fire topup center, singapore region free fire, tournament calculator, tournament organizer sri lanka, diamond store",
 };
 
 export default function RootLayout({

@@ -2,6 +2,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Gamepad2, ArrowRight, Upload, Trophy } from "lucide-react";
 import Link from "next/link";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'E-Sports Gaming Tools | Tournament Point Calculator',
+    description: 'A hub for gaming tools, including a powerful e-sports tournament point calculator. Submit your tournament or browse upcoming events.',
+};
 
 export default function GamesPage() {
   const tools = [

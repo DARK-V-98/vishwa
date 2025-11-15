@@ -12,6 +12,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Tournament } from '@/lib/types';
 import { format } from 'date-fns';
 import { ArrowRight, Trophy } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Upcoming E-Sports Tournaments in Sri Lanka',
+    description: 'Find and join upcoming e-sports tournaments in Sri Lanka. Browse events for games like Free Fire, PUBG, and Valorant submitted by tournament organizers.',
+};
+
 
 function TournamentCard({ tournament }: { tournament: Tournament }) {
     return (
