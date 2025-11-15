@@ -16,8 +16,12 @@ service cloud.firestore {
     function isAdmin() {
       // Check for primary admin email OR if the user has a specific custom role in their user document.
       let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com';
-      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid))
-                         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
+      let hasAdminRole;
+      try {
+        hasAdminRole = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
+      } catch (e) {
+        hasAdminRole = false;
+      }
       return isPrimaryAdmin || hasAdminRole;
     }
 
@@ -30,9 +34,9 @@ service cloud.firestore {
       allow list: if isAdmin();
     }
 
-    // User-specific subcollections are only accessible by their owner.
+    // User-specific subcollections are only accessible by their owner or an admin.
     match /users/{userId}/{subcollection}/{docId} {
-      allow read, list, create, update, delete: if isSignedIn() && isOwner(userId);
+      allow read, write: if (isSignedIn() && isOwner(userId)) || isAdmin();
     }
     
     // Design Orders collection for admin management
@@ -49,22 +53,23 @@ service cloud.firestore {
 
     // Services are public to read, but only admins can write.
     match /services/{serviceId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
     }
     
     // Products are public to read.
     // Writes are restricted to the product's seller or an admin.
     match /products/{productId} {
-      allow read: if true;
+      allow get: if true;
+      allow list: if true;
       allow create: if isSignedIn();
       allow update, delete: if isSignedIn() && (isOwner(resource.data.sellerId) || isAdmin());
     }
 
     // Top-up packages are public to read, but only admins can write.
     match /topupPackages/{packageId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
     }
     
     // Anyone can create a top-up order.
@@ -72,13 +77,13 @@ service cloud.firestore {
     // Only admins can update/delete it.
     match /topupOrders/{orderId} {
       allow create: if true;
-      allow read: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
+      allow get, list: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
       allow update, delete: if isAdmin();
     }
 
     // Global settings are public to read, but only admins can write.
     match /settings/{settingId} {
-        allow read: if true;
+        allow get: if true;
         allow write: if isAdmin();
     }
 
@@ -86,14 +91,10 @@ service cloud.firestore {
     match /chats/{userId} {
         // Users can create/update their own chat document. Admins can access any.
         allow get, create, update: if (isSignedIn() && isOwner(userId)) || isAdmin();
-    }
-
-    // Separated rule for listing chats
-    match /chats {
-        // Only admins can list all chat documents for the admin panel.
+        // Admins can list all chats for the admin panel.
         allow list: if isAdmin();
     }
-
+    
     // Messages within a chat can be read by the user or an admin.
     // Messages can only be created by the sender.
     match /chats/{userId}/messages/{messageId} {
@@ -103,8 +104,8 @@ service cloud.firestore {
     
     // Testimonials are public to read, but only admins can write.
     match /testimonials/{testimonialId} {
-        allow read: if true;
-        allow write: if isAdmin();
+        allow get, list: if true;
+        allow create, update, delete: if isAdmin();
     }
   }
 }
