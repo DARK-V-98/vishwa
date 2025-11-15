@@ -1,9 +1,33 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, ArrowRight } from "lucide-react";
+import { Gamepad2, ArrowRight, Upload, Trophy } from "lucide-react";
 import Link from "next/link";
 
 export default function GamesPage() {
+  const tools = [
+    {
+      title: "E-Sports Point Calculator",
+      description: "A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results.",
+      href: "/games/point-calculator",
+      icon: Gamepad2,
+      variant: "hero" as "hero",
+    },
+    {
+        title: "Upcoming Tournaments",
+        description: "Browse a list of upcoming e-sports tournaments submitted by the community.",
+        href: "/tournaments",
+        icon: Trophy,
+        variant: "outline" as "outline",
+    },
+    {
+      title: "Submit Your Tournament",
+      description: "Host your own tournament? Submit it to our public list for others to join and follow.",
+      href: "/tournaments/submit",
+      icon: Upload,
+      variant: "secondary" as "secondary",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <section className="pt-24 pb-12 md:pt-32 md:pb-16">
@@ -35,25 +59,29 @@ export default function GamesPage() {
       </section>
 
       <section className="py-12 md:py-16">
-        <div className="container mx-auto px-4 max-w-2xl">
-            <Card className="hover:shadow-strong transition-shadow duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-3">
-                        <Gamepad2 className="text-primary"/>
-                        E-Sports Point Calculator
-                    </CardTitle>
-                    <CardDescription>
-                        A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results as professional-looking images.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Link href="/games/point-calculator">
-                        <Button className="w-full" variant="hero">
-                            Open Calculator <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    </Link>
-                </CardContent>
-            </Card>
+        <div className="container mx-auto px-4 max-w-4xl">
+            <div className="grid md:grid-cols-1 gap-6">
+                {tools.map((tool) => (
+                    <Card key={tool.title} className="hover:shadow-strong transition-shadow duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-3">
+                                <tool.icon className="text-primary"/>
+                                {tool.title}
+                            </CardTitle>
+                            <CardDescription>
+                                {tool.description}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Link href={tool.href}>
+                                <Button className="w-full" variant={tool.variant}>
+                                    Open <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         </div>
       </section>
     </div>
