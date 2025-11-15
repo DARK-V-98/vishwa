@@ -27,7 +27,7 @@ export default function MessagesPage() {
     }
 
     return (
-        <div className="container py-12 pt-24 h-screen flex flex-col">
+        <div className="container py-12 pt-24 flex flex-col" style={{ height: 'calc(100vh - 4rem)'}}>
             <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">Messages</h1>
                 <p className="text-muted-foreground">Chat directly with our support team.</p>
@@ -45,5 +45,3 @@ export default function MessagesPage() {
         </div>
     );
 }
-
-    

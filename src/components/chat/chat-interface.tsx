@@ -37,7 +37,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   // Auto-scroll to bottom
   useEffect(() => {
     if (scrollAreaRef.current) {
-        const scrollableView = scrollAreaRef.current.querySelector('div');
+        const scrollableView = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
         if(scrollableView) {
             scrollableView.scrollTop = scrollableView.scrollHeight;
         }
@@ -73,11 +73,16 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
   };
   
   const getInitials = (id: string) => id.substring(0, 2).toUpperCase();
-  const isAdminMessage = (senderId: string) => senderId === 'H2y0nKq3esS3dY3NcdiVymL9XQ23';
+  
+  const isAdminMessage = (senderId: string) => {
+      // In a real app, this should be based on roles, but for now we'll use a hardcoded admin UID
+      // This is a placeholder UID for the admin account
+      return senderId === 'H2y0nKq3esS3dY3NcdiVymL9XQ23';
+  }
 
   const suggestionMessages = isAdminView
   ? ["What is your name?", "What is your contact number?"]
-  : ["Hello, my name is "];
+  : ["Hello, I have a question about my order."];
 
 
   return (
@@ -107,7 +112,7 @@ export default function ChatInterface({ userId }: ChatInterfaceProps) {
                         <BrainCircuit className="h-6 w-6 text-foreground" />
                       </div>
                     ) : (
-                      <AvatarFallback>{getInitials(msg.senderId)}</AvatarFallback>
+                      <AvatarFallback>{getInitials(userId)}</AvatarFallback>
                     )}
                   </Avatar>
                 )}
