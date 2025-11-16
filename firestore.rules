@@ -127,8 +127,12 @@ service cloud.firestore {
 
       // Only admins can delete.
       allow delete: if isAdmin();
+
+      // Rules for the teams subcollection
+      match /teams/{teamId} {
+        // Owner of the tournament or admin can read and write teams.
+        allow read, list, create, update, delete: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.userId)) || isAdmin();
+      }
     }
   }
 }
-
-    

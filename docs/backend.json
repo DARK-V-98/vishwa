@@ -474,6 +474,7 @@
         "endDate": { "type": "string", "format": "date-time" },
         "registrationLink": { "type": "string", "format": "uri" },
         "status": { "type": "string", "enum": ["published", "pending-approval", "rejected"] },
+        "matchCount": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
@@ -481,6 +482,32 @@
         "id", "userId", "tournamentName", "organizerName", "organizerEmail", "gameType", 
         "posterUrl", "description", "prizePool", "startDate", "registrationLink", "status", "createdAt"
       ]
+    },
+     "Team": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Team",
+      "type": "object",
+      "description": "Represents a team participating in a tournament.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID for the team." },
+        "name": { "type": "string" },
+        "logoUrl": { "type": "string", "format": "uri" },
+        "players": { "type": "array", "items": { "type": "string" } },
+        "region": { "type": "string" },
+        "matchScores": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kills": { "type": "number" },
+              "placement": { "type": "number" },
+              "bonus": { "type": "number" }
+            },
+            "required": ["kills", "placement", "bonus"]
+          }
+        }
+      },
+      "required": ["id", "name"]
     }
   },
   "auth": {
@@ -689,10 +716,20 @@
             { "name": "tournamentId", "description": "The unique ID for the tournament." }
           ]
         }
+      },
+      {
+        "path": "/tournaments/{tournamentId}/teams/{teamId}",
+        "definition": {
+          "entityName": "Team",
+          "schema": { "$ref": "#/backend/entities/Team" },
+          "description": "Subcollection storing teams for a specific tournament.",
+          "params": [
+            { "name": "tournamentId", "description": "The ID of the tournament." },
+            { "name": "teamId", "description": "The unique ID for the team." }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality. A `teams` subcollection is added under each tournament to store participant data."
   }
 }
-
-    

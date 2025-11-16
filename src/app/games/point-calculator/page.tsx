@@ -1,8 +1,13 @@
 
+'use client';
 import PointCalculator from "@/components/games/point-calculator";
+import TournamentManager from "@/components/games/tournament-manager";
 import { Gamepad2 } from "lucide-react";
 
 export default function PointCalculatorPage() {
+  // This page is now a generic host. We can decide later if it should
+  // host a local-only calculator or redirect. For now, we can render the
+  // manager with a null ID to signify local-only mode.
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <section className="pt-24 pb-12 md:pt-32 md:pb-16">
@@ -27,7 +32,7 @@ export default function PointCalculatorPage() {
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results as professional-looking images.
+                A fully-featured point calculator for your e-sports tournaments. Manage teams and scores for your event.
             </p>
           </div>
         </div>
@@ -35,7 +40,7 @@ export default function PointCalculatorPage() {
 
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
-            <PointCalculator />
+            <TournamentManager tournament={null} />
         </div>
       </section>
     </div>

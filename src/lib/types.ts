@@ -18,9 +18,26 @@ export interface Tournament {
     endDate: Timestamp;
     registrationLink: string;
     status: 'published' | 'pending-approval' | 'rejected';
+    matchCount?: number;
     createdAt: Timestamp;
     updatedAt: Timestamp;
 }
+
+export interface MatchScore {
+  kills: number;
+  placement: number;
+  bonus: number;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  logoUrl: string;
+  players: string[];
+  region: string;
+  matchScores: MatchScore[];
+}
+
 
 export interface TournamentBudget {
     tournamentName: string;

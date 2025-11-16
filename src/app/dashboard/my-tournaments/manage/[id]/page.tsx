@@ -10,7 +10,7 @@ import type { Tournament } from '@/lib/types';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import PointCalculator from '@/components/games/point-calculator';
+import TournamentManager from '@/components/games/tournament-manager';
 
 function ManageTournamentPageSkeleton() {
     return (
@@ -27,11 +27,12 @@ function ManageTournamentPageSkeleton() {
 export default function ManageTournamentPage() {
     const { id } = useParams();
     const firestore = useFirestore();
+    const tournamentId = Array.isArray(id) ? id[0] : id;
 
     const tournamentDocRef = useMemoFirebase(() => {
-        if (!firestore || typeof id !== 'string') return null;
-        return doc(firestore, 'tournaments', id);
-    }, [firestore, id]);
+        if (!firestore || !tournamentId) return null;
+        return doc(firestore, 'tournaments', tournamentId);
+    }, [firestore, tournamentId]);
 
     const { data: tournament, isLoading, error } = useDoc<Tournament>(tournamentDocRef);
 
@@ -76,10 +77,9 @@ export default function ManageTournamentPage() {
             </section>
              <section className="py-12 md:py-16">
                 <div className="container mx-auto px-4">
-                    <PointCalculator />
+                    <TournamentManager tournament={tournament} />
                 </div>
             </section>
         </div>
     )
 }
-
