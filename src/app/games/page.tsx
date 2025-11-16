@@ -73,12 +73,12 @@ export default function GamesPage() {
       </section>
 
       <section className="py-12 md:py-16">
-        <div className="container mx-auto px-4 max-w-4xl">
-            <div className="grid md:grid-cols-1 gap-6">
+        <div className="container mx-auto px-4 max-w-5xl">
+            <div className="grid md:grid-cols-2 gap-6">
                 {tools.map((tool) => (
-                    <Card key={tool.title} className="hover:shadow-strong transition-shadow duration-300 border-border/50 bg-card/50 backdrop-blur-sm">
+                    <Card key={tool.title} className="hover:shadow-strong transition-shadow duration-300 border-border/50 bg-card/50 backdrop-blur-sm flex flex-col">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-3">
+                            <CardTitle className="flex items-center gap-3 text-xl">
                                 <tool.icon className="text-primary"/>
                                 {tool.title}
                             </CardTitle>
@@ -86,10 +86,10 @@ export default function GamesPage() {
                                 {tool.description}
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="mt-auto">
                             <Link href={tool.href}>
                                 <Button className="w-full" variant={tool.variant}>
-                                    Open <ArrowRight className="ml-2 h-4 w-4" />
+                                    Open Tool <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </Link>
                         </CardContent>
