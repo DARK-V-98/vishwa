@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -32,6 +33,14 @@
           "description": "An array of skills possessed by the user.",
           "items": {
             "type": "string"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "description": "An array of roles assigned to the user (e.g., 'admin', 'customer').",
+          "items": {
+            "type": "string",
+            "enum": ["admin", "developer", "customer"]
           }
         }
       },

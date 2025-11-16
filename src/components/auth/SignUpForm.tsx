@@ -44,8 +44,9 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
+      const displayName = `${firstName} ${lastName}`.trim();
       await updateProfile(user, {
-        displayName: `${firstName} ${lastName}`.trim(),
+        displayName: displayName,
       });
       
       const userDocRef = doc(firestore, "users", user.uid);
@@ -54,10 +55,10 @@ export default function SignUpForm({ onToggle }: SignUpFormProps) {
         firstName: firstName,
         lastName: lastName,
         email: user.email,
+        username: user.email?.split('@')[0], // Set a default username
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         roles: ['customer']
-        // We are not setting a username here anymore.
       });
 
       toast.success("Account created successfully! Welcome.");

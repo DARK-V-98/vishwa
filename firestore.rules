@@ -76,7 +76,8 @@ service cloud.firestore {
     // Only admins can update/delete it.
     match /topupOrders/{orderId} {
       allow create: if true;
-      allow get, list: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow get: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow list: if isAdmin(); // Only admins should list all orders
       allow update, delete: if isAdmin();
     }
 
@@ -113,14 +114,11 @@ service cloud.firestore {
     // TOURNAMENT RULES
     match /tournaments/{tournamentId} {
       // Allow public read for published tournaments
-      allow get: if resource.data.status == 'published';
-
-      // Allow owners and admins to read their own or any tournament
-      allow get: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
+      allow get: if resource.data.status == 'published' || (isSignedIn() && (isOwner(resource.data.userId) || isAdmin()));
       
       // Allow admins to list all tournaments for the admin panel
       // Allow public to list only published tournaments
-      allow list: if isAdmin() || request.query.get("status") == "published";
+      allow list: if isAdmin() || (request.query.where.size() > 0 && request.query.where[0][0] == 'status' && request.query.where[0][2] == 'published');
 
       // Allow authenticated users to create tournaments
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;

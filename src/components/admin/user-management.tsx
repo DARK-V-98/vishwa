@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, doc, updateDoc } from 'firebase/firestore';
 import {
@@ -65,7 +65,11 @@ export default function UserManagement() {
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     return users.filter(user => {
-      const matchesSearch = user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = user.email?.toLowerCase().includes(searchLower) ||
+                            user.firstName?.toLowerCase().includes(searchLower) ||
+                            user.lastName?.toLowerCase().includes(searchLower) ||
+                            user.username?.toLowerCase().includes(searchLower);
       const matchesRole = roleFilter === 'all' || (user.roles && user.roles.includes(roleFilter));
       return matchesSearch && matchesRole;
     });
@@ -100,7 +104,7 @@ export default function UserManagement() {
     }
   };
 
-  const getRoleVariant = (role: string) => {
+  const getRoleVariant = (role: string): 'default' | 'destructive' | 'secondary' | 'outline' | null | undefined => {
     switch (role) {
       case 'admin': return 'destructive';
       case 'developer': return 'default';
@@ -126,7 +130,7 @@ export default function UserManagement() {
             <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by email..."
+                placeholder="Search by email, name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -206,7 +210,7 @@ export default function UserManagement() {
                 <Checkbox
                   id={role}
                   checked={editedRoles.includes(role)}
-                  onCheckedChange={(checked) => handleRoleChange(role, checked)}
+                  onCheckedChange={(checked) => handleRoleChange(role, !!checked)}
                 />
                 <Label htmlFor={role} className="capitalize font-medium">
                   {role}

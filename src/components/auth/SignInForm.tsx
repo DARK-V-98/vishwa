@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useFirestore } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc, updateDoc, writeBatch, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -39,21 +39,18 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-        const batch = writeBatch(firestore);
-        
-        batch.set(userDocRef, {
+        const displayName = user.displayName?.split(' ') || [''];
+        await setDoc(userDocRef, {
           id: user.uid,
           email: user.email,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
-          username: user.email,
-          firstName: '',
-          lastName: '',
+          username: user.email?.split('@')[0],
+          firstName: displayName[0],
+          lastName: displayName.slice(1).join(' '),
           roles: ['customer']
         });
-
-        await batch.commit();
-        toast.success("Welcome! Your profile has been initialized.");
+        toast.success("Welcome! Your profile has been created.");
       } else {
         const userData = userDoc.data();
         if (!userData.roles || userData.roles.length === 0) {
@@ -61,7 +58,7 @@ export default function SignInForm({ onToggle }: SignInFormProps) {
               roles: ['customer'],
               updatedAt: serverTimestamp()
             });
-            toast.info("Your profile has been updated with default roles.");
+            toast.info("Your profile has been updated with a default role.");
         }
         toast.success("Signed in successfully!");
       }
