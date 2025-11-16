@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Trophy, Calendar, Eye, Settings, PlusCircle, Gamepad2, AlertCircle } from 'lucide-react';
+import { Trophy, Calendar, Eye, Edit, PlusCircle, Gamepad2, AlertCircle } from 'lucide-react';
 import type { Tournament } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -140,8 +140,10 @@ export default function MyTournamentsPage() {
                                                     <Eye className="mr-2 h-4 w-4" /> View
                                                 </Link>
                                             </Button>
-                                            <Button variant="secondary" size="sm" disabled>
-                                                <Settings className="mr-2 h-4 w-4" /> Manage
+                                            <Button asChild variant="secondary" size="sm">
+                                                <Link href={`/dashboard/my-tournaments/edit/${tournament.id}`}>
+                                                   <Edit className="mr-2 h-4 w-4" /> Edit
+                                                </Link>
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -154,3 +156,5 @@ export default function MyTournamentsPage() {
         </div>
     );
 }
+
+    

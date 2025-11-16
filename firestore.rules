@@ -113,21 +113,22 @@ service cloud.firestore {
     
     // TOURNAMENT RULES
     match /tournaments/{tournamentId} {
-      // Allow public read for published tournaments
+      // Allow public read for published tournaments or owners/admins to read any.
       allow get: if resource.data.status == 'published' || (isSignedIn() && (isOwner(resource.data.userId) || isAdmin()));
       
-      // Allow admins to list all tournaments for the admin panel
-      // Allow public to list only published tournaments
-      allow list: if isAdmin() || (request.query.where.size() > 0 && request.query.where[0][0] == 'status' && request.query.where[0][2] == 'published');
+      // Allow public listing of ONLY published tournaments. Admins can list all.
+      allow list: if request.query.where.size() == 1 && request.query.where[0] == ['status', '==', 'published'] || isAdmin();
 
-      // Allow authenticated users to create tournaments
+      // Allow authenticated users to create tournaments for themselves.
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
 
-      // Allow owners and admins to update
+      // Allow owners and admins to update.
       allow update: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
 
-      // Only admins can delete
+      // Only admins can delete.
       allow delete: if isAdmin();
     }
   }
 }
+
+    
