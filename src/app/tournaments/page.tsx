@@ -66,21 +66,12 @@ export default function TournamentsPage() {
         if (!firestore) return null;
         return query(
             collection(firestore, 'tournaments'),
-            where('status', '==', 'published'), // This will be used for admin approval
+            where('status', '==', 'published'),
             orderBy('startDate', 'desc')
         );
     }, [firestore]);
 
-    // For now, let's show all tournaments since admin approval isn't implemented
-     const allTournamentsQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return query(
-            collection(firestore, 'tournaments'),
-            orderBy('createdAt', 'desc')
-        );
-    }, [firestore]);
-
-    const { data: tournaments, isLoading, error } = useCollection<Omit<Tournament, 'id'>>(allTournamentsQuery);
+    const { data: tournaments, isLoading, error } = useCollection<Omit<Tournament, 'id'>>(tournamentsQuery);
 
     return (
         <div className="container py-12 pt-24">
