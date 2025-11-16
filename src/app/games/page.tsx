@@ -14,14 +14,14 @@ export default function GamesPage() {
   const tools = [
     {
       title: "Tournament Budget Calculator",
-      description: "A comprehensive financial planning tool to budget your e-sports tournaments, from prize pools and venue costs to staff and marketing expenses.",
+      description: "A comprehensive financial planning tool to budget your e-sports tournaments.",
       href: "/games/tournament-budget-calculator",
       icon: Coins,
       variant: "hero" as "hero",
     },
     {
       title: "E-Sports Point Calculator",
-      description: "A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results.",
+      description: "A fully-featured point calculator for your e-sports tournaments. Customize scoring and manage teams.",
       href: "/games/point-calculator",
       icon: Gamepad2,
       variant: "secondary" as "secondary",
@@ -76,8 +76,8 @@ export default function GamesPage() {
         <div className="container mx-auto px-4 max-w-5xl">
             <div className="grid md:grid-cols-2 gap-6">
                 {tools.map((tool) => (
-                    <Card key={tool.title} className="hover:shadow-strong transition-shadow duration-300 border-border/50 bg-card/50 backdrop-blur-sm flex flex-col">
-                        <CardHeader>
+                    <Card key={tool.title} className="hover:shadow-strong transition-shadow duration-300 border-border/50 bg-card/50 backdrop-blur-sm flex flex-col aspect-square">
+                        <CardHeader className="flex-grow">
                             <CardTitle className="flex items-center gap-3 text-xl">
                                 <tool.icon className="text-primary"/>
                                 {tool.title}
@@ -86,7 +86,7 @@ export default function GamesPage() {
                                 {tool.description}
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="mt-auto">
+                        <CardContent>
                             <Link href={tool.href}>
                                 <Button className="w-full" variant={tool.variant}>
                                     Open Tool <ArrowRight className="ml-2 h-4 w-4" />
