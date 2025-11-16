@@ -1,22 +1,30 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Gamepad2, ArrowRight, Upload, Trophy } from "lucide-react";
+import { Gamepad2, ArrowRight, Upload, Trophy, Coins } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'E-Sports Gaming Tools | Tournament Point Calculator',
-    description: 'A hub for gaming tools, including a powerful e-sports tournament point calculator. Submit your tournament or browse upcoming events.',
+    title: 'E-Sports Gaming Tools | Tournament Point & Budget Calculator',
+    description: 'A hub for gaming tools, including a powerful e-sports tournament point calculator and a budget planner. Submit your tournament or browse upcoming events.',
 };
 
 export default function GamesPage() {
   const tools = [
     {
+      title: "Tournament Budget Calculator",
+      description: "A comprehensive financial planning tool to budget your e-sports tournaments, from prize pools and venue costs to staff and marketing expenses.",
+      href: "/games/tournament-budget-calculator",
+      icon: Coins,
+      variant: "hero" as "hero",
+    },
+    {
       title: "E-Sports Point Calculator",
       description: "A fully-featured point calculator for your e-sports tournaments. Customize scoring, manage teams, and export results.",
       href: "/games/point-calculator",
       icon: Gamepad2,
-      variant: "hero" as "hero",
+      variant: "secondary" as "secondary",
     },
     {
         title: "Upcoming Tournaments",
@@ -30,7 +38,7 @@ export default function GamesPage() {
       description: "Host your own tournament? Submit it to our public list for others to join and follow.",
       href: "/tournaments/submit",
       icon: Upload,
-      variant: "secondary" as "secondary",
+      variant: "outline" as "outline",
     },
   ];
 
