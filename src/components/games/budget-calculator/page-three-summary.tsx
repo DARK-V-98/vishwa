@@ -1,16 +1,12 @@
-
 'use client';
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, RefreshCw, Download, Save, Share2, AlertTriangle, TrendingUp, TrendingDown, CircleHelp, ArrowRight, Sparkles } from 'lucide-react';
 import type { TournamentBudget } from '@/lib/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { generateBudgetSuggestions, BudgetSuggestionOutput } from '@/ai/flows/budget-suggestion-flow';
-import { Skeleton } from '@/components/ui/skeleton';
-
 
 interface Props {
     onBack: () => void;
@@ -46,8 +42,6 @@ const SummaryCard = ({ title, value, variant = 'default', tooltipText }: { title
 
 export default function PageThreeSummary({ onBack, onRestart, initialData }: Props) {
     const router = useRouter();
-    const [suggestions, setSuggestions] = useState<BudgetSuggestionOutput | null>(null);
-    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(true);
 
     const calculations = useMemo(() => {
         const { participants = 0, regFeeType, regFeeAmount = 0, income, expenses, estimatedPrizePool = 0, refereeCost = 0, venueCost = 0 } = initialData;
@@ -92,31 +86,6 @@ export default function PageThreeSummary({ onBack, onRestart, initialData }: Pro
         };
     }, [initialData]);
     
-    useEffect(() => {
-        async function fetchSuggestions() {
-            setIsLoadingSuggestions(true);
-            try {
-                const suggestionInput = {
-                    participants: initialData.participants || 0,
-                    regFeeAmount: initialData.regFeeAmount || 0,
-                    estimatedPrizePool: initialData.estimatedPrizePool || 0,
-                    totalExpenses: calculations.totalExpenses,
-                    totalIncome: calculations.totalIncome,
-                };
-                const result = await generateBudgetSuggestions(suggestionInput);
-                setSuggestions(result);
-            } catch (error) {
-                console.error("Failed to fetch AI suggestions:", error);
-                // Silently fail, don't show an error to the user
-                setSuggestions(null);
-            } finally {
-                setIsLoadingSuggestions(false);
-            }
-        }
-        fetchSuggestions();
-    }, [calculations, initialData]);
-
-
     const getRiskColor = (risk: 'Low' | 'Medium' | 'High') => {
         if (risk === 'High') return 'bg-red-500/20 text-red-500 border-red-500/30';
         if (risk === 'Medium') return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30';
@@ -159,30 +128,6 @@ export default function PageThreeSummary({ onBack, onRestart, initialData }: Pro
                         <p className="font-bold text-lg">{calculations.profitPercentage.toFixed(2)}% Profit Margin</p>
                     </div>
                 </div>
-
-                 {/* AI Suggestions */}
-                <Card className="bg-card/30">
-                    <CardHeader>
-                        <CardTitle className="text-xl flex items-center gap-2"><Sparkles className="text-primary"/>AI Suggestions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 text-sm text-muted-foreground">
-                        {isLoadingSuggestions ? (
-                            <div className="space-y-3">
-                                <Skeleton className="h-5 w-3/4" />
-                                <Skeleton className="h-5 w-2/3" />
-                                <Skeleton className="h-5 w-4/5" />
-                            </div>
-                        ) : suggestions ? (
-                             <>
-                                <p><strong className="text-primary">Suggested Fee:</strong> {suggestions.suggestedFee}</p>
-                                <p><strong className="text-primary">Prize Distribution:</strong> {suggestions.prizeDistribution}</p>
-                                <p><strong className="text-primary">Cost Saving Tip:</strong> {suggestions.costSavingTip}</p>
-                             </>
-                        ) : (
-                            <p>AI suggestions could not be loaded at this time.</p>
-                        )}
-                    </CardContent>
-                </Card>
 
                 {/* User Actions */}
                 <div className="space-y-3 pt-4">
