@@ -85,14 +85,17 @@ const Home = () => {
       
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <Image
-            src="https://picsum.photos/seed/hero/1920/1080"
-            alt="Hero background"
-            fill
-            className="object-cover"
-            data-ai-hint="abstract background"
-          />
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/bgr.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -107,10 +110,10 @@ const Home = () => {
                 Web Developer
               </span>
               <br />
-              <span className="text-foreground">Designer & Entrepreneur</span>
+              <span className="text-white">Designer & Entrepreneur</span>
             </h1>
             
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
               Bringing your digital vision to life with 6+ years of professional experience
               in web development, creative design, and innovative business solutions.
             </p>
@@ -139,7 +142,7 @@ const Home = () => {
               {features.map((feature, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-sm">
                   <feature.icon className="h-5 w-5 text-primary" />
-                  <span className="text-muted-foreground">{feature.text}</span>
+                  <span className="text-slate-300">{feature.text}</span>
                 </div>
               ))}
             </div>
