@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -47,16 +47,30 @@ export default function SubmitTournamentPage() {
     const firestore = useFirestore();
     const storage = useStorage();
     const router = useRouter();
+    const searchParams = useSearchParams();
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [posterFile, setPosterFile] = useState<File | null>(null);
 
     const form = useForm<TournamentFormValues>({
         resolver: zodResolver(tournamentSchema),
         defaultValues: {
+            tournamentName: searchParams.get('name') || '',
+            gameType: searchParams.get('game') || undefined,
+            prizePool: searchParams.get('prize') || '',
+            entryFee: searchParams.get('fee') || '',
             organizerName: user?.displayName ?? "",
             organizerEmail: user?.email ?? "",
         }
     });
+
+    // Effect to update form values if user data becomes available after form init
+    useEffect(() => {
+        if (user) {
+            form.setValue('organizerName', user.displayName || '');
+            form.setValue('organizerEmail', user.email || '');
+        }
+    }, [user, form]);
 
     const uploadImage = async (file: File, path: string): Promise<string> => {
         if (!storage) throw new Error("Firebase Storage is not configured.");
@@ -85,6 +99,7 @@ export default function SubmitTournamentPage() {
                 posterUrl,
                 status: 'pending-approval',
                 createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
             });
 
             toast.success("Tournament submitted successfully! It will be reviewed by an admin shortly.");
@@ -158,6 +173,9 @@ export default function SubmitTournamentPage() {
                                                 <SelectItem value="Free Fire">Free Fire</SelectItem>
                                                 <SelectItem value="Valorant">Valorant</SelectItem>
                                                 <SelectItem value="Fortnite">Fortnite</SelectItem>
+                                                <SelectItem value="MLBB">Mobile Legends</SelectItem>
+                                                <SelectItem value="Cricket">Cricket</SelectItem>
+                                                <SelectItem value="Football">Football</SelectItem>
                                                 <SelectItem value="Custom">Custom</SelectItem>
                                             </SelectContent>
                                         </Select><FormMessage />

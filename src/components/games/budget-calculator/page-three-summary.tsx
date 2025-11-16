@@ -2,9 +2,10 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RefreshCw, Download, Save, Share2, AlertTriangle, TrendingUp, TrendingDown, CircleHelp } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Download, Save, Share2, AlertTriangle, TrendingUp, TrendingDown, CircleHelp, ArrowRight } from 'lucide-react';
 import type { TournamentBudget } from '@/lib/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -41,7 +42,8 @@ const SummaryCard = ({ title, value, variant = 'default', tooltipText }: { title
 };
 
 export default function PageThreeSummary({ onBack, onRestart, initialData }: Props) {
-    
+    const router = useRouter();
+
     const calculations = useMemo(() => {
         const { participants = 0, regFeeType, regFeeAmount = 0, income, expenses, estimatedPrizePool = 0, refereeCost = 0, venueCost = 0 } = initialData;
         
@@ -91,6 +93,16 @@ export default function PageThreeSummary({ onBack, onRestart, initialData }: Pro
         return 'bg-green-500/20 text-green-500 border-green-500/30';
     }
 
+    const handleContinue = () => {
+        const queryParams = new URLSearchParams({
+            name: initialData.tournamentName || '',
+            game: initialData.gameType || '',
+            prize: initialData.estimatedPrizePool?.toString() || '0',
+            fee: initialData.regFeeAmount?.toString() || '0',
+        });
+        router.push(`/tournaments/submit?${queryParams.toString()}`);
+    }
+
     return (
         <Card className="max-w-4xl mx-auto shadow-strong border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
@@ -130,12 +142,17 @@ export default function PageThreeSummary({ onBack, onRestart, initialData }: Pro
                 </Card>
 
                 {/* User Actions */}
-                <div className="space-y-3">
+                <div className="space-y-3 pt-4">
                      <h3 className="text-lg font-semibold text-center">What's Next?</h3>
-                     <div className="grid md:grid-cols-3 gap-4">
-                         <Button size="lg" variant="secondary"><Save className="mr-2 h-4 w-4" /> Save to Profile</Button>
-                         <Button size="lg" variant="default"><Share2 className="mr-2 h-4 w-4" /> Create Public Post</Button>
-                         <Button size="lg" variant="outline"><Download className="mr-2 h-4 w-4" /> Export</Button>
+                     <div className="grid grid-cols-1 gap-4">
+                         <Button size="lg" variant="hero" onClick={handleContinue}>
+                             Continue to Tournament Submission 
+                             <ArrowRight className="ml-2 h-4 w-4" />
+                         </Button>
+                         <div className="grid md:grid-cols-2 gap-4">
+                            <Button size="lg" variant="secondary" disabled><Save className="mr-2 h-4 w-4" /> Save to Profile</Button>
+                            <Button size="lg" variant="outline" disabled><Download className="mr-2 h-4 w-4" /> Export</Button>
+                         </div>
                      </div>
                 </div>
             </CardContent>
