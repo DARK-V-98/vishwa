@@ -84,19 +84,16 @@ const Home = () => {
     <div className="min-h-screen bg-gradient-subtle">
       
       {/* Hero Section */}
-      <section className="pt-24 pb-12 md:pt-32 md:pb-20 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          >
-            <source src="/bgr.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-black/50"></div>
-        </div>
+      <section className="relative pt-24 pb-12 md:pt-32 md:pb-20 overflow-hidden bg-black">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover opacity-50 z-0"
+        >
+          <source src="/bgr.mp4" type="video/mp4" />
+        </video>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-block">
