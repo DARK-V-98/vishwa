@@ -1,6 +1,7 @@
 
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -42,7 +43,7 @@ const tournamentSchema = z.object({
 
 type TournamentFormValues = z.infer<typeof tournamentSchema>;
 
-export default function SubmitTournamentPage() {
+function SubmitTournamentForm() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const storage = useStorage();
@@ -244,4 +245,20 @@ export default function SubmitTournamentPage() {
             </Card>
         </div>
     );
+}
+
+export default function SubmitTournamentPage() {
+    return (
+        <Suspense fallback={
+            <div className="container py-12 pt-24 max-w-4xl mx-auto">
+                <div className="text-center mb-12">
+                    <Skeleton className="h-10 w-1/2 mx-auto mb-2" />
+                    <Skeleton className="h-6 w-3/4 mx-auto" />
+                </div>
+                <Card><CardContent className="p-6"><Skeleton className="h-96 w-full" /></CardContent></Card>
+            </div>
+        }>
+            <SubmitTournamentForm />
+        </Suspense>
+    )
 }
