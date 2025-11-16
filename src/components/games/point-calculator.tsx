@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,14 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, Trash2, Crown, Medal, Trophy, RefreshCw, Settings, X, Upload } from 'lucide-react';
+import { PlusCircle, Trash2, Crown, Medal, Trophy, RefreshCw, Settings, X, Upload, Download, Image as ImageIconExport } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from '../ui/separator';
 import type { Team, MatchScore } from '@/lib/types';
-
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { toast } from 'sonner';
 
 interface CalculatedTeam extends Team {
     totalPoints: number;
@@ -40,17 +42,17 @@ const GAME_PRESETS = {
         killPointValue: 1,
         placementPoints: [12, 9, 7, 5, 4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
-    'valorant': { // Placeholder
+    'valorant': { 
         killPointValue: 0,
         placementPoints: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     },
-    'fortnite': { // Placeholder
+    'fortnite': { 
         killPointValue: 1,
         placementPoints: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     },
 };
 
-const RankIcon = ({ rank }: { rank: number }) => {
+export const RankIcon = ({ rank }: { rank: number }) => {
   if (rank === 1) return <Crown className="h-5 w-5 text-yellow-400" />;
   if (rank === 2) return <Medal className="h-5 w-5 text-slate-400" />;
   if (rank === 3) return <Trophy className="h-5 w-5 text-amber-600" />;
@@ -86,6 +88,8 @@ export default function PointCalculator({
 
   // UI State
   const [activeTab, setActiveTab] = useState('match-0');
+  const leaderboardRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Load settings from localStorage
   useEffect(() => {
@@ -160,6 +164,43 @@ export default function PointCalculator({
       setActiveTab(`match-${matchCount - 2}`);
     }
   }
+
+  const exportLeaderboard = async (format: 'png' | 'pdf') => {
+    if (!leaderboardRef.current) return;
+    setIsExporting(true);
+    toast.info(`Exporting leaderboard as ${format.toUpperCase()}...`);
+
+    try {
+        const canvas = await html2canvas(leaderboardRef.current, {
+            scale: 2, // Higher scale for better quality
+            useCORS: true,
+            backgroundColor: null,
+        });
+
+        if (format === 'png') {
+            const image = canvas.toDataURL('image/png', 1.0);
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'leaderboard.png';
+            link.click();
+        } else { // pdf
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: [canvas.width, canvas.height],
+            });
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save('leaderboard.pdf');
+        }
+        toast.success('Export successful!');
+    } catch (error) {
+        console.error("Export failed:", error);
+        toast.error('Export failed. Please try again.');
+    } finally {
+        setIsExporting(false);
+    }
+  };
 
   return (
     <div className="grid lg:grid-cols-3 gap-8 items-start">
@@ -244,26 +285,30 @@ export default function PointCalculator({
 
       <div className="lg:col-span-2">
         <Card className="shadow-strong border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <CardTitle>Tournament Leaderboard</CardTitle>
               <CardDescription>Teams are ranked by total points, then kills.</CardDescription>
             </div>
-             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" disabled={teams.length === 0}><RefreshCw className="mr-2 h-4 w-4"/>Clear All</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                  <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>This will permanently clear all teams and scores. This action cannot be undone.</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={onClear}>Yes, clear it</AlertDialogAction>
-                  </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => exportLeaderboard('png')} disabled={isExporting}><ImageIconExport className="mr-2 h-4 w-4"/>Export PNG</Button>
+                <Button variant="outline" size="sm" onClick={() => exportLeaderboard('pdf')} disabled={isExporting}><Download className="mr-2 h-4 w-4"/>Export PDF</Button>
+                 <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" disabled={teams.length === 0}><RefreshCw className="mr-2 h-4 w-4"/>Clear All</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                      <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>This will permanently clear all teams and scores. This action cannot be undone.</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={onClear}>Yes, clear it</AlertDialogAction>
+                      </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+            </div>
           </CardHeader>
           <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -285,7 +330,7 @@ export default function PointCalculator({
                   ))}
 
                   <TabsContent value="overall">
-                      <OverallLeaderboard leaderboard={calculatedLeaderboard} onDelete={onDeleteTeam} />
+                      <OverallLeaderboard leaderboard={calculatedLeaderboard} onDelete={onDeleteTeam} leaderboardRef={leaderboardRef}/>
                   </TabsContent>
               </Tabs>
           </CardContent>
@@ -350,9 +395,9 @@ const MatchInputTable = ({ teams, matchIndex, onScoreChange }: { teams: Team[], 
     )
 }
 
-const OverallLeaderboard = ({ leaderboard, onDelete }: { leaderboard: CalculatedTeam[], onDelete: (id: string) => void }) => {
+const OverallLeaderboard = ({ leaderboard, onDelete, leaderboardRef }: { leaderboard: CalculatedTeam[], onDelete: (id: string) => void, leaderboardRef: React.RefObject<HTMLDivElement> }) => {
      return (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto p-4 bg-card" ref={leaderboardRef}>
             <Table>
             <TableHeader>
                 <TableRow>

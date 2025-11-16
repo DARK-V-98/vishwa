@@ -2,17 +2,20 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, collection, query, orderBy } from 'firebase/firestore';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Ticket, Trophy, Gamepad2, Info, Users, Link as LinkIcon, Share2 } from 'lucide-react';
-import type { Tournament } from '@/lib/types';
+import { Calendar, Ticket, Trophy, Gamepad2, Info, Users, Link as LinkIcon, Share2, ListOrdered, BarChart } from 'lucide-react';
+import type { Tournament, Team } from '@/lib/types';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { RankIcon } from '@/components/games/point-calculator';
 
 function TournamentPageSkeleton() {
     return (
@@ -31,14 +34,76 @@ function TournamentPageSkeleton() {
     )
 }
 
+function PublicLeaderboard({ tournamentId }: { tournamentId: string }) {
+    const firestore = useFirestore();
+
+    const teamsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'tournaments', tournamentId, 'teams'));
+    }, [firestore, tournamentId]);
+
+    const { data: teams, isLoading, error } = useCollection<Team>(teamsQuery);
+    
+    // This is a simplified calculation, ideally should share logic with point calculator
+    const calculatedLeaderboard = useMemo(() => {
+        if (!teams) return [];
+        return teams.map(team => {
+            const totalPoints = team.matchScores.reduce((sum, score) => sum + score.kills + score.bonus, 0); // Simplified
+            const totalKills = team.matchScores.reduce((sum, score) => sum + score.kills, 0);
+            return { ...team, totalPoints, totalKills };
+        }).sort((a, b) => b.totalPoints - a.totalPoints || b.totalKills - a.totalKills);
+    }, [teams]);
+
+    if (isLoading) {
+        return (
+            <div className="space-y-2">
+                {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+            </div>
+        );
+    }
+    
+    if (error) return <p className="text-destructive text-sm">Could not load leaderboard.</p>;
+    if (!teams || teams.length === 0) return <p className="text-muted-foreground text-center py-4">Leaderboard is not available yet.</p>;
+
+    return (
+         <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead className="w-[50px]">Rank</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead className="text-center">Total Kills</TableHead>
+                <TableHead className="text-center">Total Pts</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {calculatedLeaderboard.map((team, index) => (
+                    <TableRow key={team.id}>
+                    <TableCell className="font-bold text-center"><RankIcon rank={index + 1} /></TableCell>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                        <Avatar><AvatarImage src={team.logoUrl} /><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                        <span className="font-medium">{team.name}</span>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-center">{team.totalKills}</TableCell>
+                    <TableCell className="text-center font-bold text-lg text-primary">{team.totalPoints}</TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
 export default function TournamentPage() {
     const { id } = useParams();
     const firestore = useFirestore();
+    const tournamentId = Array.isArray(id) ? id[0] : id;
+
 
     const tournamentDocRef = useMemoFirebase(() => {
-        if (!firestore || typeof id !== 'string') return null;
-        return doc(firestore, 'tournaments', id);
-    }, [firestore, id]);
+        if (!firestore || !tournamentId) return null;
+        return doc(firestore, 'tournaments', tournamentId);
+    }, [firestore, tournamentId]);
 
     const { data: tournament, isLoading, error } = useDoc<Tournament>(tournamentDocRef);
 
@@ -48,7 +113,6 @@ export default function TournamentPage() {
 
     return (
         <div className="min-h-screen bg-gradient-subtle">
-            {/* Banner Image */}
             <div className="relative h-64 md:h-80 bg-muted">
                 {tournament.posterUrl && (
                     <Image src={tournament.posterUrl} alt={`${tournament.tournamentName} Banner`} layout="fill" className="object-cover" />
@@ -65,14 +129,20 @@ export default function TournamentPage() {
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8">
+                         <Card>
+                            <CardHeader><CardTitle className="flex items-center gap-2"><ListOrdered />Live Leaderboard</CardTitle></CardHeader>
+                            <CardContent>
+                                <PublicLeaderboard tournamentId={tournamentId}/>
+                            </CardContent>
+                        </Card>
                         <Card>
-                            <CardHeader><CardTitle>Description</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className="flex items-center gap-2"><Info />Description</CardTitle></CardHeader>
                             <CardContent className="prose dark:prose-invert max-w-full">
                                 <p>{tournament.description}</p>
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader><CardTitle>Rules & Instructions</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className="flex items-center gap-2"><BarChart />Rules & Instructions</CardTitle></CardHeader>
                             <CardContent className="prose dark:prose-invert max-w-full">
                                 <p>{tournament.rules}</p>
                             </CardContent>
