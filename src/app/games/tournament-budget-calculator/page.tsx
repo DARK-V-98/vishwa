@@ -4,8 +4,10 @@
 import { useState } from 'react';
 import PageOneSetup from '@/components/games/budget-calculator/page-one-setup';
 import PageTwoBreakdown from '@/components/games/budget-calculator/page-two-breakdown';
+import PageThreeSummary from '@/components/games/budget-calculator/page-three-summary';
 import { Coins } from "lucide-react";
 import type { TournamentBudget } from '@/lib/types';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function TournamentBudgetCalculatorPage() {
     const [step, setStep] = useState(1);
@@ -16,10 +18,29 @@ export default function TournamentBudgetCalculatorPage() {
         setStep(prevStep => prevStep + 1);
     };
 
-    const goToPrevStep = (data: Partial<TournamentBudget>) => {
-        setBudget(prev => ({ ...prev, ...data }));
+    const goToPrevStep = (data?: Partial<TournamentBudget>) => {
+        if (data) {
+            setBudget(prev => ({ ...prev, ...data }));
+        }
         setStep(prevStep => prevStep - 1);
     }
+    
+    const restart = () => {
+        setBudget({});
+        setStep(1);
+    }
+
+    const pageVariants = {
+        initial: { opacity: 0, x: 50 },
+        in: { opacity: 1, x: 0 },
+        out: { opacity: 0, x: -50 },
+    };
+
+    const pageTransition = {
+        type: "tween",
+        ease: "anticipate",
+        duration: 0.5,
+    };
 
     return (
         <div className="min-h-screen bg-gradient-subtle">
@@ -53,9 +74,20 @@ export default function TournamentBudgetCalculatorPage() {
 
             <section className="py-12 md:py-16">
                 <div className="container mx-auto px-4">
-                    {step === 1 && <PageOneSetup onNext={goToNextStep} initialData={budget} />}
-                    {step === 2 && <PageTwoBreakdown onNext={goToNextStep} onBack={goToPrevStep} initialData={budget} />}
-                    {/* Step 3 will be added later */}
+                     <AnimatePresence mode="wait">
+                        <motion.div
+                            key={step}
+                            initial="initial"
+                            animate="in"
+                            exit="out"
+                            variants={pageVariants}
+                            transition={pageTransition}
+                        >
+                            {step === 1 && <PageOneSetup onNext={goToNextStep} initialData={budget} />}
+                            {step === 2 && <PageTwoBreakdown onNext={goToNextStep} onBack={goToPrevStep} initialData={budget} />}
+                            {step === 3 && <PageThreeSummary onBack={goToPrevStep} initialData={budget} onRestart={restart} />}
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </section>
         </div>

@@ -79,5 +79,9 @@ export interface TournamentBudget {
             medals: number;
             certificates: number;
         }
-    }
+    };
+    // Calculated fields for summary
+    totalIncome: number;
+    totalExpenses: number;
+    profitOrLoss: number;
 }
