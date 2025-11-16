@@ -16,6 +16,7 @@ import {
   LogOut,
   ArrowRight,
   ShoppingBag,
+  Trophy,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ export default function DashboardPage() {
   const menuItems = useMemo(() => {
     const items = [
       { id: 'orders', label: 'My Orders', icon: ShoppingBag, href: '/my-orders', description: 'View your top-up history' },
+      { id: 'tournaments', label: 'My Tournaments', icon: Trophy, href: '/dashboard/my-tournaments', description: 'Manage your created events' },
       { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/messages', description: 'Chat with support' },
       { id: 'appointments', label: 'Appointments', icon: Calendar, href: '/appointments', description: 'Manage your meetings' },
       { id: 'vip', label: 'VIP Area', icon: Sparkles, href: '/vip-area', description: 'Access exclusive content' },

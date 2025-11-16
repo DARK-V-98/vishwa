@@ -18,11 +18,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Upload } from 'lucide-react';
+import { CalendarIcon, Upload, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import type { Metadata } from 'next';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const tournamentSchema = z.object({
     tournamentName: z.string().min(5, "Tournament name is required."),
@@ -42,7 +43,7 @@ const tournamentSchema = z.object({
 type TournamentFormValues = z.infer<typeof tournamentSchema>;
 
 export default function SubmitTournamentPage() {
-    const { user } = useUser();
+    const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const storage = useStorage();
     const router = useRouter();
@@ -82,12 +83,12 @@ export default function SubmitTournamentPage() {
                 ...data,
                 userId: user.uid,
                 posterUrl,
-                status: 'pending-approval', // or 'published'
+                status: 'pending-approval',
                 createdAt: serverTimestamp(),
             });
 
             toast.success("Tournament submitted successfully! It will be reviewed by an admin shortly.");
-            router.push('/tournaments');
+            router.push('/dashboard/my-tournaments');
         } catch (error: any) {
             console.error("Error submitting tournament:", error);
             toast.error(`Submission failed: ${error.message}`);
@@ -95,6 +96,30 @@ export default function SubmitTournamentPage() {
             setIsSubmitting(false);
         }
     };
+    
+    if (isUserLoading) {
+        return (
+             <div className="container py-12 pt-24 max-w-4xl mx-auto">
+                 <Skeleton className="h-96 w-full" />
+             </div>
+        )
+    }
+
+    if (!user) {
+        return (
+             <div className="container py-12 pt-24 max-w-4xl mx-auto">
+                <Alert>
+                  <AlertTitle className="flex items-center gap-2"><LogIn /> Authentication Required</AlertTitle>
+                  <AlertDescription>
+                    You must be logged in to submit a tournament. Please sign in or create an account to continue.
+                  </AlertDescription>
+                  <div className="mt-4">
+                      <Button onClick={() => router.push('/auth')}>Go to Login</Button>
+                  </div>
+                </Alert>
+             </div>
+        )
+    }
 
     return (
         <div className="container py-12 pt-24">
