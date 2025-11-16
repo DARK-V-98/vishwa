@@ -1,11 +1,6 @@
+
 import PointCalculator from "@/components/games/point-calculator";
 import { Gamepad2 } from "lucide-react";
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-    title: 'E-Sports Point Calculator | Free Fire, PUBG, Apex',
-    description: 'A fully-featured point calculator for your e-sports tournaments. Customize scoring for games like Free Fire and PUBG, manage teams, track matches, and export results as professional-looking images.',
-};
 
 export default function PointCalculatorPage() {
   return (
