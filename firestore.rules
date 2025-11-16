@@ -110,13 +110,25 @@ service cloud.firestore {
         allow create, update, delete: if isAdmin();
     }
     
-    // Tournaments can be created by any authenticated user.
-    // They are publicly readable if status is 'published'.
-    // Only the owner or an admin can update. Only admins can delete.
+    // TOURNAMENT RULES
     match /tournaments/{tournamentId} {
-      allow get, list: if resource.data.status == 'published' || isAdmin();
-      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+      // Allow public read for published tournaments
+      allow get: if resource.data.status == 'published';
+
+      // Allow owners and admins to read their own or any tournament
+      allow get: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
+      
+      // Allow admins to list all tournaments for the admin panel
+      // Allow public to list only published tournaments
+      allow list: if isAdmin() || request.query.get("status") == "published";
+
+      // Allow authenticated users to create tournaments
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+
+      // Allow owners and admins to update
       allow update: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+
+      // Only admins can delete
       allow delete: if isAdmin();
     }
   }

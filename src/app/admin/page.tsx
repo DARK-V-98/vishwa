@@ -12,6 +12,7 @@ import AdminChat from "@/components/admin/admin-chat";
 import TestimonialManagement from "@/components/admin/testimonial-management";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import UserManagement from "@/components/admin/user-management";
+import TournamentManagement from "@/components/admin/tournament-management";
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
@@ -67,6 +68,7 @@ export default function AdminPage() {
             <div className="overflow-x-auto whitespace-nowrap">
                 <TabsList className="inline-flex">
                   <TabsTrigger value="chat">Chat</TabsTrigger>
+                  <TabsTrigger value="tournament-approvals">Tournament Approvals</TabsTrigger>
                   <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
                   <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
                   <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
@@ -80,6 +82,9 @@ export default function AdminPage() {
         
         <TabsContent value="chat" className="mt-6 h-[75vh]">
           <AdminChat />
+        </TabsContent>
+         <TabsContent value="tournament-approvals" className="mt-6">
+          <TournamentManagement />
         </TabsContent>
         <TabsContent value="topup-orders" className="mt-6">
           <TopupOrderManagement />
