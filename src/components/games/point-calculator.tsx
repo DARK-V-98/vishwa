@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PlusCircle, Trash2, Crown, Medal, Trophy, RefreshCw, Edit, Save, X, Settings, Download, Info, Gamepad2, Swords } from 'lucide-react';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import { PlusCircle, Trash2, Crown, Medal, Trophy, RefreshCw, Edit, Save, X, Settings, Download, Info, Gamepad2, Swords, Upload } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import html2canvas from 'html2canvas';
@@ -25,7 +26,10 @@ interface MatchScore {
 
 interface Team {
   id: number;
-  name:string;
+  name: string;
+  logoUrl: string;
+  players: string[];
+  region: string;
   matchScores: MatchScore[];
 }
 
@@ -51,12 +55,20 @@ const GAME_PRESETS = {
         killPointValue: 1,
         placementPoints: [12, 9, 7, 5, 4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
+    'valorant': { // Placeholder
+        killPointValue: 0,
+        placementPoints: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    },
+    'fortnite': { // Placeholder
+        killPointValue: 1,
+        placementPoints: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    },
 };
 
 const RankIcon = ({ rank }: { rank: number }) => {
-  if (rank === 1) return <Crown className="h-5 w-5 text-yellow-500" />;
+  if (rank === 1) return <Crown className="h-5 w-5 text-yellow-400" />;
   if (rank === 2) return <Medal className="h-5 w-5 text-slate-400" />;
-  if (rank === 3) return <Trophy className="h-5 w-5 text-amber-700" />;
+  if (rank === 3) return <Trophy className="h-5 w-5 text-amber-600" />;
   return <span className="font-mono text-sm w-5 text-center">{rank}</span>;
 };
 
@@ -71,7 +83,6 @@ export default function PointCalculator() {
   // Tournament State
   const [teams, setTeams] = useState<Team[]>([]);
   const [matchCount, setMatchCount] = useState(1);
-  const [teamNameInput, setTeamNameInput] = useState('');
   const [activeTab, setActiveTab] = useState('match-0');
   
   // UI State
@@ -106,6 +117,9 @@ export default function PointCalculator() {
         
         // Ensure data integrity
         parsedTeams.forEach(team => {
+            if (!team.logoUrl) team.logoUrl = '';
+            if (!team.players) team.players = [];
+            if (!team.region) team.region = '';
             if (team.matchScores.length < count) {
                 for (let i = team.matchScores.length; i < count; i++) {
                     team.matchScores.push({ kills: 0, placement: 25, bonus: 0 });
@@ -162,20 +176,17 @@ export default function PointCalculator() {
     }).sort((a, b) => b.totalPoints - a.totalPoints || b.totalKills - a.totalKills);
   }, [teams, killPointValue, placementPoints]);
 
-
-  const handleAddTeam = () => {
-    if (!teamNameInput.trim()) return;
-    const newTeam: Team = {
+  const handleAddTeam = (newTeam: Omit<Team, 'id' | 'matchScores'>) => {
+    const teamToAdd: Team = {
       id: Date.now(),
-      name: teamNameInput.trim(),
+      ...newTeam,
       matchScores: Array(matchCount).fill(null).map(() => ({
         kills: 0,
         placement: 25,
         bonus: 0,
       })),
     };
-    setTeams(prev => [...prev, newTeam]);
-    setTeamNameInput('');
+    setTeams(prev => [...prev, teamToAdd]);
   };
 
   const handleUpdateTeamScore = (teamId: number, matchIndex: number, field: keyof MatchScore, value: number) => {
@@ -212,7 +223,6 @@ export default function PointCalculator() {
             matchScores: team.matchScores.slice(0, newCount)
         })));
         
-        // If active tab was the one being removed, switch to the new last match or overall
         if (activeTab === `match-${newCount}`) {
             setActiveTab(`match-${newCount - 1}`);
         }
@@ -225,11 +235,6 @@ export default function PointCalculator() {
     const newPoints = [...placementPoints];
     newPoints[index] = parseInt(value, 10) || 0;
     setPlacementPoints(newPoints);
-  };
-  
-  const startEditing = (team: Team) => {
-      setEditingTeamId(team.id);
-      setEditingTeamData(JSON.parse(JSON.stringify(team))); // Deep copy for editing
   };
   
   const saveEditing = () => {
@@ -259,13 +264,7 @@ export default function PointCalculator() {
               <CardTitle>Tournament Setup</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                  <Label htmlFor="teamName">Add New Team</Label>
-                   <div className="flex gap-2">
-                    <Input id="teamName" placeholder="Enter team name" value={teamNameInput} onChange={e => setTeamNameInput(e.target.value)} />
-                    <Button onClick={handleAddTeam}><PlusCircle className="h-4 w-4"/></Button>
-                  </div>
-              </div>
+              <TeamEntryDialog onAddTeam={handleAddTeam} />
               <Separator />
               <div className="space-y-2">
                 <Label>Matches</Label>
@@ -305,6 +304,8 @@ export default function PointCalculator() {
                             <SelectItem value="freefire">Free Fire</SelectItem>
                             <SelectItem value="pubg">PUBG / BGMI</SelectItem>
                             <SelectItem value="apex">Apex Legends</SelectItem>
+                            <SelectItem value="valorant">Valorant</SelectItem>
+                            <SelectItem value="fortnite">Fortnite</SelectItem>
                             <SelectItem value="custom">Custom</SelectItem>
                         </SelectContent>
                     </Select>
@@ -379,7 +380,7 @@ export default function PointCalculator() {
                     ))}
 
                     <TabsContent value="overall">
-                        <OverallLeaderboard leaderboard={calculatedLeaderboard} onDelete={deleteTeam} onEdit={startEditing} />
+                        <OverallLeaderboard leaderboard={calculatedLeaderboard} onDelete={deleteTeam} />
                     </TabsContent>
                 </Tabs>
             </CardContent>
@@ -407,7 +408,7 @@ const MatchInputTable = ({ teams, matchIndex, onScoreChange }: { teams: Team[], 
                         <TableRow key={team.id}>
                             <TableCell>
                                 <div className="flex items-center gap-3">
-                                <Avatar><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                                <Avatar><AvatarImage src={team.logoUrl} /><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
                                 <span className="font-medium">{team.name}</span>
                                 </div>
                             </TableCell>
@@ -445,7 +446,7 @@ const MatchInputTable = ({ teams, matchIndex, onScoreChange }: { teams: Team[], 
     )
 }
 
-const OverallLeaderboard = ({ leaderboard, onDelete, onEdit }: { leaderboard: CalculatedTeam[], onDelete: (id: number) => void, onEdit: (team: Team) => void }) => {
+const OverallLeaderboard = ({ leaderboard, onDelete }: { leaderboard: CalculatedTeam[], onDelete: (id: number) => void }) => {
      return (
         <div className="overflow-x-auto">
             <Table>
@@ -465,7 +466,7 @@ const OverallLeaderboard = ({ leaderboard, onDelete, onEdit }: { leaderboard: Ca
                     <TableCell className="font-bold text-center"><RankIcon rank={index + 1} /></TableCell>
                     <TableCell>
                         <div className="flex items-center gap-3">
-                        <Avatar><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
+                        <Avatar><AvatarImage src={team.logoUrl} /><AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback></Avatar>
                         <span className="font-medium">{team.name}</span>
                         </div>
                     </TableCell>
@@ -473,7 +474,6 @@ const OverallLeaderboard = ({ leaderboard, onDelete, onEdit }: { leaderboard: Ca
                     <TableCell className="text-center font-bold text-lg text-primary">{team.totalPoints}</TableCell>
                     <TableCell className="text-right">
                         <div className="flex justify-end items-center gap-2">
-                        {/* <Button size="icon" variant="ghost" onClick={() => onEdit(team)}><Edit className="h-4 w-4" /></Button> */}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                             <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
@@ -497,5 +497,99 @@ const OverallLeaderboard = ({ leaderboard, onDelete, onEdit }: { leaderboard: Ca
         </div>
     )
 }
+
+function TeamEntryDialog({ onAddTeam }: { onAddTeam: (team: Omit<Team, 'id'|'matchScores'>) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [teamName, setTeamName] = useState('');
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoPreview, setLogoPreview] = useState('');
+    const [players, setPlayers] = useState(['']);
+    const [region, setRegion] = useState('');
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setLogoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLogoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePlayerChange = (index: number, value: string) => {
+        const newPlayers = [...players];
+        newPlayers[index] = value;
+        setPlayers(newPlayers);
+    };
+
+    const addPlayerInput = () => setPlayers([...players, '']);
+    const removePlayerInput = (index: number) => setPlayers(players.filter((_, i) => i !== index));
+
+    const handleSubmit = () => {
+        if (!teamName.trim()) return;
+        onAddTeam({ name: teamName, logoUrl: logoPreview, players: players.filter(p => p.trim()), region });
+        // Reset form
+        setTeamName('');
+        setLogoFile(null);
+        setLogoPreview('');
+        setPlayers(['']);
+        setRegion('');
+        setIsOpen(false);
+    };
+    
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button className="w-full"><PlusCircle className="mr-2 h-4 w-4" /> Add New Team</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Add a New Team</DialogTitle>
+                    <DialogDescription>Enter the details for the new team.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">Name</Label>
+                        <Input id="name" value={teamName} onChange={(e) => setTeamName(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="logo" className="text-right">Logo</Label>
+                        <div className="col-span-3 flex items-center gap-2">
+                           <Avatar>
+                                <AvatarImage src={logoPreview} />
+                                <AvatarFallback><Upload className="h-4 w-4" /></AvatarFallback>
+                           </Avatar>
+                           <Input id="logo" type="file" accept="image/*" onChange={handleFileChange} />
+                        </div>
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="region" className="text-right">Region</Label>
+                        <Input id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="col-span-3" placeholder="e.g., Sri Lanka" />
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                       <Label className="text-right pt-2">Players</Label>
+                       <div className="col-span-3 space-y-2">
+                            {players.map((player, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <Input value={player} onChange={(e) => handlePlayerChange(index, e.target.value)} placeholder={`Player ${index + 1}`} />
+                                    <Button variant="ghost" size="icon" onClick={() => removePlayerInput(index)} disabled={players.length === 1}><X className="h-4 w-4"/></Button>
+                                </div>
+                            ))}
+                            <Button variant="outline" size="sm" onClick={addPlayerInput}>Add Player</Button>
+                       </div>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                    <Button onClick={handleSubmit}>Add Team</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+    
 
     
