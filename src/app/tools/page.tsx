@@ -25,7 +25,6 @@ import {
   FileJson,
   Fingerprint as JwtIcon,
   Palette,
-  Tags,
   Server,
   FileCode2,
 } from "lucide-react";
@@ -80,14 +79,6 @@ const allTools = [
     href: "/tools/color-palette-generator",
     icon: Palette,
     category: "Design",
-    variant: "outline" as "outline",
-  },
-  {
-    title: "Meta Tag Generator",
-    description: "Create SEO-friendly meta tags for your web pages, including Open Graph and Twitter Cards.",
-    href: "/tools/meta-tag-generator",
-    icon: Tags,
-    category: "SEO",
     variant: "outline" as "outline",
   },
   {
