@@ -11,20 +11,6 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import type { Metadata } from 'next';
-
-const pageTitle = "QR Code Generator – Free Browser-Based Tool | Vishwa Vidarshana";
-const pageDescription = "Use QR Code Generator to create QR codes from text or URLs. Free, fast, and secure client-side tool. No login required.";
-
-export const metadata: Metadata = {
-    title: pageTitle,
-    description: pageDescription,
-    openGraph: {
-        title: pageTitle,
-        description: pageDescription,
-        url: '/tools/qr-generator',
-    }
-};
 
 const featureList = [
     { icon: Zap, title: "Instant Generation", description: "Create your QR code in a single click." },
