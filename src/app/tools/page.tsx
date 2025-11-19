@@ -34,7 +34,7 @@ import {
   Pipette,
   TestTube2,
   Server,
-  Markdown,
+  FileCode2,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from 'framer-motion';
@@ -77,7 +77,7 @@ const allTools = [
     title: "Markdown to HTML",
     description: "Convert Markdown text into clean HTML with a live preview and copy-to-clipboard functionality.",
     href: "/tools/markdown-converter",
-    icon: Markdown,
+    icon: FileCode2,
     category: "Converter",
     variant: "outline" as "outline",
   },
