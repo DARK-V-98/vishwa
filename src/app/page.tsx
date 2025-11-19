@@ -189,13 +189,6 @@ const Home = () => {
   }, [firestore]);
   const { data: testimonials, isLoading: testimonialsLoading } = useCollection<Omit<Testimonial, 'id'>>(testimonialsQuery);
 
-  const stats = [
-    { value: "50+", label: "Projects Delivered" },
-    { value: "250+", label: "Happy Clients" },
-    { value: "15+", label: "Tools Created" },
-    { value: "30+", label: "Tournaments Managed" },
-  ];
-
   const services = [
     { icon: Code, title: "Web Development & Software", description: "Custom web apps, mobile apps, with a focus on security and fast delivery.", link: "/esystemlk" },
     { icon: Palette, title: "Design Services", description: "Professional logo and post designs with clear packages and a simple process.", link: "/design-services" },
@@ -246,43 +239,6 @@ const Home = () => {
               <Link href="/tools"><Button variant="outline" size="lg">Explore Tools</Button></Link>
             </div>
           </motion.div>
-        </div>
-      </section>
-
-      {/* About Me Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            Innovating Digital Experiences
-          </h2>
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <p className="text-muted-foreground leading-relaxed">
-                Hello! I'm Vishwa Vidarshana, a full-stack developer with a passion for creating beautiful and functional digital experiences. As the founder of <Link href="/esystemlk" className="text-primary hover:underline">ESystemLK</Link>, I specialize in turning complex problems into elegant software solutions. My expertise spans web development, UI/UX design, and creating specialized tools for the gaming community.
-              </p>
-              <div className="space-y-4">
-                <AnimatedProgress value={95} label="Web Development" />
-                <AnimatedProgress value={90} label="UI/UX Design" />
-                <AnimatedProgress value={85} label="Game Tools Development" />
-                <AnimatedProgress value={92} label="Full-Stack Software Solutions" />
-              </div>
-              <Button asChild variant="link" className="px-0">
-                <Link href="/about">View Full Portfolio <ArrowRight/></Link>
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {stats.map((stat, i) => (
-                <motion.div key={stat.label} initial={{opacity: 0, scale: 0.9}} animate={{opacity: 1, scale: 1}} transition={{delay: i * 0.1}}>
-                  <Card className="text-center bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-6">
-                      <p className="text-4xl font-bold text-primary">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
