@@ -115,7 +115,7 @@ ${author ? `<meta name="author" content="${author}">` : ''}
                             </div>
                         </CardContent>
                     </Card>
-                    <div className="lg:col-span-2">
+                    <div className="space-y-8">
                         <Card className="shadow-strong h-full">
                             <CardHeader>
                                 <CardTitle>Generated Tags</CardTitle>
@@ -128,6 +128,34 @@ ${author ? `<meta name="author" content="${author}">` : ''}
                                 <Button onClick={copyToClipboard} className="w-full">
                                     <Copy className="mr-2" /> Copy Tags
                                 </Button>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Social Preview</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="border rounded-lg overflow-hidden">
+                                     {imageUrl ? (
+                                        <Image
+                                            src={imageUrl}
+                                            alt="Social Preview"
+                                            width={500}
+                                            height={261}
+                                            className="w-full aspect-[1.91/1] object-cover"
+                                            onError={(e) => (e.currentTarget.style.display = 'none')}
+                                        />
+                                    ) : (
+                                        <div className="aspect-[1.91/1] bg-muted flex items-center justify-center">
+                                            <p className="text-muted-foreground text-sm">No image provided</p>
+                                        </div>
+                                    )}
+                                    <div className="p-4 bg-background">
+                                        <p className="text-xs text-muted-foreground uppercase">{siteUrl ? new URL(siteUrl).hostname : 'example.com'}</p>
+                                        <p className="font-semibold truncate">{siteTitle || 'Your Website Title'}</p>
+                                        <p className="text-sm text-muted-foreground truncate">{description || 'A brief description of your website.'}</p>
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </div>
@@ -167,4 +195,3 @@ ${author ? `<meta name="author" content="${author}">` : ''}
         </div>
     );
 }
-
