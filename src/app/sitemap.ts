@@ -40,7 +40,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/code-minifier',
     '/tools/regex-tester',
     '/tools/api-tester',
-    '/tools/color-palette-generator'
+    '/tools/color-palette-generator',
+    '/tools/json-csv-converter'
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
