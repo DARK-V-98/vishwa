@@ -34,6 +34,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/qr-scanner',
     '/tools/barcode-generator',
     '/tools/password-generator',
+    '/tools/file-converter',
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({

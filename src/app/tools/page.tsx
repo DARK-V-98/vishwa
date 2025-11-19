@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -21,7 +20,8 @@ import {
   Zap,
   Shield,
   Globe,
-  Fingerprint
+  Fingerprint,
+  FileKey2,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from 'framer-motion';
@@ -35,6 +35,14 @@ const allTools = [
     href: "/tools/pdf-suite",
     icon: FileImage,
     category: "PDF",
+    variant: "hero" as "hero",
+  },
+  {
+    title: "File Converter",
+    description: "Convert image and video files between different formats (e.g., JPG to PNG, MP4 to WebM).",
+    href: "/tools/file-converter",
+    icon: FileKey2,
+    category: "Utility",
     variant: "hero" as "hero",
   },
   {
@@ -120,7 +128,7 @@ export default function ToolsPage() {
         const matchesCategory = activeCategory === 'All' || tool.category === activeCategory;
         const matchesSearch = tool.title.toLowerCase().includes(searchTerm.toLowerCase()) || tool.description.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesCategory && matchesSearch;
-    });
+    }).sort((a, b) => a.title.localeCompare(b.title));
 
     const cardVariants = {
         hidden: { opacity: 0, y: 20 },
