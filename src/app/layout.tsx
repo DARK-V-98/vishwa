@@ -1,5 +1,6 @@
 
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster as SonnerToaster } from "sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,6 +10,8 @@ import "./globals.css";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import WelcomeMat from "@/components/welcome-mat";
 import FloatingChatWidget from "@/components/chat/FloatingChatWidget";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const siteUrl = "https://vishwavidarshana.com";
 
@@ -84,13 +87,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
         <head>
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <meta name="yandex-verification" content="178a448e712d05c6" />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
           />
         </head>
-      <body className={cn("min-h-screen bg-background font-sans antialiased")}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", inter.variable)}>
         <FirebaseClientProvider>
           <WelcomeMat />
           <Navbar />
