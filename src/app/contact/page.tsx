@@ -1,3 +1,4 @@
+
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,20 @@ import {
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { Metadata } from 'next';
+
+const pageTitle = "Contact Vishwa Vidarshana – Get In Touch";
+const pageDescription = "Reach out to Vishwa Vidarshana for web development, design, and e-sports solutions. Fill the form, email, or call directly.";
+
+export const metadata: Metadata = {
+    title: pageTitle,
+    description: pageDescription,
+    openGraph: {
+        title: pageTitle,
+        description: pageDescription,
+        url: '/contact',
+    }
+};
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -34,19 +49,26 @@ const Contact = () => {
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  
+  const contactSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPoint",
+    "telephone": "+94-76-571-1396",
+    "contactType": "customer service",
+    "areaServed": "LK"
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }}
+        />
       
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-block">
-              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold border border-primary/20">
-                Get In Touch
-              </span>
-            </div>
             <h1 className="text-4xl md:text-6xl font-bold">
               <span className="bg-gradient-hero bg-clip-text text-transparent">
                 Contact Me
@@ -68,7 +90,7 @@ const Contact = () => {
               <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-lg">Contact Information</h3>
+                    <h2 className="font-semibold text-lg">Direct Contact Info</h2>
                     <p className="text-sm text-muted-foreground">
                       Reach out through any of these channels
                     </p>
@@ -211,6 +233,7 @@ const Contact = () => {
       <section className="py-12 md:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <Card className="max-w-6xl mx-auto border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+             <h2 className="sr-only">Find Me on Map</h2>
             <div className="aspect-video bg-gradient-primary flex items-center justify-center">
               <div className="text-center text-primary-foreground">
                 <MapPin className="h-16 w-16 mx-auto mb-4 opacity-50" />

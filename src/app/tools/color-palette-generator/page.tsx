@@ -8,8 +8,20 @@ import { Label } from '@/components/ui/label';
 import { Palette, Copy, ArrowLeft, RefreshCw, Zap, Shield, Globe, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
+import type { Metadata } from 'next';
+
+const pageTitle = "Color Palette Generator – Free Browser-Based Tool | Vishwa Vidarshana";
+const pageDescription = "Use Color Palette Generator to create harmonious color schemes. Free, fast, and secure client-side tool. No login required.";
+
+export const metadata: Metadata = {
+    title: pageTitle,
+    description: pageDescription,
+    openGraph: {
+        title: pageTitle,
+        description: pageDescription,
+        url: '/tools/color-palette-generator',
+    }
+};
 
 // --- Color Conversion Utilities ---
 type RGB = { r: number; g: number; b: number };
@@ -111,8 +123,21 @@ export default function ColorPaletteGeneratorPage() {
         setBaseColor(randomColor);
     };
 
+    const softwareAppSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Color Palette Generator",
+        "url": "https://vishwavidarshana.com/tools/color-palette-generator",
+        "applicationCategory": "Design",
+        "operatingSystem": "Web"
+    };
+
     return (
         <div className="min-h-screen bg-gradient-subtle">
+             <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
+            />
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
                     <div className="max-w-4xl mx-auto mb-8 text-left">
@@ -130,7 +155,7 @@ export default function ColorPaletteGeneratorPage() {
             <section className="container mx-auto px-4 pb-16">
                 <Card className="max-w-4xl mx-auto shadow-strong">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Palette /> Generate Your Palette</CardTitle>
+                        <h2 className="text-2xl font-bold flex items-center gap-2"><Palette /> Generate Your Palette</h2>
                         <CardDescription>Use the color picker or enter a HEX code to start.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-8">

@@ -12,6 +12,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Server, ArrowLeft, Send, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+const pageTitle = "API Tester – Free Browser-Based Tool | Vishwa Vidarshana";
+const pageDescription = "Use API Tester to send HTTP requests and test your endpoints. Free, fast, and secure client-side tool. No login required.";
+
+export const metadata: Metadata = {
+    title: pageTitle,
+    description: pageDescription,
+    openGraph: {
+        title: pageTitle,
+        description: pageDescription,
+        url: '/tools/api-tester',
+    }
+};
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 type KeyValuePair = { id: number; key: string; value: string };
@@ -78,9 +92,22 @@ export default function ApiTesterPage() {
             setLoading(false);
         }
     };
+    
+    const softwareAppSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "API Tester",
+        "url": "https://vishwavidarshana.com/tools/api-tester",
+        "applicationCategory": "Utility",
+        "operatingSystem": "Web"
+    };
 
     return (
         <div className="min-h-screen bg-gradient-subtle">
+             <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
+            />
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
                     <div className="max-w-4xl mx-auto mb-8 text-left">
@@ -98,7 +125,7 @@ export default function ApiTesterPage() {
             <section className="container mx-auto px-4 pb-16">
                 <Card className="max-w-4xl mx-auto shadow-strong">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Server /> Make a Request</CardTitle>
+                        <h2 className="text-2xl font-bold flex items-center gap-2"><Server /> Make a Request</h2>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex flex-col sm:flex-row gap-2">

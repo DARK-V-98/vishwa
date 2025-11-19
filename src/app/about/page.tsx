@@ -17,6 +17,19 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import type { Metadata } from 'next';
 
+const pageTitle = "About Vishwa Vidarshana – Developer & Entrepreneur";
+const pageDescription = "Learn about Vishwa Vidarshana’s journey, skills, expertise, and achievements in web development, design, and e-sports solutions.";
+
+export const metadata: Metadata = {
+  title: pageTitle,
+  description: pageDescription,
+  openGraph: {
+    title: pageTitle,
+    description: pageDescription,
+    url: "/about",
+  }
+};
+
 
 const About = () => {
   const [animatedSkills, setAnimatedSkills] = useState([
@@ -57,22 +70,32 @@ const About = () => {
       description: "Developing comprehensive marketplace platform for users",
     },
   ];
+  
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Vishwa Vidarshana",
+    "url": "https://vishwavidarshana.com/about",
+    "sameAs": [
+        "https://www.linkedin.com/in/vishwa-vidarshana-6b2608394",
+        "https://www.facebook.com/share/1Ber5EBeNW/"
+    ]
+  };
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        />
       
       {/* Hero Section */}
       <section className="pt-24 pb-12 md:pt-32 md:pb-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-block">
-              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold border border-primary/20">
-                About Me
-              </span>
-            </div>
             <h1 className="text-4xl md:text-6xl font-bold">
               <span className="bg-gradient-hero bg-clip-text text-transparent">
-                R.M.T Vishwa Vidarshana
+                About Me
               </span>
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -136,7 +159,7 @@ const About = () => {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                My <span className="bg-gradient-hero bg-clip-text text-transparent">Expertise</span>
+                My <span className="bg-gradient-hero bg-clip-text text-transparent">Skills</span>
               </h2>
               <p className="text-muted-foreground">
                 Skills honed over years of professional experience
@@ -176,7 +199,7 @@ const About = () => {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                My <span className="bg-gradient-hero bg-clip-text text-transparent">Journey</span>
+                Career <span className="bg-gradient-hero bg-clip-text text-transparent">Timeline</span>
               </h2>
               <p className="text-muted-foreground">
                 6+ years of growth and achievements
@@ -218,9 +241,9 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Achievements & <span className="bg-gradient-hero bg-clip-text text-transparent">Certifications</span>
-              </h2>
+              <h3 className="text-3xl md:text-4xl font-bold mb-4">
+                Key <span className="bg-gradient-hero bg-clip-text text-transparent">Achievements</span>
+              </h3>
             </div>
             
             <div className="grid md:grid-cols-3 gap-6">

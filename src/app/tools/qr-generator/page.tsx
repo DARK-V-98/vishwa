@@ -11,6 +11,20 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import type { Metadata } from 'next';
+
+const pageTitle = "QR Code Generator – Free Browser-Based Tool | Vishwa Vidarshana";
+const pageDescription = "Use QR Code Generator to create QR codes from text or URLs. Free, fast, and secure client-side tool. No login required.";
+
+export const metadata: Metadata = {
+    title: pageTitle,
+    description: pageDescription,
+    openGraph: {
+        title: pageTitle,
+        description: pageDescription,
+        url: '/tools/qr-generator',
+    }
+};
 
 const featureList = [
     { icon: Zap, title: "Instant Generation", description: "Create your QR code in a single click." },
@@ -61,9 +75,22 @@ export default function QrGeneratorPage() {
         link.download = 'qrcode.png';
         link.click();
     };
+    
+    const softwareAppSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "QR Code Generator",
+        "url": "https://vishwavidarshana.com/tools/qr-generator",
+        "applicationCategory": "Utility",
+        "operatingSystem": "Web"
+    };
 
     return (
         <div className="min-h-screen bg-gradient-subtle">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
+            />
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
                     <div className="max-w-md mx-auto mb-8 text-left">
@@ -126,7 +153,7 @@ export default function QrGeneratorPage() {
                 </section>
 
                 <section>
-                    <h2 className="text-3xl font-bold text-center mb-10">How It Works</h2>
+                    <h2 className="text-3xl font-bold text-center mb-10">How to Use</h2>
                     <div className="grid grid-cols-1 gap-4">
                         {howItWorksSteps.map((step, index) => (
                             <Card key={index} className="border-border/50 bg-card/50 backdrop-blur-sm">

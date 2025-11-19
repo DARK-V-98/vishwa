@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/freefire-topup',
     '/games',
     '/games/point-calculator',
+    '/games/tournament-budget-calculator',
     '/marketplace',
     '/messages',
     '/my-orders',

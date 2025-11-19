@@ -10,9 +10,15 @@ import { FirebaseClientProvider } from "@/firebase/client-provider";
 import WelcomeMat from "@/components/welcome-mat";
 import FloatingChatWidget from "@/components/chat/FloatingChatWidget";
 
+const siteUrl = "https://vishwavidarshana.com";
+
 export const metadata: Metadata = {
-  title: "Vishwa Vidarshana | Dark Diamond Store | ESystemLK",
-  description: "The official portfolio of Vishwa Vidarshana, a professional web developer and designer. Home to Dark Diamond Store (Free Fire Top-up for SG & SL), an e-sports tournament organizer, and ESystemLK software solutions.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Vishwa Vidarshana | Web Development, Design & E-Sports Solutions",
+    template: "%s | Vishwa Vidarshana",
+  },
+  description: "The official portfolio of Vishwa Vidarshana, a professional web developer and designer. Home to Dark Diamond Store (Free Fire Top-up), e-sports tools, and ESystemLK software solutions.",
   keywords: [
     // Personal & Company Branding
     "Vishwa Vidarshana",
@@ -117,6 +123,38 @@ export const metadata: Metadata = {
     "customer chat for support",
     "admin dashboard for website"
   ],
+  openGraph: {
+    title: "Vishwa Vidarshana | Web Development, Design & E-Sports Solutions",
+    description: "Expert web development, creative design, and e-sports solutions.",
+    url: siteUrl,
+    siteName: 'Vishwa Vidarshana',
+    images: [
+      {
+        url: `${siteUrl}/og-image.png`, // Must be an absolute URL
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Vishwa Vidarshana | Web Development, Design & E-Sports Solutions",
+    description: "Expert web development, creative design, and e-sports solutions.",
+    images: [`${siteUrl}/og-image.png`], // Must be an absolute URL
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -124,8 +162,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Vishwa Vidarshana",
+      "url": "https://vishwavidarshana.com",
+      "logo": "https://vishwavidarshana.com/lg.png",
+      "sameAs": [
+        "https://www.facebook.com/share/1Ber5EBeNW/",
+        "https://www.linkedin.com/in/vishwa-vidarshana-6b2608394"
+      ]
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
+        <head>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          />
+        </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased")}>
         <FirebaseClientProvider>
           <WelcomeMat />

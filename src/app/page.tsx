@@ -87,7 +87,7 @@ const Home = () => {
       <section className="relative pt-24 pb-12 md:pt-32 md:pb-20 overflow-hidden">
         <Image
             src="/bac.png"
-            alt="Hero background"
+            alt="Vishwa Vidarshana Web Development Hero Image"
             fill
             className="object-cover z-0"
             priority
@@ -95,18 +95,10 @@ const Home = () => {
         <div className="absolute inset-0 bg-black/50 z-0" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="inline-block">
-              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold border border-primary/20">
-                Welcome to Vishwa Vidarshana
-              </span>
-            </div>
-            
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
               <span className="bg-gradient-hero bg-clip-text text-transparent">
-                Web Developer
+                Welcome to Vishwa Vidarshana
               </span>
-              <br />
-              <span className="text-white">Designer & Entrepreneur</span>
             </h1>
             
             <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
@@ -151,7 +143,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              What I <span className="bg-gradient-hero bg-clip-text text-transparent">Offer</span>
+              Our <span className="bg-gradient-hero bg-clip-text text-transparent">Services</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Comprehensive digital solutions tailored to your business needs
@@ -188,7 +180,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Trusted by <span className="bg-gradient-hero bg-clip-text text-transparent">Many Businesses</span>
+              Client <span className="bg-gradient-hero bg-clip-text text-transparent">Testimonials</span>
             </h2>
             <p className="text-muted-foreground">
               Delivering excellence in every project

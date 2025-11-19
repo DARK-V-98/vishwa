@@ -27,6 +27,7 @@ import {
   Palette,
   Server,
   FileCode2,
+  ListTree
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from 'framer-motion';
@@ -94,6 +95,14 @@ const allTools = [
     description: "Convert image files between different formats (e.g., JPG, PNG, WEBP).",
     href: "/tools/file-converter",
     icon: FileKey2,
+    category: "Converter",
+    variant: "hero" as "hero",
+  },
+  {
+    title: "PDF Suite",
+    description: "Convert images to PDF or extract pages from a PDF file into images.",
+    href: "/tools/pdf-suite",
+    icon: ListTree,
     category: "Converter",
     variant: "hero" as "hero",
   },

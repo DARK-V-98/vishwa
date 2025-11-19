@@ -89,8 +89,21 @@ export default function JwtDecoderPage() {
         }
     }, [token]);
 
+    const softwareAppSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "JWT Decoder",
+        "url": "https://vishwavidarshana.com/tools/jwt-decoder",
+        "applicationCategory": "Security",
+        "operatingSystem": "Web"
+    };
+
     return (
         <div className="min-h-screen bg-gradient-subtle">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
+            />
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
                     <div className="max-w-4xl mx-auto mb-8 text-left">
@@ -108,7 +121,7 @@ export default function JwtDecoderPage() {
             <section className="container mx-auto px-4 pb-16">
                 <Card className="max-w-4xl mx-auto shadow-strong">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Fingerprint /> Decode Your JWT</CardTitle>
+                        <h2 className="text-2xl font-bold flex items-center gap-2"><Fingerprint /> Decode Your JWT</h2>
                         <CardDescription>Paste your token below. Decoding happens in your browser and your data is never sent to a server.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">

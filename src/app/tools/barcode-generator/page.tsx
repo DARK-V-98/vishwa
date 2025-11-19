@@ -86,9 +86,22 @@ export default function BarcodeGeneratorPage() {
             link.click();
         }
     };
+    
+    const softwareAppSchema = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Barcode Generator",
+        "url": "https://vishwavidarshana.com/tools/barcode-generator",
+        "applicationCategory": "Utility",
+        "operatingSystem": "Web"
+    };
 
     return (
         <div className="min-h-screen bg-gradient-subtle">
+             <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
+            />
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
                     <div className="max-w-md mx-auto mb-8 text-left">
@@ -157,7 +170,7 @@ export default function BarcodeGeneratorPage() {
                 </section>
 
                 <section>
-                    <h2 className="text-3xl font-bold text-center mb-10">How It Works</h2>
+                    <h2 className="text-3xl font-bold text-center mb-10">How to Use</h2>
                     <div className="grid grid-cols-1 gap-4">
                         {howItWorksSteps.map((step, index) => (
                             <Card key={index} className="border-border/50 bg-card/50 backdrop-blur-sm">
