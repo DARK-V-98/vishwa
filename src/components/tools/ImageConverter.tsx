@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -15,7 +16,7 @@ interface ImageFile extends File {
     preview: string;
 }
 
-type OutputFormat = 'image/jpeg' | 'image/png' | 'image/webp';
+type OutputFormat = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/bmp' | 'image/gif';
 
 export default function ImageConverter() {
     const [files, setFiles] = useState<ImageFile[]>([]);
@@ -112,6 +113,8 @@ export default function ImageConverter() {
                                     <SelectItem value="image/png">PNG</SelectItem>
                                     <SelectItem value="image/jpeg">JPEG</SelectItem>
                                     <SelectItem value="image/webp">WEBP</SelectItem>
+                                    <SelectItem value="image/bmp">BMP</SelectItem>
+                                    <SelectItem value="image/gif">GIF</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
