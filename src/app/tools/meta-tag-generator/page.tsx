@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +26,6 @@ const faqItems = [
     { q: "Is my data safe?", a: "Yes. All processing happens locally in your browser. No data is ever sent to a server." },
 ];
 
-
 export default function MetaTagGeneratorPage() {
     const [siteTitle, setSiteTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -38,24 +37,24 @@ export default function MetaTagGeneratorPage() {
 
     useEffect(() => {
         const tags = `<!-- Standard Meta Tags -->
-<title>${siteTitle}</title>
-<meta name="description" content="${description}">
-<meta name="keywords" content="${keywords}">
+<title>${siteTitle || 'Your Title'}</title>
+<meta name="description" content="${description || 'Your site description.'}">
+<meta name="keywords" content="${keywords || 'keyword1, keyword2'}">
 ${author ? `<meta name="author" content="${author}">` : ''}
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="${siteUrl}">
-<meta property="og:title" content="${siteTitle}">
-<meta property="og:description" content="${description}">
-<meta property="og:image" content="${imageUrl}">
+<meta property="og:url" content="${siteUrl || 'https://example.com'}">
+<meta property="og:title" content="${siteTitle || 'Your Title'}">
+<meta property="og:description" content="${description || 'Your site description.'}">
+<meta property="og:image" content="${imageUrl || 'https://example.com/image.jpg'}">
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="${siteUrl}">
-<meta property="twitter:title" content="${siteTitle}">
-<meta property="twitter:description" content="${description}">
-<meta property="twitter:image" content="${imageUrl}">`;
+<meta property="twitter:url" content="${siteUrl || 'https://example.com'}">
+<meta property="twitter:title" content="${siteTitle || 'Your Title'}">
+<meta property="twitter:description" content="${description || 'Your site description.'}">
+<meta property="twitter:image" content="${imageUrl || 'https://example.com/image.jpg'}">`;
         setGeneratedTags(tags.trim());
     }, [siteTitle, description, keywords, author, imageUrl, siteUrl]);
 
@@ -115,8 +114,9 @@ ${author ? `<meta name="author" content="${author}">` : ''}
                             </div>
                         </CardContent>
                     </Card>
+
                     <div className="space-y-8">
-                        <Card className="shadow-strong h-full">
+                        <Card className="shadow-strong">
                             <CardHeader>
                                 <CardTitle>Generated Tags</CardTitle>
                                 <CardDescription>Copy and paste this into the `<head>` section of your HTML.</CardDescription>
@@ -137,17 +137,20 @@ ${author ? `<meta name="author" content="${author}">` : ''}
                             <CardContent>
                                 <div className="border rounded-lg overflow-hidden">
                                     <div className="aspect-[1.91/1] bg-muted flex items-center justify-center relative">
-                                    {imageUrl ? (
-                                        <Image
-                                            src={imageUrl}
-                                            alt="Social Preview"
-                                            layout="fill"
-                                            className="object-cover"
-                                            onError={(e) => (e.currentTarget.style.display = 'none')}
-                                        />
-                                    ) : (
-                                        <p className="text-muted-foreground text-sm">No image provided</p>
-                                    )}
+                                        {imageUrl ? (
+                                            <Image
+                                                src={imageUrl}
+                                                alt="Social Preview"
+                                                layout="fill"
+                                                className="object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                }}
+                                            />
+                                        ) : (
+                                            <p className="text-muted-foreground text-sm">No image provided</p>
+                                        )}
                                     </div>
                                     <div className="p-4 bg-background">
                                         <p className="text-xs text-muted-foreground uppercase">{siteUrl ? new URL(siteUrl).hostname : 'example.com'}</p>
