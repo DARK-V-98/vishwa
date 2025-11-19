@@ -13,8 +13,6 @@
     "update:cors": "gsutil cors set cors.json gs://studio-8072496389-b03d4.firebasestorage.app"
   },
   "dependencies": {
-    "@ffmpeg/ffmpeg": "^0.12.10",
-    "@ffmpeg/util": "^0.12.1",
     "@genkit-ai/google-genai": "^1.20.0",
     "@genkit-ai/next": "^1.20.0",
     "@hookform/resolvers": "^3.10.0",

@@ -2,40 +2,26 @@
 'use client';
 
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { FileKey2, ArrowLeft, Shield, Zap, Package, Image, Video, MonitorPlay } from 'lucide-react';
+import { FileKey2, ArrowLeft, Shield, Zap, Package, Image as ImageIcon } from 'lucide-react';
 import ImageConverter from '@/components/tools/ImageConverter';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const VideoConverter = dynamic(() => import('@/components/tools/VideoConverter'), {
-    ssr: false,
-    loading: () => (
-        <div className="space-y-6">
-            <Skeleton className="h-40 w-full" />
-            <Skeleton className="h-10 w-full" />
-        </div>
-    )
-});
-
 const featureList = [
-    { icon: Image, title: "Image Conversion", description: "Convert between JPG, PNG, WebP, and more." },
-    { icon: Video, title: "Video Transcoding", description: "Change video formats like MP4 to WebM, powered by FFmpeg." },
+    { icon: ImageIcon, title: "Multiple Formats", description: "Convert between JPG, PNG, WebP, and more." },
+    { icon: Package, title: "Batch Processing", description: "Convert multiple images at once and download as a ZIP." },
     { icon: Shield, title: "100% Private & Secure", description: "Files are processed in your browser and never uploaded to a server." },
     { icon: Zap, title: "Fast Client-Side Processing", description: "Leverages your computer's power for quick conversions." },
 ];
 
 const howItWorksSteps = [
-    "Select the 'Image Converter' or 'Video Converter' tab.",
-    "Drag and drop your file(s) or click to upload.",
+    "Drag and drop your image(s) or click to upload.",
     "Choose your desired output format from the dropdown menu.",
-    "Adjust quality or compression settings if available.",
     "Click 'Convert' and wait for the process to complete.",
     "Download your converted file(s) individually or as a single ZIP archive."
 ];
@@ -43,9 +29,8 @@ const howItWorksSteps = [
 const faqItems = [
     { q: "Are my files uploaded to a server?", a: "No. This tool is 100% client-side. All conversion processes happen locally in your web browser. Your files never leave your computer, ensuring complete privacy." },
     { q: "Is this file converter free to use?", a: "Yes, it is completely free. There are no watermarks, usage limits, or hidden costs." },
-    { q: "Why is video conversion slow?", a: "Video transcoding is a very resource-intensive task. Since it runs in your browser using WebAssembly (FFmpeg.wasm), performance depends on your computer's CPU. It may be slower than server-based converters but is far more secure." },
-    { q: "What file sizes are supported?", a: "For images, most file sizes are handled easily. For videos, very large files (multiple gigabytes) might cause your browser to become slow or run out of memory. We recommend refreshing the page after a large conversion." },
-    { q: "Can I convert multiple files at once?", a: "Yes, the Image Converter fully supports batch processing. You can upload multiple images and convert them all simultaneously. The Video Converter currently processes one file at a time due to its high resource usage." },
+    { q: "Can I convert multiple files at once?", a: "Yes, the Image Converter fully supports batch processing. You can upload multiple images and convert them all simultaneously." },
+    { q: "What file sizes are supported?", a: "For images, most file sizes are handled easily. However, very large images (over 20MB) might cause your browser to become slow or run out of memory. We recommend refreshing the page after a large conversion." },
 ];
 
 export default function FileConverterPage() {
@@ -61,8 +46,8 @@ export default function FileConverterPage() {
                             </Link>
                         </Button>
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-hero bg-clip-text text-transparent">File Converter</h1>
-                    <p className="text-xl text-muted-foreground mt-4 max-w-3xl mx-auto">A powerful, all-in-one tool to convert your image and video files. Secure, private, and incredibly fast—all from within your browser.</p>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-hero bg-clip-text text-transparent">Image Converter</h1>
+                    <p className="text-xl text-muted-foreground mt-4 max-w-3xl mx-auto">A powerful, all-in-one tool to convert your image files. Secure, private, and incredibly fast—all from within your browser.</p>
                 </div>
             </section>
 
@@ -71,10 +56,10 @@ export default function FileConverterPage() {
                     <CardHeader>
                         <CardTitle className="text-2xl flex items-center gap-3">
                             <FileKey2 className="text-primary" />
-                            Converter Suite
+                            Image Converter
                         </CardTitle>
                         <CardDescription>
-                            Choose between the Image and Video converters below.
+                            Drag and drop your images, select an output format, and convert.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -85,19 +70,7 @@ export default function FileConverterPage() {
                                 Your files are never uploaded. All conversions happen locally on your device for maximum security and speed.
                             </AlertDescription>
                         </Alert>
-
-                        <Tabs defaultValue="image-converter" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="image-converter"><Image className="mr-2"/>Image Converter</TabsTrigger>
-                                <TabsTrigger value="video-converter"><MonitorPlay className="mr-2"/>Video Converter</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="image-converter" className="mt-6">
-                                <ImageConverter />
-                            </TabsContent>
-                            <TabsContent value="video-converter" className="mt-6">
-                                <VideoConverter />
-                            </TabsContent>
-                        </Tabs>
+                        <ImageConverter />
                     </CardContent>
                 </Card>
             </section>
@@ -137,7 +110,7 @@ export default function FileConverterPage() {
                 <section>
                     <h2 className="text-3xl font-bold text-center mb-10">Common Use Cases</h2>
                     <div className="flex flex-wrap justify-center gap-4">
-                         {["Web Developers", "Content Creators", "Marketers", "Students", "Photographers", "Videographers"].map(role => (
+                         {["Web Developers", "Content Creators", "Marketers", "Students", "Photographers"].map(role => (
                             <Badge key={role} variant="secondary" className="px-4 py-2 text-sm">{role}</Badge>
                          ))}
                     </div>
