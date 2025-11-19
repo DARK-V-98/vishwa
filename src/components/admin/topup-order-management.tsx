@@ -60,6 +60,8 @@ interface TopupOrder {
   playerId: string;
   packageName: string;
   packagePrice: number;
+  quantity: number;
+  totalPrice: number;
   paymentMethod: 'online' | 'bank' | 'manual';
   status: 'pending' | 'processing' | 'completed' | 'cancelled';
   createdAt: { seconds: number; nanoseconds: number };
@@ -73,6 +75,7 @@ function ManualOrderDialog({ packages, onOrderAdded }: { packages: TopupPackage[
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [playerId, setPlayerId] = useState('');
     const [selectedPackageId, setSelectedPackageId] = useState('');
+    const [quantity, setQuantity] = useState(1);
 
     const handleAddOrder = async () => {
         if (!playerId || !selectedPackageId) {
@@ -88,13 +91,16 @@ function ManualOrderDialog({ packages, onOrderAdded }: { packages: TopupPackage[
 
         setIsSubmitting(true);
         try {
-            const profit = selectedPackage.price - (selectedPackage.realPrice || 0);
+            const profit = (selectedPackage.price - (selectedPackage.realPrice || 0)) * quantity;
+            const totalPrice = selectedPackage.price * quantity;
 
             await addDoc(collection(firestore, 'topupOrders'), {
                 playerId,
                 packageId: selectedPackage.id,
                 packageName: selectedPackage.name,
                 packagePrice: selectedPackage.price,
+                quantity: quantity,
+                totalPrice: totalPrice,
                 paymentMethod: 'manual',
                 status: 'completed',
                 source: 'manual',
@@ -107,6 +113,7 @@ function ManualOrderDialog({ packages, onOrderAdded }: { packages: TopupPackage[
             setIsOpen(false);
             setPlayerId('');
             setSelectedPackageId('');
+            setQuantity(1);
         } catch (err: any) {
             toast.error(`Failed to add order: ${err.message}`);
         } finally {
@@ -144,6 +151,10 @@ function ManualOrderDialog({ packages, onOrderAdded }: { packages: TopupPackage[
                                 ))}
                             </SelectContent>
                         </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="manual-quantity">Quantity</Label>
+                        <Input id="manual-quantity" type="number" min="1" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
                     </div>
                 </div>
                 <DialogFooter>
@@ -218,7 +229,8 @@ export default function TopupOrderManagement() {
                 <TableHead>Date</TableHead>
                 <TableHead>Player ID</TableHead>
                 <TableHead>Package</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead>Qty</TableHead>
+                <TableHead>Total Price</TableHead>
                 <TableHead>Profit</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Status</TableHead>
@@ -233,8 +245,9 @@ export default function TopupOrderManagement() {
                   <TableCell>{format(new Date(order.createdAt.seconds * 1000), 'PPp')}</TableCell>
                   <TableCell>{order.playerId}</TableCell>
                   <TableCell className="font-medium">{order.packageName}</TableCell>
-                  <TableCell>LKR {order.packagePrice.toLocaleString()}</TableCell>
-                  <TableCell className={order.profit && order.profit > 0 ? 'text-green-500' : 'text-red-500'}>
+                  <TableCell>{order.quantity || 1}</TableCell>
+                  <TableCell>LKR {order.totalPrice.toLocaleString()}</TableCell>
+                  <TableCell className={order.profit && order.profit > 0 ? 'text-green-500' : order.profit !== undefined ? 'text-red-500' : ''}>
                     {order.profit !== undefined ? `LKR ${order.profit.toLocaleString()}` : 'N/A'}
                   </TableCell>
                    <TableCell>

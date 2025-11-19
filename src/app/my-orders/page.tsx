@@ -9,12 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Package, Calendar, Tag, Circle, CreditCard } from 'lucide-react';
+import { Package, Calendar, Tag, Circle, CreditCard, XIcon } from 'lucide-react';
 
 interface TopupOrder {
     id: string;
     packageName: string;
     packagePrice: number;
+    quantity: number;
+    totalPrice: number;
     paymentMethod: 'online' | 'bank';
     status: 'pending' | 'processing' | 'completed' | 'cancelled';
     createdAt: { seconds: number; nanoseconds: number };
@@ -86,7 +88,8 @@ export default function MyOrdersPage() {
                                 <TableRow>
                                     <TableHead><Calendar className="inline-block h-4 w-4 mr-2"/>Date</TableHead>
                                     <TableHead><Package className="inline-block h-4 w-4 mr-2"/>Package</TableHead>
-                                    <TableHead><Tag className="inline-block h-4 w-4 mr-2"/>Price</TableHead>
+                                    <TableHead><XIcon className="inline-block h-4 w-4 mr-2"/>Qty</TableHead>
+                                    <TableHead><Tag className="inline-block h-4 w-4 mr-2"/>Total Price</TableHead>
                                     <TableHead><CreditCard className="inline-block h-4 w-4 mr-2"/>Payment</TableHead>
                                     <TableHead><Circle className="inline-block h-4 w-4 mr-2"/>Status</TableHead>
                                 </TableRow>
@@ -96,7 +99,8 @@ export default function MyOrdersPage() {
                                     <TableRow key={order.id}>
                                         <TableCell>{format(new Date(order.createdAt.seconds * 1000), 'PPp')}</TableCell>
                                         <TableCell className="font-medium">{order.packageName}</TableCell>
-                                        <TableCell>LKR {order.packagePrice.toLocaleString()}</TableCell>
+                                        <TableCell>{order.quantity || 1}</TableCell>
+                                        <TableCell>LKR {order.totalPrice.toLocaleString()}</TableCell>
                                         <TableCell className="capitalize">{order.paymentMethod}</TableCell>
                                         <TableCell>
                                             <Badge variant={getStatusVariant(order.status)} className="capitalize">{order.status}</Badge>

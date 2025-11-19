@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useCollection, useDoc, useUser, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -16,13 +16,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Gem, ShieldCheck, Zap, Image as ImageIcon, Banknote, CreditCard } from 'lucide-react';
+import { Gem, ShieldCheck, Zap, Image as ImageIcon, Banknote, CreditCard, Minus, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
-import type { Metadata } from 'next';
 
 interface TopupPackage {
   id: string;
@@ -36,10 +35,6 @@ interface TopupPackage {
 interface PaymentSettings {
     onlinePaymentEnabled: boolean;
     bankTransferEnabled: boolean;
-}
-
-interface UserProfile {
-    username?: string;
 }
 
 export default function FreefireTopupPage() {
@@ -59,8 +54,25 @@ export default function FreefireTopupPage() {
 
   const [playerId, setPlayerId] = useState('');
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'bank' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const selectedPackage = useMemo(() => {
+      if (!selectedPackageId || !packages) return null;
+      return packages.find(p => p.id === selectedPackageId);
+  }, [selectedPackageId, packages]);
+
+  const totalPrice = useMemo(() => {
+      if (!selectedPackage) return 0;
+      return selectedPackage.price * quantity;
+  }, [selectedPackage, quantity]);
+
+  useEffect(() => {
+      // Reset quantity when package changes
+      setQuantity(1);
+  }, [selectedPackageId]);
+
 
   const handlePlaceOrder = async () => {
     if (!user || !firestore) {
@@ -73,7 +85,6 @@ export default function FreefireTopupPage() {
       return;
     }
 
-    // Check if user profile is complete
     const userDocRef = doc(firestore, "users", user.uid);
     const userDoc = await getDoc(userDocRef);
     if (!userDoc.exists() || !userDoc.data()?.username) {
@@ -88,24 +99,17 @@ export default function FreefireTopupPage() {
         return;
     }
 
-
     if (!playerId) {
       toast.error('Please enter your Player ID.');
       return;
     }
-    if (!selectedPackageId) {
-      toast.error('Please select a package.');
-      return;
+    if (!selectedPackage) {
+        toast.error('Please select a package.');
+        return;
     }
     if (!paymentMethod) {
       toast.error('Please select a payment method.');
       return;
-    }
-
-    const selectedPackage = packages?.find(p => p.id === selectedPackageId);
-    if (!selectedPackage) {
-        toast.error('Selected package not found.');
-        return;
     }
 
     setIsSubmitting(true);
@@ -119,18 +123,21 @@ export default function FreefireTopupPage() {
             packageId: selectedPackage.id,
             packageName: selectedPackage.name,
             packagePrice: selectedPackage.price,
+            quantity: quantity,
+            totalPrice: totalPrice,
             paymentMethod,
             status: 'pending',
             createdAt: serverTimestamp(),
+            source: 'website'
         });
 
         toast.success(
-          `Your order for "${selectedPackage.name}" has been placed successfully! We will process it shortly.`
+          `Your order for ${quantity}x "${selectedPackage.name}" has been placed successfully!`
         );
-        // Reset form
         setPlayerId('');
         setSelectedPackageId(null);
         setPaymentMethod(null);
+        setQuantity(1);
     } catch (err: any) {
         toast.error(`Failed to place order: ${err.message}`);
     } finally {
@@ -152,7 +159,6 @@ export default function FreefireTopupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-subtle relative overflow-hidden">
-      {/* Background Image */}
       <div className="absolute inset-0 z-0 opacity-10">
         <Image
           src="/tp.png"
@@ -163,7 +169,6 @@ export default function FreefireTopupPage() {
       </div>
 
       <div className="container relative z-10 mx-auto px-4 py-12 pt-24">
-        {/* Page Header */}
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-12">
           <div className="inline-block">
             <span className="px-4 py-2 bg-secondary/10 text-secondary rounded-full text-sm font-semibold border border-secondary/20">
@@ -181,9 +186,7 @@ export default function FreefireTopupPage() {
           </p>
         </div>
 
-        {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8 items-start">
-          {/* Top-up Form */}
           <div className="lg:col-span-2">
             <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-strong">
               <CardHeader>
@@ -196,7 +199,6 @@ export default function FreefireTopupPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
-                {/* Step 1: Player ID */}
                 <div className="space-y-2">
                   <Label htmlFor="playerId" className="text-lg font-semibold">
                     Step 1: Enter Player ID
@@ -211,7 +213,6 @@ export default function FreefireTopupPage() {
                   />
                 </div>
 
-                {/* Step 2: Diamond Packages */}
                 <div className="space-y-4">
                    <Label className="text-lg font-semibold">
                     Step 2: Choose a Package
@@ -260,10 +261,27 @@ export default function FreefireTopupPage() {
                   )}
                 </div>
 
-                {/* Step 3: Payment Method */}
+                 {selectedPackage && (
+                    <div className="space-y-4 animate-in fade-in">
+                        <Label className="text-lg font-semibold">
+                            Step 3: Select Quantity
+                        </Label>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <Button variant="outline" size="icon" onClick={() => setQuantity(q => Math.max(1, q - 1))}><Minus className="h-4 w-4" /></Button>
+                                <Input type="number" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-20 text-center text-lg h-10" />
+                                <Button variant="outline" size="icon" onClick={() => setQuantity(q => q + 1)}><Plus className="h-4 w-4" /></Button>
+                            </div>
+                             <div className="text-2xl font-bold text-primary">
+                                Total: LKR {totalPrice.toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                 )}
+
                 <div className="space-y-4">
                     <Label className="text-lg font-semibold">
-                        Step 3: Select Payment Method
+                        Step {selectedPackage ? 4 : 3}: Select Payment Method
                     </Label>
                     {isLoading && <Skeleton className="h-24 w-full" />}
                     {!isLoading && (!paymentSettings || (!paymentSettings.onlinePaymentEnabled && !paymentSettings.bankTransferEnabled)) && (
@@ -325,7 +343,6 @@ export default function FreefireTopupPage() {
             </Card>
           </div>
           
-          {/* Info Panel */}
           <div className="space-y-6 sticky top-24">
              <Card className="border-border/50 bg-card/70 backdrop-blur-sm shadow-strong">
                 <CardHeader>
