@@ -76,7 +76,8 @@
     "react-image-crop": "^11.0.6",
     "jsbarcode": "^3.11.6",
     "qrcode": "^1.5.3",
-    "crypto-js": "^4.2.0"
+    "crypto-js": "^4.2.0",
+    "jsqr": "^1.4.0"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.13",

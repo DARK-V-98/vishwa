@@ -26,8 +26,8 @@ import { motion } from 'framer-motion';
 
 const allTools = [
   {
-    title: "PDF ↔ Image Converter",
-    description: "Convert PDF pages into images or combine multiple images into a single PDF file.",
+    title: "PDF Tools Suite",
+    description: "Convert PDFs to images or combine images into a single PDF, all securely in your browser.",
     href: "/tools/pdf-suite",
     icon: FileImage,
     category: "PDF",
@@ -35,7 +35,7 @@ const allTools = [
   },
   {
     title: "Image Resizer",
-    description: "Resize images to custom dimensions without losing quality. Perfect for web or social media.",
+    description: "Resize images to custom dimensions. Perfect for web, social media, or documents.",
     href: "/tools/image-resizer",
     icon: Maximize,
     category: "Image",
@@ -43,7 +43,7 @@ const allTools = [
   },
   {
     title: "Image Cropper",
-    description: "Upload any image, crop a specific area, and download only the selected portion.",
+    description: "Crop specific areas of an image with an easy-to-use interface. Download only the selected part.",
     href: "/tools/image-cropper",
     icon: Crop,
     category: "Image",
@@ -51,7 +51,7 @@ const allTools = [
   },
   {
     title: "File Encryption & Decryption",
-    description: "Protect your files using AES-256 encryption. Securely lock and unlock files with a password.",
+    description: "Secure any file with AES-256 encryption. Lock and unlock files with a password, client-side.",
     href: "/tools/file-encryption",
     icon: FileLock,
     category: "Security",
@@ -59,7 +59,7 @@ const allTools = [
   },
   {
     title: "QR Code Generator",
-    description: "Generate QR codes instantly from any text, URL, or contact info. Download as a PNG.",
+    description: "Generate QR codes from any text or URL. Download a high-quality PNG instantly.",
     href: "/tools/qr-generator",
     icon: QrCode,
     category: "Utility",
@@ -67,7 +67,7 @@ const allTools = [
   },
    {
     title: "QR Code Scanner",
-    description: "Scan QR codes using your camera or by uploading an image. Automatically detects and reads the code.",
+    description: "Scan QR codes using your camera or by uploading an image. Detects and reads code data securely.",
     href: "/tools/qr-scanner",
     icon: ScanLine,
     category: "Utility",
@@ -75,7 +75,7 @@ const allTools = [
   },
   {
     title: "Barcode Generator",
-    description: "Create barcodes (EAN-13, CODE128) for products or inventory. Download as high-quality images.",
+    description: "Create standard barcodes (EAN, UPC, etc.) for products or inventory management.",
     href: "/tools/barcode-generator",
     icon: Barcode,
     category: "Utility",
@@ -83,7 +83,7 @@ const allTools = [
   },
   {
     title: "Password Generator",
-    description: "Create strong, secure passwords with custom length and character settings. Copy instantly.",
+    description: "Create strong, secure passwords with custom length and character settings.",
     href: "/tools/password-generator",
     icon: KeyRound,
     category: "Security",
@@ -130,7 +130,7 @@ export default function ToolsPage() {
               </span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Free, Fast, Secure Tools That Run 100% Inside Your Browser.
+              A suite of free, fast, and secure tools that run 100% inside your browser. No uploads, no waiting.
             </p>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function ToolsPage() {
                         animate="visible"
                         variants={cardVariants}
                     >
-                        <Link href={tool.href} className="h-full">
+                        <Link href={tool.href} className="h-full block">
                             <Card className="hover:shadow-strong transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm flex flex-col h-full group hover:-translate-y-1">
                                 <CardHeader className="flex-grow">
                                     <div className="flex justify-between items-start">
