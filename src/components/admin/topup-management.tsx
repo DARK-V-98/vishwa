@@ -35,6 +35,7 @@ interface TopupPackage {
   id: string;
   name: string;
   price: number;
+  realPrice?: number;
   category: 'Gems' | 'Membership' | 'Other';
   imageUrl?: string;
   order: number;
@@ -58,6 +59,7 @@ export default function TopupManagement() {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    realPrice: '',
     category: 'Gems' as const,
     imageUrl: '',
     order: 0,
@@ -70,6 +72,7 @@ export default function TopupManagement() {
       setFormData({
         name: pkg.name,
         price: String(pkg.price),
+        realPrice: String(pkg.realPrice || ''),
         category: pkg.category,
         imageUrl: pkg.imageUrl || '',
         order: pkg.order,
@@ -80,6 +83,7 @@ export default function TopupManagement() {
       setFormData({
         name: '',
         price: '',
+        realPrice: '',
         category: 'Gems' as const,
         imageUrl: '',
         order: packages ? packages.length + 1 : 1,
@@ -131,14 +135,15 @@ export default function TopupManagement() {
         const dataToSave = {
           name: formData.name,
           price: parseFloat(formData.price),
+          realPrice: formData.realPrice ? parseFloat(formData.realPrice) : 0,
           category: formData.category,
           imageUrl: finalImageUrl,
           order: Number(formData.order),
           updatedAt: serverTimestamp(),
         };
 
-        if (isNaN(dataToSave.price) || isNaN(dataToSave.order)) {
-            toast.error("Price and Order must be valid numbers.");
+        if (isNaN(dataToSave.price) || isNaN(dataToSave.order) || isNaN(dataToSave.realPrice)) {
+            toast.error("Price, Real Price, and Order must be valid numbers.");
             setIsSubmitting(false);
             return;
         }
@@ -215,6 +220,7 @@ export default function TopupManagement() {
                  </div>
                 <CardTitle>{pkg.name}</CardTitle>
                 <CardDescription>LKR {pkg.price.toLocaleString()}</CardDescription>
+                <CardDescription className="text-xs text-red-500">Cost: LKR {(pkg.realPrice || 0).toLocaleString()}</CardDescription>
               </CardHeader>
               <CardFooter className="mt-auto flex gap-2">
                 <Button variant="outline" size="sm" className="w-full" onClick={() => handleOpenDialog(pkg)}>
@@ -242,25 +248,31 @@ export default function TopupManagement() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="price">Price (LKR)</Label>
+                        <Label htmlFor="price">Selling Price (LKR)</Label>
                         <Input id="price" name="price" type="number" value={formData.price} onChange={handleFormChange} placeholder="e.g., 200" required />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="order">Display Order</Label>
-                        <Input id="order" name="order" type="number" value={formData.order} onChange={handleFormChange} required />
+                     <div className="space-y-2">
+                        <Label htmlFor="realPrice">Real Price (LKR) - For Profit Calculation</Label>
+                        <Input id="realPrice" name="realPrice" type="number" value={formData.realPrice} onChange={handleFormChange} placeholder="e.g., 180" />
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label>Category</Label>
-                    <Select onValueChange={handleCategoryChange} value={formData.category}>
-                        <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
-                        <SelectContent>
-                            {packageCategories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                 <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="order">Display Order</Label>
+                        <Input id="order" name="order" type="number" value={formData.order} onChange={handleFormChange} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Category</Label>
+                        <Select onValueChange={handleCategoryChange} value={formData.category}>
+                            <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                            <SelectContent>
+                                {packageCategories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 
                 <div className="space-y-2">

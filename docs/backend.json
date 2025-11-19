@@ -241,7 +241,11 @@
         },
         "price": {
           "type": "number",
-          "description": "The price of the package in LKR."
+          "description": "The selling price of the package in LKR."
+        },
+        "realPrice": {
+            "type": "number",
+            "description": "The actual cost of the package, for profit calculation."
         },
         "category": {
           "type": "string",
@@ -307,7 +311,8 @@
           "type": "string",
           "enum": [
             "online",
-            "bank"
+            "bank",
+            "manual"
           ],
           "description": "The selected payment method."
         },
@@ -325,6 +330,15 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the order was created."
+        },
+        "source": {
+            "type": "string",
+            "enum": ["website", "manual"],
+            "description": "Where the order originated from."
+        },
+        "profit": {
+            "type": "number",
+            "description": "The calculated profit for this order (price - realPrice)."
         }
       },
       "required": [
@@ -730,6 +744,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have `sellerId`, so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality. A `teams` subcollection is added under each tournament to store participant data."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have 'sellerId', so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality. A `teams` subcollection is added under each tournament to store participant data."
   }
 }
