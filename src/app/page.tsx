@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Code, Palette, Building2, ArrowRight, Star, Zap, Shield, Users, Gamepad2, Briefcase,
   FileKey2, ListTree, Regex, FileJson, QrCode, Barcode, ScanLine, KeyRound, Server, Palette as PaletteIcon,
-  Cpu, FileCode2, Fingerprint, Award, Tv, Bot, Settings, MessageSquare, Download
+  Cpu, FileCode2, Fingerprint, Award, Tv, Bot, Settings, MessageSquare, Download, Maximize, Crop, FileLock
 } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
@@ -48,6 +48,137 @@ const AnimatedProgress = ({ value, label }: { value: number; label: string }) =>
     </div>
   );
 };
+
+const allTools = [
+   {
+    title: "JSON <> CSV Converter",
+    description: "Convert JSON files to CSV and vice-versa. Supports nested JSON and file uploads.",
+    href: "/tools/json-csv-converter",
+    icon: FileJson,
+    category: "Converter",
+    variant: "hero" as "hero",
+  },
+  {
+    title: "Code Minifier",
+    description: "Minify your CSS, JavaScript, and HTML code to reduce file size and improve load times.",
+    href: "/tools/code-minifier",
+    icon: Code,
+    category: "Utility",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "Regex Tester",
+    description: "Test and debug your regular expressions with live matching, groups, and replacements.",
+    href: "/tools/regex-tester",
+    icon: Regex,
+    category: "Utility",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "JWT Decoder",
+    description: "Decode and inspect JSON Web Tokens to view header and payload data securely.",
+    href: "/tools/jwt-decoder",
+    icon: Fingerprint,
+    category: "Security",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Markdown to HTML",
+    description: "Convert Markdown text into clean HTML with a live preview and copy-to-clipboard functionality.",
+    href: "/tools/markdown-converter",
+    icon: FileCode2,
+    category: "Converter",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Color Palette Generator",
+    description: "Generate beautiful color palettes from a base color or randomly. Get HEX, RGB, and HSL values.",
+    href: "/tools/color-palette-generator",
+    icon: Palette,
+    category: "Design",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "API Tester",
+    description: "A lightweight, browser-based client to test your API endpoints (GET, POST, etc.). A mini Postman.",
+    href: "/tools/api-tester",
+    icon: Server,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+   {
+    title: "Image Converter",
+    description: "Convert image files between different formats (e.g., JPG, PNG, WEBP).",
+    href: "/tools/file-converter",
+    icon: FileKey2,
+    category: "Converter",
+    variant: "hero" as "hero",
+  },
+  {
+    title: "PDF Suite",
+    description: "Convert images to PDF or extract pages from a PDF file into images.",
+    href: "/tools/pdf-suite",
+    icon: ListTree,
+    category: "Converter",
+    variant: "hero" as "hero",
+  },
+  {
+    title: "Image Resizer",
+    description: "Resize images to custom dimensions. Perfect for web, social media, or documents.",
+    href: "/tools/image-resizer",
+    icon: Maximize,
+    category: "Image",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "Image Cropper",
+    description: "Crop specific areas of an image with an easy-to-use interface. Download only the selected part.",
+    href: "/tools/image-cropper",
+    icon: Crop,
+    category: "Image",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "File Encryption & Decryption",
+    description: "Secure any file with AES-256 encryption. Lock and unlock files with a password, client-side.",
+    href: "/tools/file-encryption",
+    icon: FileLock,
+    category: "Security",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "QR Code Generator",
+    description: "Generate QR codes from any text or URL. Download a high-quality PNG instantly.",
+    href: "/tools/qr-generator",
+    icon: QrCode,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+   {
+    title: "QR Code Scanner",
+    description: "Scan QR codes using your camera or by uploading an image. Detects and reads code data securely.",
+    href: "/tools/qr-scanner",
+    icon: ScanLine,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Barcode Generator",
+    description: "Create standard barcodes (EAN, UPC, etc.) for products or inventory management.",
+    href: "/tools/barcode-generator",
+    icon: Barcode,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Password Generator",
+    description: "Create strong, secure passwords with custom length and character settings.",
+    href: "/tools/password-generator",
+    icon: KeyRound,
+    category: "Security",
+    variant: "outline" as "outline",
+  },
+];
 
 const Home = () => {
   const firestore = useFirestore();
