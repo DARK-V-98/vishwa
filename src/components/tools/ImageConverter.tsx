@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import FileDropzone from './FileDropzone';
 import { Button } from '../ui/button';
 import Image from 'next/image';
@@ -33,6 +33,11 @@ export default function ImageConverter() {
         setFiles(prev => [...prev, ...imageFiles.map(file => Object.assign(file, { preview: URL.createObjectURL(file) }))]);
         setConvertedFiles([]);
     }, []);
+
+    useEffect(() => {
+        // Make sure to revoke the data uris to avoid memory leaks
+        return () => files.forEach(file => URL.revokeObjectURL(file.preview));
+    }, [files]);
 
     const removeFile = (fileName: string) => {
         setFiles(prev => prev.filter(file => file.name !== fileName));
@@ -134,7 +139,7 @@ export default function ImageConverter() {
                         <div className="max-h-48 overflow-y-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-2 rounded-md border">
                             {files.map(file => (
                                 <div key={file.name} className="relative group aspect-square">
-                                    <Image src={file.preview} alt={file.name} fill className="object-cover rounded-md" onLoad={() => URL.revokeObjectURL(file.preview)} />
+                                    <Image src={file.preview} alt={file.name} fill className="object-cover rounded-md" />
                                     <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => removeFile(file.name)}><X className="h-4 w-4" /></Button>
                                 </div>
                             ))}
