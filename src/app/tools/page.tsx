@@ -8,9 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   FileImage,
-  ImageIcon,
   Lock,
-  UtilityPole,
   ArrowRight,
   Search,
   Maximize,
@@ -19,10 +17,16 @@ import {
   QrCode,
   Barcode,
   KeyRound,
-  ScanLine
+  ScanLine,
+  Zap,
+  Shield,
+  Globe,
+  Fingerprint
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from 'framer-motion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 
 const allTools = [
   {
@@ -92,6 +96,21 @@ const allTools = [
 ];
 
 const categories = ["All", "PDF", "Image", "Security", "Utility"];
+
+const generalFeatures = [
+    { icon: Zap, title: "Blazing Fast", description: "All tools run instantly in your browser, with no waiting for uploads or server processing." },
+    { icon: Shield, title: "100% Private", description: "Your files and data are never sent to a server. Everything stays on your device." },
+    { icon: Globe, title: "Works Offline", description: "After the initial page load, our tools work even without an internet connection." },
+    { icon: Fingerprint, title: "Free & Anonymous", description: "No sign-ups, no tracking, and no watermarks. Just free, powerful tools for everyone." },
+];
+
+const faqItems = [
+    { q: "Are these tools really free?", a: "Yes, every tool in our collection is 100% free to use, with no hidden fees, watermarks, or usage limits." },
+    { q: "Is it safe to use my sensitive files?", a: "Absolutely. The core security feature of our suite is that all processing happens locally in your browser. Your files are never uploaded to any server, making it as secure as an offline desktop application." },
+    { q: "Do I need to install any software?", a: "No, there's nothing to install. All tools run directly in your web browser. As long as you have a modern browser like Chrome, Firefox, or Safari, you're good to go." },
+    { q: "Do the tools work on mobile devices?", a: "Yes, our entire tool suite is designed to be fully responsive and functional on desktops, tablets, and smartphones." },
+];
+
 
 export default function ToolsPage() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -201,6 +220,45 @@ export default function ToolsPage() {
             )}
         </div>
       </section>
+
+      <div className="container mx-auto px-4 py-16 space-y-16 max-w-4xl">
+            <section>
+                <h2 className="text-3xl font-bold text-center mb-10">Why Use Our Tools?</h2>
+                <div className="grid md:grid-cols-2 gap-8">
+                    {generalFeatures.map(feature => (
+                         <div key={feature.title} className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0 shadow-medium">
+                                <feature.icon className="h-6 w-6 text-primary-foreground" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold">{feature.title}</h3>
+                                <p className="text-muted-foreground">{feature.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+             <section>
+                <h2 className="text-3xl font-bold text-center mb-10">Privacy-First By Design</h2>
+                 <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                    <CardContent className="p-6">
+                        <p className="text-muted-foreground">Unlike other online tools that upload your files to their servers, our suite operates entirely within your browser. This client-side approach means your sensitive data—whether it's a personal photo, a confidential document, or a business plan—never leaves your computer. This eliminates privacy risks, data leaks, and wait times for uploads, offering you peace of mind and unparalleled speed. It's the modern, secure way to get things done online.</p>
+                    </CardContent>
+                </Card>
+            </section>
+
+            <section>
+                <h2 className="text-3xl font-bold text-center mb-10">Frequently Asked Questions</h2>
+                <Accordion type="single" collapsible className="w-full">
+                    {faqItems.map(item => (
+                        <AccordionItem value={item.q} key={item.q}>
+                            <AccordionTrigger>{item.q}</AccordionTrigger>
+                            <AccordionContent>{item.a}</AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </section>
+        </div>
     </div>
   );
 }
