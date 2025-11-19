@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -136,20 +136,19 @@ ${author ? `<meta name="author" content="${author}">` : ''}
                             </CardHeader>
                             <CardContent>
                                 <div className="border rounded-lg overflow-hidden">
-                                     {imageUrl ? (
+                                    <div className="aspect-[1.91/1] bg-muted flex items-center justify-center relative">
+                                    {imageUrl ? (
                                         <Image
                                             src={imageUrl}
                                             alt="Social Preview"
-                                            width={500}
-                                            height={261}
-                                            className="w-full aspect-[1.91/1] object-cover"
+                                            layout="fill"
+                                            className="object-cover"
                                             onError={(e) => (e.currentTarget.style.display = 'none')}
                                         />
                                     ) : (
-                                        <div className="aspect-[1.91/1] bg-muted flex items-center justify-center">
-                                            <p className="text-muted-foreground text-sm">No image provided</p>
-                                        </div>
+                                        <p className="text-muted-foreground text-sm">No image provided</p>
                                     )}
+                                    </div>
                                     <div className="p-4 bg-background">
                                         <p className="text-xs text-muted-foreground uppercase">{siteUrl ? new URL(siteUrl).hostname : 'example.com'}</p>
                                         <p className="font-semibold truncate">{siteTitle || 'Your Website Title'}</p>
