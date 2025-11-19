@@ -15,21 +15,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import type { Metadata } from 'next';
-
-const pageTitle = "About Vishwa Vidarshana – Developer & Entrepreneur";
-const pageDescription = "Learn about Vishwa Vidarshana’s journey, skills, expertise, and achievements in web development, design, and e-sports solutions.";
-
-export const metadata: Metadata = {
-  title: pageTitle,
-  description: pageDescription,
-  openGraph: {
-    title: pageTitle,
-    description: pageDescription,
-    url: "/about",
-  }
-};
-
 
 const About = () => {
   const [animatedSkills, setAnimatedSkills] = useState([
