@@ -1,6 +1,8 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-
 User-agent: *
-Allow: /
+Disallow: /auth/
+Disallow: /my-orders/
+Disallow: /messages/
+Disallow: /dashboard/
+Disallow: /admin/
 
-Sitemap: https://www.vishwa-vidarshana.com/sitemap.xml
+Sitemap: https://vishwavidarshana.com/sitemap.xml
