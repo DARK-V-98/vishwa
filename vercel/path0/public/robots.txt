@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /my-orders
+
+Sitemap: https://vishwavidarshana.com/sitemap.xml
