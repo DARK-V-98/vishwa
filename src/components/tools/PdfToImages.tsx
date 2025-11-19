@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import FileDropzone from './FileDropzone';
 import { Button } from '../ui/button';
+import { Card } from '../ui/card';
 import { X, FileDown, Loader2, Download, Package, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '../ui/progress';
 import { toast } from 'sonner';
