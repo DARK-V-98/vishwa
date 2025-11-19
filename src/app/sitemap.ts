@@ -36,7 +36,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/image-resizer',
     '/tools/image-cropper',
     '/tools/file-converter',
-    '/tools/pdf-suite'
+    '/tools/pdf-suite',
+    '/tools/code-minifier'
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
