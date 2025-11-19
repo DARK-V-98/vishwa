@@ -38,21 +38,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-   webpack: (config, { isServer }) => {
-    // Correct configuration to handle ffmpeg.wasm
-    config.module.rules.push({
-      test: /\.wasm$/,
-      type: "asset/resource",
-    });
-
-    // This is needed to prevent errors with some packages that use fs
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-    };
-    
-    return config;
-  },
   async headers() {
     return [
       {

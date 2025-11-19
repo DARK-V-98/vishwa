@@ -1,0 +1,32 @@
+diff --git a/node_modules/@ffmpeg/ffmpeg/dist/esm/classes.js b/node_modules/@ffmpeg/ffmpeg/dist/esm/classes.js
+index 9a94121..1b1e345 100644
+--- a/node_modules/@ffmpeg/ffmpeg/dist/esm/classes.js
++++ b/node_modules/@ffmpeg/ffmpeg/dist/esm/classes.js
+@@ -101,13 +101,17 @@ class FFmpeg {
+         this.#eventHandlers = {};
+         this.#loaded = false;
+         if (!this.#worker) {
+-            this.#worker = classWorkerURL ?
+-                new Worker(new URL(classWorkerURL, import.meta.url), {
+-                    type: "module",
+-                }) :
+-                // We need to duplicated the code here to enable webpack
+-                // to parse correctly.
+-                new Worker(new URL("./worker.js", import.meta.url), {
+-                    type: "module",
+-                });
++            if (typeof window !== "undefined") {
++              this.#worker = classWorkerURL
++                ? new Worker(new URL(classWorkerURL, import.meta.url), {
++                    type: "module",
++                  })
++                : // We need to duplicated the code here to enable webpack
++                  // to parse correctly.
++                  new Worker(new URL("./worker.js", import.meta.url), {
++                    type: "module",
++                  });
++            }
+         }
+         this.#worker.onmessage = this.#onMessage;
+     }
+
