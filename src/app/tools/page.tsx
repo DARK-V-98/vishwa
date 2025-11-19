@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -22,27 +23,94 @@ import {
   Globe,
   Fingerprint,
   FileKey2,
+  List,
+  Braces,
+  Code,
+  Regex,
+  FileJson,
+  Fingerprint as JwtIcon,
+  Palette,
+  Tags,
+  Pipette,
+  TestTube2,
+  Server,
+  Markdown,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from 'framer-motion';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
 
 const allTools = [
-  {
-    title: "PDF Tools Suite",
-    description: "Convert PDFs to images or combine images into a single PDF, all securely in your browser.",
-    href: "/tools/pdf-suite",
-    icon: FileImage,
-    category: "PDF",
+   {
+    title: "JSON <> CSV Converter",
+    description: "Convert JSON files to CSV and vice-versa. Supports nested JSON and file uploads.",
+    href: "/tools/json-csv-converter",
+    icon: FileJson,
+    category: "Converter",
     variant: "hero" as "hero",
   },
   {
-    title: "File Converter",
-    description: "Convert image and video files between different formats (e.g., JPG to PNG, MP4 to WebM).",
+    title: "Code Minifier",
+    description: "Minify your CSS, JavaScript, and HTML code to reduce file size and improve load times.",
+    href: "/tools/code-minifier",
+    icon: Code,
+    category: "Utility",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "Regex Tester",
+    description: "Test and debug your regular expressions with live matching, groups, and replacements.",
+    href: "/tools/regex-tester",
+    icon: Regex,
+    category: "Utility",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "JWT Decoder",
+    description: "Decode and inspect JSON Web Tokens to view header and payload data securely.",
+    href: "/tools/jwt-decoder",
+    icon: JwtIcon,
+    category: "Security",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Markdown to HTML",
+    description: "Convert Markdown text into clean HTML with a live preview and copy-to-clipboard functionality.",
+    href: "/tools/markdown-converter",
+    icon: Markdown,
+    category: "Converter",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Color Palette Generator",
+    description: "Generate beautiful color palettes from a base color or randomly. Get HEX, RGB, and HSL values.",
+    href: "/tools/color-palette-generator",
+    icon: Palette,
+    category: "Design",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Meta Tag Generator",
+    description: "Create SEO-friendly meta tags for your web pages, including Open Graph and Twitter Cards.",
+    href: "/tools/meta-tag-generator",
+    icon: Tags,
+    category: "SEO",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "API Tester",
+    description: "A lightweight, browser-based client to test your API endpoints (GET, POST, etc.). A mini Postman.",
+    href: "/tools/api-tester",
+    icon: Server,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+   {
+    title: "Image Converter",
+    description: "Convert image files between different formats (e.g., JPG, PNG, WEBP).",
     href: "/tools/file-converter",
     icon: FileKey2,
-    category: "Utility",
+    category: "Converter",
     variant: "hero" as "hero",
   },
   {
@@ -103,7 +171,7 @@ const allTools = [
   },
 ];
 
-const categories = ["All", "PDF", "Image", "Security", "Utility"];
+const categories = ["All", "Converter", "Image", "Security", "Utility", "Design", "SEO"];
 
 const generalFeatures = [
     { icon: Zap, title: "Blazing Fast", description: "All tools run instantly in your browser, with no waiting for uploads or server processing." },
@@ -153,11 +221,11 @@ export default function ToolsPage() {
             </div>
             <h1 className="text-4xl md:text-6xl font-bold">
               <span className="bg-gradient-hero bg-clip-text text-transparent">
-                Online Tools Collection
+                Developer Tools Suite
               </span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              A suite of free, fast, and secure tools that run 100% inside your browser. No uploads, no waiting.
+              A suite of fast, free, and secure tools that run 100% inside your browser. No uploads, no waiting.
             </p>
           </div>
         </div>
@@ -177,7 +245,7 @@ export default function ToolsPage() {
                     />
                 </div>
                 <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full md:w-auto">
-                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-12">
+                    <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7 h-auto md:h-12 flex-wrap">
                         {categories.map(cat => (
                              <TabsTrigger key={cat} value={cat} className="h-full">{cat}</TabsTrigger>
                         ))}

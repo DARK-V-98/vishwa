@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { KeyRound, Copy, ArrowLeft, Zap, Shield, Globe, RefreshCw } from 'lucide-react';
+import { KeyRound, Copy, ArrowLeft, Zap, Shield, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -65,7 +65,7 @@ export default function PasswordGeneratorPage() {
     
     useEffect(() => {
         generatePassword();
-    }, []);
+    }, [length, includeUppercase, includeNumbers, includeSymbols]);
 
 
     const copyToClipboard = () => {

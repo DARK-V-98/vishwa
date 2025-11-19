@@ -1,3 +1,4 @@
+
 import { MetadataRoute } from 'next'
  
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -35,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/barcode-generator',
     '/tools/password-generator',
     '/tools/file-converter',
+    '/tools/jwt-decoder',
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
