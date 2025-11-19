@@ -1,119 +1,206 @@
 
 'use client';
-import { Card, CardContent } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Hammer, Lock, Zap, ServerOff, FileType, FileQuestion } from "lucide-react";
-import ImagePdfConverter from "@/components/tools/ImagePdfConverter";
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  FileImage,
+  ImageIcon,
+  Lock,
+  UtilityPole,
+  ArrowRight,
+  Search,
+  Maximize,
+  Crop,
+  FileLock,
+  QrCode,
+  Barcode,
+  KeyRound,
+  ScanLine
+} from "lucide-react";
+import Link from "next/link";
+import { motion } from 'framer-motion';
+
+const allTools = [
+  {
+    title: "PDF ↔ Image Converter",
+    description: "Convert PDF pages into images or combine multiple images into a single PDF file.",
+    href: "/tools/pdf-suite",
+    icon: FileImage,
+    category: "PDF",
+    variant: "hero" as "hero",
+  },
+  {
+    title: "Image Resizer",
+    description: "Resize images to custom dimensions without losing quality. Perfect for web or social media.",
+    href: "/tools/image-resizer",
+    icon: Maximize,
+    category: "Image",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "Image Cropper",
+    description: "Upload any image, crop a specific area, and download only the selected portion.",
+    href: "/tools/image-cropper",
+    icon: Crop,
+    category: "Image",
+    variant: "secondary" as "secondary",
+  },
+  {
+    title: "File Encryption & Decryption",
+    description: "Protect your files using AES-256 encryption. Securely lock and unlock files with a password.",
+    href: "/tools/file-encryption",
+    icon: FileLock,
+    category: "Security",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "QR Code Generator",
+    description: "Generate QR codes instantly from any text, URL, or contact info. Download as a PNG.",
+    href: "/tools/qr-generator",
+    icon: QrCode,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+   {
+    title: "QR Code Scanner",
+    description: "Scan QR codes using your camera or by uploading an image. Automatically detects and reads the code.",
+    href: "/tools/qr-scanner",
+    icon: ScanLine,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Barcode Generator",
+    description: "Create barcodes (EAN-13, CODE128) for products or inventory. Download as high-quality images.",
+    href: "/tools/barcode-generator",
+    icon: Barcode,
+    category: "Utility",
+    variant: "outline" as "outline",
+  },
+  {
+    title: "Password Generator",
+    description: "Create strong, secure passwords with custom length and character settings. Copy instantly.",
+    href: "/tools/password-generator",
+    icon: KeyRound,
+    category: "Security",
+    variant: "outline" as "outline",
+  },
+];
+
+const categories = ["All", "PDF", "Image", "Security", "Utility"];
 
 export default function ToolsPage() {
-    const faqs = [
-        { q: "Is this tool free to use?", a: "Yes, our Image-PDF Converter is completely free for everyone to use." },
-        { q: "Do you store my files?", a: "No. All conversions happen locally in your browser. Your files are never uploaded to our servers, ensuring your privacy." },
-        { q: "What file formats are supported?", a: "For image-to-PDF, you can upload JPG, and PNG files. For PDF-to-image, you can upload any standard PDF document." },
-        { q: "Is there a limit on file size or number of files?", a: "There are no hard limits imposed by us, but performance may vary depending on your device's memory and the size/number of files you are converting." },
-        { q: "Do I need to install any software?", a: "No software installation is required. The tool runs entirely in your web browser." },
-        { q: "How secure is this converter?", a: "Since your files are not uploaded to any server, it is one of the most secure ways to convert documents. Your data remains on your computer." },
-    ];
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
 
-    const benefits = [
-        { icon: Lock, title: "100% Secure & Private", description: "Your files never leave your device. All processing is done in your browser." },
-        { icon: Zap, title: "Lightning Fast", description: "Conversions are almost instant, with no upload/download delays." },
-        { icon: ServerOff, title: "Works Offline", description: "Once the page is loaded, the tool can work even without an internet connection." },
-        { icon: FileType, title: "Versatile Formats", description: "Easily switch between converting images to PDF and PDF pages to images." },
-    ];
+    const filteredTools = allTools.filter(tool => {
+        const matchesCategory = activeCategory === 'All' || tool.category === activeCategory;
+        const matchesSearch = tool.title.toLowerCase().includes(searchTerm.toLowerCase()) || tool.description.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
 
-    return (
-        <div className="min-h-screen bg-gradient-subtle">
-            {/* Hero Section */}
-            <section className="pt-24 pb-12 md:pt-32 md:pb-16">
-                <div className="container mx-auto px-4">
-                    <div className="max-w-4xl mx-auto text-center space-y-6">
-                        <div className="inline-block">
-                            <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold border border-primary/20">
-                                Productivity Suite
-                            </span>
-                        </div>
-                        <h1 className="text-4xl md:text-6xl font-bold">
-                            <span className="bg-gradient-hero bg-clip-text text-transparent">
-                                Online Tools
-                            </span>
-                        </h1>
-                        <p className="text-xl text-muted-foreground">
-                            Fast. Secure. Browser-Based. Your files are never uploaded.
-                        </p>
-                    </div>
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: (i: number) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                delay: i * 0.05,
+            },
+        }),
+    };
+
+  return (
+    <div className="min-h-screen bg-gradient-subtle">
+      <section className="pt-24 pb-12 md:pt-32 md:pb-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <div className="inline-block">
+              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold border border-primary/20">
+                Productivity Suite
+              </span>
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold">
+              <span className="bg-gradient-hero bg-clip-text text-transparent">
+                Online Tools Collection
+              </span>
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Free, Fast, Secure Tools That Run 100% Inside Your Browser.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-12 md:py-16">
+        <div className="container mx-auto px-4 max-w-7xl">
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+                <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search for a tool..."
+                        className="pl-10 h-12 text-base"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-            </section>
+                <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full md:w-auto">
+                    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-12">
+                        {categories.map(cat => (
+                             <TabsTrigger key={cat} value={cat} className="h-full">{cat}</TabsTrigger>
+                        ))}
+                    </TabsList>
+                </Tabs>
+            </div>
 
             {/* Tools Grid */}
-            <section className="py-12 md:py-16">
-                <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-1 gap-8">
-                        <ImagePdfConverter />
-                    </div>
-                </div>
-            </section>
-
-            {/* About Section */}
-            <section className="py-12 md:py-16 bg-muted/30">
-                <div className="container mx-auto px-4 max-w-4xl">
-                    <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                        <CardContent className="p-8 space-y-4">
-                            <h2 className="text-2xl font-bold flex items-center gap-2"><Hammer className="text-primary" /> About The Tool</h2>
-                            <p className="text-muted-foreground">
-                                Our Image-PDF Converter is a powerful, free online utility designed with your privacy and efficiency in mind. Unlike other online converters, this tool leverages the power of your own browser to perform all conversions. This means your files are never sent over the internet to a server. Whether you need to combine multiple photos into a single PDF document for a report, or extract pages from a PDF as individual images, our tool handles it instantly and securely.
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-            </section>
-            
-            {/* Benefits Section */}
-             <section className="py-12 md:py-16">
-                <div className="container mx-auto px-4 max-w-6xl">
-                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold">Why Use Our Converter?</h2>
-                        <p className="text-muted-foreground">Experience the benefits of client-side processing.</p>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {benefits.map(benefit => (
-                            <Card key={benefit.title} className="text-center border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-medium transition-shadow">
-                                <CardContent className="p-6 space-y-3">
-                                    <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center mx-auto shadow-medium">
-                                        <benefit.icon className="h-6 w-6 text-primary-foreground" />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredTools.map((tool, i) => (
+                    <motion.div
+                        key={tool.href}
+                        custom={i}
+                        initial="hidden"
+                        animate="visible"
+                        variants={cardVariants}
+                    >
+                        <Link href={tool.href} className="h-full">
+                            <Card className="hover:shadow-strong transition-all duration-300 border-border/50 bg-card/50 backdrop-blur-sm flex flex-col h-full group hover:-translate-y-1">
+                                <CardHeader className="flex-grow">
+                                    <div className="flex justify-between items-start">
+                                        <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center shadow-medium mb-4">
+                                            <tool.icon className="h-6 w-6 text-primary-foreground" />
+                                        </div>
+                                        <span className="text-xs font-semibold text-primary">{tool.category}</span>
                                     </div>
-                                    <h3 className="font-semibold">{benefit.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                                    <CardTitle className="text-xl">
+                                        {tool.title}
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {tool.description}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Button className="w-full mt-auto" variant={tool.variant}>
+                                        Open Tool <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
                                 </CardContent>
                             </Card>
-                        ))}
-                    </div>
+                        </Link>
+                    </motion.div>
+                ))}
+            </div>
+             {filteredTools.length === 0 && (
+                <div className="text-center col-span-full py-16">
+                    <p className="text-muted-foreground">No tools found matching your criteria.</p>
                 </div>
-            </section>
-
-
-            {/* FAQs Section */}
-            <section className="py-12 md:py-16 bg-muted/30">
-                <div className="container mx-auto px-4 max-w-4xl">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold flex items-center justify-center gap-2">
-                            <FileQuestion className="text-primary"/> Frequently Asked Questions
-                        </h2>
-                    </div>
-                    <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                        <CardContent className="p-6">
-                            <Accordion type="single" collapsible className="w-full">
-                                {faqs.map((faq, i) => (
-                                <AccordionItem value={`item-${i}`} key={i}>
-                                    <AccordionTrigger>{faq.q}</AccordionTrigger>
-                                    <AccordionContent>{faq.a}</AccordionContent>
-                                </AccordionItem>
-                                ))}
-                            </Accordion>
-                        </CardContent>
-                    </Card>
-                </div>
-            </section>
+            )}
         </div>
-    );
+      </section>
+    </div>
+  );
 }

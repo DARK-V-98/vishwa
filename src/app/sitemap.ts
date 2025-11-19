@@ -25,6 +25,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/terms',
     '/tournaments',
     '/tournaments/submit',
+    '/tools',
+    '/tools/pdf-suite',
+    '/tools/image-resizer',
+    '/tools/image-cropper',
+    '/tools/file-encryption',
+    '/tools/qr-generator',
+    '/tools/qr-scanner',
+    '/tools/barcode-generator',
+    '/tools/password-generator',
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
