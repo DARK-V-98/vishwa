@@ -39,7 +39,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/pdf-suite',
     '/tools/code-minifier',
     '/tools/regex-tester',
-    '/tools/api-tester'
+    '/tools/api-tester',
+    '/tools/color-palette-generator'
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
