@@ -295,25 +295,24 @@
           "type": "string",
           "description": "The in-game Player ID for the top-up."
         },
-        "packageId": {
-          "type": "string",
-          "description": "The ID of the selected top-up package."
-        },
-        "packageName": {
-          "type": "string",
-          "description": "The name of the selected top-up package."
-        },
-        "packagePrice": {
-          "type": "number",
-          "description": "The price of the package at the time of order."
-        },
-        "quantity": {
-            "type": "number",
-            "description": "The number of packages ordered."
+        "items": {
+          "type": "array",
+          "description": "A list of items purchased in this order.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "packageId": { "type": "string" },
+              "packageName": { "type": "string" },
+              "packagePrice": { "type": "number" },
+              "quantity": { "type": "number" },
+              "profit": { "type": "number" }
+            },
+            "required": ["packageId", "packageName", "packagePrice", "quantity"]
+          }
         },
         "totalPrice": {
-            "type": "number",
-            "description": "The total price for the order (packagePrice * quantity)."
+          "type": "number",
+          "description": "The total price for the entire order."
         },
         "paymentMethod": {
           "type": "string",
@@ -346,16 +345,13 @@
         },
         "profit": {
             "type": "number",
-            "description": "The calculated profit for this order (price - realPrice)."
+            "description": "The calculated total profit for this order."
         }
       },
       "required": [
         "id",
         "playerId",
-        "packageId",
-        "packageName",
-        "packagePrice",
-        "quantity",
+        "items",
         "totalPrice",
         "paymentMethod",
         "status",
