@@ -11,7 +11,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "update:cors": "gsutil cors set cors.json gs://studio-8072496389-b03d4.firebasestorage.app",
-    "postinstall": "unpkg @ffmpeg/core-mt@0.12.6/dist/esm -d public/ffmpeg"
+    "postinstall": "npx unpkg @ffmpeg/core-mt@0.12.6/dist/esm -d public/ffmpeg"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.10",
@@ -93,6 +93,6 @@
     "typescript": "^5",
     "@types/crypto-js": "^4.2.2",
     "@types/qrcode": "^1.5.5",
-    "unpkg": "^0.2.0"
+    "unpkg-cli": "^0.2.0"
   }
 }
