@@ -92,6 +92,7 @@ export default function FreefireTopupPage() {
 
   const removeFromCart = (packageId: string) => {
     setCart(prevCart => prevCart.filter(item => item.id !== packageId));
+    toast.info("Item removed from cart.");
   };
 
   const handlePlaceOrder = async () => {
@@ -238,7 +239,7 @@ export default function FreefireTopupPage() {
                                        <span className="w-6 text-center">{item.quantity}</span>
                                        <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-3 w-3" /></Button>
                                    </div>
-                                   <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeFromCart(item.id)}><Trash2 className="h-4 w-4"/></Button>
+                                   <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeFromCart(item.id)}><Trash2 className="h-4 w-4"/></Button>
                                </div>
                            ))}
                        </div>
