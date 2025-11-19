@@ -37,6 +37,7 @@ const Navbar = () => {
     { name: "Design Services", path: "/design-services" },
     { name: "Get a Quote", path: "/quotation-generator" },
     { name: "Games", path: "/games" },
+    { name: "Tools", path: "/tools" },
     { name: "Contact", path: "/contact" },
   ];
 
