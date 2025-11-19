@@ -41,7 +41,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/regex-tester',
     '/tools/api-tester',
     '/tools/color-palette-generator',
-    '/tools/json-csv-converter'
+    '/tools/json-csv-converter',
+    '/tools/markdown-converter'
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
