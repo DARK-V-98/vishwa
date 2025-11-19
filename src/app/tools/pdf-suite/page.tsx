@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import ImagesToPdf from '@/components/tools/ImagesToPdf';
 import PdfToImages from '@/components/tools/PdfToImages';
 import { FileImage, Lock, ArrowLeft, Zap, Shield, Globe, Users, Cpu, FileCheck2, Fingerprint, Image, List, CheckCircle, Package } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 
 const featureList = [
     { icon: Zap, title: "Blazing-Fast Conversion", description: "Processes files instantly in your browser." },
