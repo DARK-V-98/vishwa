@@ -24,7 +24,8 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https',
+        protocol: 'https'
+        ,
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
@@ -39,16 +40,35 @@ const nextConfig: NextConfig = {
   },
    webpack: (config, { isServer }) => {
     // Correct configuration to handle ffmpeg.wasm
-    if (isServer) {
-      config.externals.push('@ffmpeg/ffmpeg', '@ffmpeg/util');
-    }
-    
     config.module.rules.push({
       test: /\.wasm$/,
-      type: 'asset/resource',
+      type: "asset/resource",
     });
+
+    // This is needed to prevent errors with some packages that use fs
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+    };
     
     return config;
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          },
+        ],
+      },
+    ];
   },
 };
 
