@@ -48,7 +48,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Trash2, Plus, Minus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -98,7 +98,24 @@ function ManualOrderDialog({ packages, onOrderAdded }: { packages: TopupPackage[
             }
             return [...prev, { pkg, quantity: 1 }];
         });
+        toast.success(`${pkg.name} added to cart.`);
     }
+
+    const updateQuantity = (packageId: string, newQuantity: number) => {
+        setCart(prevCart => {
+            if (newQuantity <= 0) {
+                return prevCart.filter(item => item.pkg.id !== packageId);
+            }
+            return prevCart.map(item => 
+                item.pkg.id === packageId ? { ...item, quantity: newQuantity } : item
+            );
+        });
+    };
+
+    const removeFromCart = (packageId: string) => {
+        setCart(prevCart => prevCart.filter(item => item.pkg.id !== packageId));
+        toast.info("Item removed from cart.");
+    };
 
     const handleAddOrder = async () => {
         if (!playerId) { toast.error("Please enter a Player ID."); return; }
@@ -155,20 +172,43 @@ function ManualOrderDialog({ packages, onOrderAdded }: { packages: TopupPackage[
                     </div>
                     <div className="space-y-2">
                         <Label>Packages</Label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                             {packages.map(p => (<Button key={p.id} variant="outline" onClick={() => handleAddToCart(p.id)}>{p.name}</Button>))}
                         </div>
                     </div>
                     <div className="space-y-2">
                         <Label>Cart</Label>
-                        {cart.length === 0 ? <p className="text-sm text-muted-foreground">No items in cart.</p> :
-                        cart.map(({pkg, quantity}) => (
-                            <div key={pkg.id} className="flex justify-between items-center text-sm">
-                                <span>{pkg.name} x {quantity}</span>
-                                <span>LKR {(pkg.price * quantity).toLocaleString()}</span>
-                            </div>
-                        ))}
+                        {cart.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No items in cart.</p>
+                        ) : (
+                            <div className="space-y-3">
+                               {cart.map(({pkg, quantity}) => (
+                                    <div key={pkg.id} className="flex items-center gap-3">
+                                       <div className="flex-grow">
+                                           <p className="font-semibold">{pkg.name}</p>
+                                           <p className="text-sm text-muted-foreground">LKR {pkg.price.toLocaleString()}</p>
+                                       </div>
+                                       <div className="flex items-center gap-1">
+                                           <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(pkg.id, quantity - 1)}><Minus className="h-3 w-3" /></Button>
+                                           <span className="w-6 text-center">{quantity}</span>
+                                           <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(pkg.id, quantity + 1)}><Plus className="h-3 w-3" /></Button>
+                                       </div>
+                                       <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeFromCart(pkg.id)}><Trash2 className="h-4 w-4"/></Button>
+                                   </div>
+                               ))}
+                           </div>
+                        )}
                     </div>
+                     {cart.length > 0 && (
+                        <div className="border-t pt-4 mt-4 space-y-4">
+                            <div className="flex justify-between text-xl font-bold">
+                                <span>Total:</span>
+                                <span className="text-primary">
+                                    LKR {cart.reduce((total, item) => total + (item.pkg.price * item.quantity), 0).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <DialogFooter>
                     <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
