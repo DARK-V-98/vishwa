@@ -38,7 +38,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tools/file-converter',
     '/tools/pdf-suite',
     '/tools/code-minifier',
-    '/tools/regex-tester'
+    '/tools/regex-tester',
+    '/tools/api-tester'
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
@@ -53,4 +54,3 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return sitemapEntries;
 }
-
