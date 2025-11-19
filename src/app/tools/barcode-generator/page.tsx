@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Barcode, Download } from 'lucide-react';
+import { Barcode, Download, ArrowLeft } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function BarcodeGeneratorPage() {
     const [text, setText] = useState('');
@@ -49,6 +50,14 @@ export default function BarcodeGeneratorPage() {
         <div className="min-h-screen bg-gradient-subtle">
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
+                    <div className="max-w-md mx-auto mb-8 text-left">
+                        <Button variant="outline" asChild>
+                            <Link href="/tools">
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back to Tools
+                            </Link>
+                        </Button>
+                    </div>
                     <h1 className="text-4xl md:text-6xl font-bold bg-gradient-hero bg-clip-text text-transparent">Barcode Generator</h1>
                     <p className="text-xl text-muted-foreground mt-4">Create barcodes for products, inventory, or business use.</p>
                 </div>

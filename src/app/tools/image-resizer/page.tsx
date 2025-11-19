@@ -4,10 +4,11 @@ import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import FileDropzone from '@/components/tools/FileDropzone';
-import { Maximize, Download, Loader2 } from 'lucide-react';
+import { Maximize, Download, Loader2, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function ImageResizerPage() {
     const [image, setImage] = useState<File | null>(null);
@@ -64,6 +65,14 @@ export default function ImageResizerPage() {
         <div className="min-h-screen bg-gradient-subtle">
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
+                    <div className="max-w-2xl mx-auto mb-8 text-left">
+                        <Button variant="outline" asChild>
+                            <Link href="/tools">
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back to Tools
+                            </Link>
+                        </Button>
+                    </div>
                     <h1 className="text-4xl md:text-6xl font-bold bg-gradient-hero bg-clip-text text-transparent">Image Resizer</h1>
                     <p className="text-xl text-muted-foreground mt-4">Resize images to custom dimensions without losing quality.</p>
                 </div>

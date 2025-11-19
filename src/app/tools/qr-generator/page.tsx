@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { QrCode, Download } from 'lucide-react';
+import { QrCode, Download, ArrowLeft } from 'lucide-react';
 import QRCode from 'qrcode';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function QrGeneratorPage() {
     const [text, setText] = useState('');
@@ -40,6 +41,14 @@ export default function QrGeneratorPage() {
         <div className="min-h-screen bg-gradient-subtle">
             <section className="pt-24 pb-12 md:pt-32 md:pb-16">
                 <div className="container mx-auto px-4 text-center">
+                    <div className="max-w-md mx-auto mb-8 text-left">
+                        <Button variant="outline" asChild>
+                            <Link href="/tools">
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back to Tools
+                            </Link>
+                        </Button>
+                    </div>
                     <h1 className="text-4xl md:text-6xl font-bold bg-gradient-hero bg-clip-text text-transparent">QR Code Generator</h1>
                     <p className="text-xl text-muted-foreground mt-4">Generate QR codes instantly from any text or URL.</p>
                 </div>
