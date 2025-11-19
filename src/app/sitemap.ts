@@ -27,16 +27,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/tournaments',
     '/tournaments/submit',
     '/tools',
-    '/tools/pdf-suite',
-    '/tools/image-resizer',
-    '/tools/image-cropper',
-    '/tools/file-encryption',
+    '/tools/jwt-decoder',
+    '/tools/password-generator',
     '/tools/qr-generator',
     '/tools/qr-scanner',
     '/tools/barcode-generator',
-    '/tools/password-generator',
+    '/tools/file-encryption',
+    '/tools/image-resizer',
+    '/tools/image-cropper',
     '/tools/file-converter',
-    '/tools/jwt-decoder',
+    '/tools/pdf-suite'
   ];
 
   const sitemapEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({

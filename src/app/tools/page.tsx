@@ -5,10 +5,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  FileImage,
-  Lock,
   ArrowRight,
   Search,
   Maximize,
@@ -21,18 +19,13 @@ import {
   Zap,
   Shield,
   Globe,
-  Fingerprint,
   FileKey2,
-  List,
-  Braces,
   Code,
   Regex,
   FileJson,
   Fingerprint as JwtIcon,
   Palette,
   Tags,
-  Pipette,
-  TestTube2,
   Server,
   FileCode2,
 } from "lucide-react";
@@ -177,7 +170,7 @@ const generalFeatures = [
     { icon: Zap, title: "Blazing Fast", description: "All tools run instantly in your browser, with no waiting for uploads or server processing." },
     { icon: Shield, title: "100% Private", description: "Your files and data are never sent to a server. Everything stays on your device." },
     { icon: Globe, title: "Works Offline", description: "After the initial page load, our tools work even without an internet connection." },
-    { icon: Fingerprint, title: "Free & Anonymous", description: "No sign-ups, no tracking, and no watermarks. Just free, powerful tools for everyone." },
+    { icon: JwtIcon, title: "Free & Anonymous", description: "No sign-ups, no tracking, and no watermarks. Just free, powerful tools for everyone." },
 ];
 
 const faqItems = [
