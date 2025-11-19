@@ -8,46 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Code, Palette, Building2, ArrowRight, Star, Zap, Shield, Users, Gamepad2, Briefcase,
   FileKey2, ListTree, Regex, FileJson, QrCode, Barcode, ScanLine, KeyRound, Server, Palette as PaletteIcon,
-  Cpu, FileCode2, Fingerprint, Award, Tv, Bot, Settings, MessageSquare, Download, Maximize, Crop, FileLock
+  Cpu, FileCode2, Fingerprint, Award, Tv, Bot, Settings, MessageSquare, Download, Crop, FileLock, Maximize
 } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface Testimonial {
-  id: string;
-  name: string;
-  position: string;
-  message: string;
-  imageUrl: string;
-  rating: number;
-}
-
-const AnimatedProgress = ({ value, label }: { value: number; label: string }) => {
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    const timer = setTimeout(() => setWidth(value), 100);
-    return () => clearTimeout(timer);
-  }, [value]);
-
-  return (
-    <div className="w-full">
-      <div className="flex justify-between mb-1">
-        <span className="text-base font-medium text-foreground">{label}</span>
-        <span className="text-sm font-medium text-primary">{value}%</span>
-      </div>
-      <div className="w-full bg-muted rounded-full h-2.5">
-        <div className="bg-gradient-primary h-2.5 rounded-full transition-all duration-1000 ease-out" style={{ width: `${width}%` }}></div>
-      </div>
-    </div>
-  );
-};
 
 const allTools = [
    {
@@ -180,15 +147,18 @@ const allTools = [
   },
 ];
 
-const Home = () => {
-  const firestore = useFirestore();
-  const testimonialsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    const testimonialsCollection = collection(firestore, 'testimonials');
-    return query(testimonialsCollection, orderBy('createdAt', 'desc'));
-  }, [firestore]);
-  const { data: testimonials, isLoading: testimonialsLoading } = useCollection<Omit<Testimonial, 'id'>>(testimonialsQuery);
+const TestimonialCarousel = dynamic(() => import('@/components/sections/testimonial-carousel'), { 
+    ssr: false,
+    loading: () => (
+        <div className="flex gap-4">
+            <Skeleton className="w-full h-56 md:w-1/2 lg:w-1/3" />
+            <Skeleton className="w-full h-56 hidden md:block md:w-1/2 lg:w-1/3" />
+            <Skeleton className="w-full h-56 hidden lg:block lg:w-1/3" />
+        </div>
+    )
+});
 
+const Home = () => {
   const services = [
     { icon: Code, title: "Web Development & Software", description: "Custom web apps, mobile apps, with a focus on security and fast delivery.", link: "/esystemlk" },
     { icon: Palette, title: "Design Services", description: "Professional logo and post designs with clear packages and a simple process.", link: "/design-services" },
@@ -218,7 +188,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
         <div className="absolute inset-0 bg-background opacity-50 z-0">
-           <Image src="/bac.png" alt="Abstract background" layout="fill" objectFit="cover" quality={80} />
+           <Image src="/bac.png" alt="Abstract background" layout="fill" objectFit="cover" quality={80} priority />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80 z-0"></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -353,41 +323,7 @@ const Home = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} plugins={[Autoplay({ delay: 5000, stopOnInteraction: true })]} className="w-full max-w-6xl mx-auto">
-            <CarouselContent className="-ml-4">
-              {(testimonialsLoading ? [...Array(3)] : testimonials)?.map((testimonial, idx) => (
-                <CarouselItem key={testimonial?.id || idx} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <Card className="h-full bg-card/50 backdrop-blur-sm border-border/50 flex flex-col">
-                    <CardContent className="p-6 flex flex-col flex-grow">
-                      {testimonial ? (
-                        <>
-                          <div className="flex items-center gap-4 mb-4">
-                            <Avatar className="w-12 h-12 border-2 border-primary/20"><AvatarImage src={testimonial.imageUrl} /><AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback></Avatar>
-                            <div>
-                                <p className="font-semibold">{testimonial.name}</p>
-                                <p className="text-sm text-muted-foreground">{testimonial.position}</p>
-                            </div>
-                          </div>
-                          <p className="text-muted-foreground italic flex-grow">"{testimonial.message}"</p>
-                          <div className="flex gap-1 mt-4">
-                            {[...Array(5)].map((_, i) => <Star key={i} className={`h-5 w-5 ${i < testimonial.rating ? 'text-secondary fill-secondary' : 'text-muted-foreground/30'}`} />)}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4"><Skeleton className="h-12 w-12 rounded-full"/><div className="space-y-2"><Skeleton className="h-4 w-24"/><Skeleton className="h-4 w-16"/></div></div>
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-5/6" />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex -left-4" />
-            <CarouselNext className="hidden sm:flex -right-4" />
-          </Carousel>
+          <TestimonialCarousel />
         </div>
       </section>
 
