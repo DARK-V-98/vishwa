@@ -8,20 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Palette, Copy, ArrowLeft, RefreshCw, Zap, Shield, Globe, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import type { Metadata } from 'next';
-
-const pageTitle = "Color Palette Generator – Free Browser-Based Tool | Vishwa Vidarshana";
-const pageDescription = "Use Color Palette Generator to create harmonious color schemes. Free, fast, and secure client-side tool. No login required.";
-
-export const metadata: Metadata = {
-    title: pageTitle,
-    description: pageDescription,
-    openGraph: {
-        title: pageTitle,
-        description: pageDescription,
-        url: '/tools/color-palette-generator',
-    }
-};
 
 // --- Color Conversion Utilities ---
 type RGB = { r: number; g: number; b: number };
