@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -10,7 +12,17 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { FileKey2, ArrowLeft, Shield, Zap, Package, Image, Video, MonitorPlay } from 'lucide-react';
 import ImageConverter from '@/components/tools/ImageConverter';
-import VideoConverter from '@/components/tools/VideoConverter';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const VideoConverter = dynamic(() => import('@/components/tools/VideoConverter'), {
+    ssr: false,
+    loading: () => (
+        <div className="space-y-6">
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+    )
+});
 
 const featureList = [
     { icon: Image, title: "Image Conversion", description: "Convert between JPG, PNG, WebP, and more." },
