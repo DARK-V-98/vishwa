@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import ImagesToPdf from '@/components/tools/ImagesToPdf';
 import PdfToImages from '@/components/tools/PdfToImages';
 import { FileImage, Lock, ArrowLeft, Zap, Shield, Globe, Users, Cpu, FileCheck2, Fingerprint, Image, List, CheckCircle, Package } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -180,7 +180,7 @@ export default function PdfSuitePage() {
                             <h3 className="text-2xl font-bold mb-4">Ready to Try More?</h3>
                             <p className="mb-6">You've seen how easy and secure our PDF converter is. Explore our full collection of free, browser-based tools designed by ESystemLK to make your digital life easier.</p>
                             <Button asChild variant="secondary">
-                                <Link href="/tools">Explore All Tools <ArrowLeft className="mr-2 h-4 w-4" /></Link>
+                                <Link href="/tools">Explore All Tools</Link>
                             </Button>
                         </CardContent>
                     </Card>
