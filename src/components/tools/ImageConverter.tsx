@@ -16,7 +16,7 @@ interface ImageFile extends File {
     preview: string;
 }
 
-type OutputFormat = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/bmp' | 'image/gif';
+type OutputFormat = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/bmp';
 
 export default function ImageConverter() {
     const [files, setFiles] = useState<ImageFile[]>([]);
@@ -51,21 +51,32 @@ export default function ImageConverter() {
             const ctx = canvas.getContext('2d');
             const img = document.createElement('img');
 
-            const loadPromise = new Promise((resolve, reject) => {
-                img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx?.drawImage(img, 0, 0);
-                    const dataUrl = canvas.toDataURL(outputFormat, 0.95);
-                    const newName = `${file.name.split('.').slice(0, -1).join('.')}.${outputFormat.split('/')[1]}`;
-                    newConvertedFiles.push({ name: newName, url: dataUrl });
-                    resolve(true);
-                };
-                img.onerror = reject;
-                img.src = file.preview;
-            });
-            
-            await loadPromise;
+            try {
+                const loadPromise = new Promise((resolve, reject) => {
+                    img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        if(ctx) {
+                            ctx.drawImage(img, 0, 0);
+                        }
+                        const outputExtension = outputFormat === 'image/jpeg' ? 'jpg' : outputFormat.split('/')[1];
+                        const dataUrl = canvas.toDataURL(outputFormat, 0.95);
+                        const newName = `${file.name.split('.').slice(0, -1).join('.')}.${outputExtension}`;
+                        newConvertedFiles.push({ name: newName, url: dataUrl });
+                        resolve(true);
+                    };
+                    img.onerror = () => reject(new Error(`Could not load image: ${file.name}`));
+                    img.src = file.preview;
+                });
+                
+                await loadPromise;
+            } catch (e: any) {
+                toast.error(e.message);
+                setIsConverting(false);
+                setProgress(0);
+                return;
+            }
+
             setProgress(((i + 1) / files.length) * 100);
         }
 
@@ -114,7 +125,6 @@ export default function ImageConverter() {
                                     <SelectItem value="image/jpeg">JPEG</SelectItem>
                                     <SelectItem value="image/webp">WEBP</SelectItem>
                                     <SelectItem value="image/bmp">BMP</SelectItem>
-                                    <SelectItem value="image/gif">GIF</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
