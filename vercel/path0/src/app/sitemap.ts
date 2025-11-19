@@ -5,6 +5,7 @@ const baseUrl = 'https://vishwavidarshana.com';
 
 // This function tells Next.js which sitemaps to generate.
 export async function generateSitemaps() {
+  // In the future, you could generate sitemaps dynamically, e.g., for each year of blog posts.
   return [{ id: 'main' }, { id: 'tools' }];
 }
 
@@ -35,6 +36,8 @@ export default async function sitemap({
       '/tools/qr-scanner',
       '/tools/color-palette-generator',
       '/tools/api-tester',
+      '/games/point-calculator',
+      '/games/tournament-budget-calculator',
     ];
 
     return toolsRoutes.map((route) => ({
@@ -49,21 +52,28 @@ export default async function sitemap({
   const mainRoutes = [
     { url: '/', changeFrequency: 'daily', priority: 1.0 },
     { url: '/about', changeFrequency: 'monthly', priority: 0.8 },
-    { url: '/contact', changeFrequency: 'monthly', priority: 0.8 },
-    { url: '/privacy', changeFrequency: 'yearly', priority: 0.5 },
-    { url: '/terms', changeFrequency: 'yearly', priority: 0.5 },
-    { url: '/refund-policy', changeFrequency: 'yearly', priority: 0.5 },
+    { url: '/contact', changeFrequency: 'monthly', priority: 0.7 },
+    { url: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
+    { url: '/terms', changeFrequency: 'yearly', priority: 0.3 },
+    { url: '/refund-policy', changeFrequency: 'yearly', priority: 0.3 },
     { url: '/esystemlk', changeFrequency: 'monthly', priority: 0.9 },
     { url: '/design-services', changeFrequency: 'monthly', priority: 0.9 },
     { url: '/design-studio', changeFrequency: 'monthly', priority: 0.8 },
+    { url: '/quotation-generator', changeFrequency: 'weekly', priority: 0.8 },
     { url: '/quotation', changeFrequency: 'weekly', priority: 0.8 },
     { url: '/freefire-topup', changeFrequency: 'daily', priority: 1.0 },
     { url: '/games', changeFrequency: 'daily', priority: 0.9 },
     { url: '/tournaments', changeFrequency: 'daily', priority: 0.9 },
     { url: '/tournaments/submit', changeFrequency: 'weekly', priority: 0.7 },
-    { url: '/dashboard', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/my-orders', changeFrequency: 'weekly', priority: 0.7 },
-    { url: '/marketplace', changeFrequency: 'monthly', priority: 0.6 },
+    { url: '/dashboard', changeFrequency: 'weekly', priority: 0.6 },
+    { url: '/dashboard/my-tournaments', changeFrequency: 'weekly', priority: 0.6 },
+    { url: '/my-orders', changeFrequency: 'weekly', priority: 0.6 },
+    { url: '/messages', changeFrequency: 'weekly', priority: 0.5 },
+    { url: '/marketplace', changeFrequency: 'monthly', priority: 0.5 },
+    { url: '/auth', changeFrequency: 'monthly', priority: 0.4 },
+    { url: '/auth/complete-profile', changeFrequency: 'yearly', priority: 0.2 },
+    { url: '/admin', changeFrequency: 'weekly', priority: 0.1 },
+    { url: '/appointments', changeFrequency: 'monthly', priority: 0.6 },
   ];
 
   return mainRoutes.map((route) => ({
