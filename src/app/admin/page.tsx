@@ -24,36 +24,44 @@ export default function AdminPage() {
 
   useEffect(() => {
     const checkAdminRole = async () => {
-        if (isUserLoading || !firestore) return;
-        if (!user) {
-            setIsAdmin(false);
-            setIsCheckingRole(false);
+        if (isUserLoading || !firestore || !user) {
+            if (!isUserLoading) {
+                setIsAdmin(false);
+                setIsCheckingRole(false);
+            }
             return;
         }
 
-        // Primary admin check via email
-        if (user.email === 'tikfese@gmail.com') {
+        // Primary admin check via hardcoded emails
+        const primaryAdminEmails = ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
+        if (user.email && primaryAdminEmails.includes(user.email)) {
             setIsAdmin(true);
             setIsCheckingRole(false);
             return;
         }
 
-        // Role-based check
+        // Role-based check from Firestore document
         const userDocRef = doc(firestore, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
+        try {
+            const userDoc = await getDoc(userDocRef);
 
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const roles = userData.roles || [];
-            if (roles.includes('admin') || roles.includes('developer')) {
-                setIsAdmin(true);
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const roles = userData.roles || [];
+                if (roles.includes('admin') || roles.includes('developer')) {
+                    setIsAdmin(true);
+                } else {
+                    setIsAdmin(false);
+                }
             } else {
                 setIsAdmin(false);
             }
-        } else {
+        } catch (error) {
+            console.error("Error checking admin role:", error);
             setIsAdmin(false);
+        } finally {
+            setIsCheckingRole(false);
         }
-        setIsCheckingRole(false);
     };
 
     checkAdminRole();
