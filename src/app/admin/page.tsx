@@ -1,76 +1,32 @@
 
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListingManagement } from "@/components/admin/listing-management";
 import TopupManagement from "@/components/admin/topup-management";
 import TopupOrderManagement from "@/components/admin/topup-order-management";
 import PaymentSettings from "@/components/admin/payment-settings";
-import { useUser, useFirestore } from "@/firebase";
+import { useUser } from "@/firebase";
 import AdminChat from "@/components/admin/admin-chat";
 import TestimonialManagement from "@/components/admin/testimonial-management";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import UserManagement from "@/components/admin/user-management";
 import TournamentManagement from "@/components/admin/tournament-management";
-import { doc, getDoc } from "firebase/firestore";
 import CourseNotesManagement from "@/components/admin/course-notes-management";
 
 export default function AdminPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { user, roles, isUserLoading } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
 
-  useEffect(() => {
-    const checkAdminRole = async () => {
-        if (isUserLoading || !user) {
-            if (!isUserLoading) {
-                setIsAdmin(false);
-                setIsCheckingRole(false);
-            }
-            return;
-        }
-
-        // Primary admin check via hardcoded emails
-        const primaryAdminEmails = ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
-        if (user.email && primaryAdminEmails.includes(user.email)) {
-            setIsAdmin(true);
-            setIsCheckingRole(false);
-            return;
-        }
-
-        // Role-based check from Firestore document
-        if (!firestore) {
-            setIsCheckingRole(false);
-            return;
-        }
-
-        const userDocRef = doc(firestore, "users", user.uid);
-        try {
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                const roles = userData.roles || [];
-                if (roles.includes('admin') || roles.includes('developer')) {
-                    setIsAdmin(true);
-                } else {
-                    setIsAdmin(false);
-                }
-            } else {
-                setIsAdmin(false);
-            }
-        } catch (error) {
-            console.error("Error checking admin role:", error);
-            setIsAdmin(false);
-        } finally {
-            setIsCheckingRole(false);
-        }
-    };
-
-    checkAdminRole();
-  }, [user, isUserLoading, firestore]);
+  useState(() => {
+    if (!isUserLoading) {
+      const userIsAdmin = roles.includes('admin') || roles.includes('developer');
+      setIsAdmin(userIsAdmin);
+      setIsCheckingRole(false);
+    }
+  }, [isUserLoading, roles]);
 
   if (isUserLoading || isCheckingRole) {
     return <div className="container py-12 pt-24">Loading Admin Panel...</div>
