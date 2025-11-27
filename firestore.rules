@@ -14,15 +14,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Primary admin emails have ultimate power.
-      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com' || request.auth.token.email == 'nelumjayakody2005@gmail.com';
-      
       // Check for 'admin' or 'developer' role in the user's document.
-      // Use exists() for a safe check before accessing .data
-      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
-                         
-      return isPrimaryAdmin || hasAdminRole;
+      // This is now the single source of truth for admin privileges.
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
     }
 
     // User profiles can be created by the user themselves.
@@ -123,7 +119,6 @@ service cloud.firestore {
 
     match /accessCodes/{codeId} {
       // Admins have full control over access codes.
-      // This explicitly allows admins (by email or by role) to list the codes, which fixes the error.
       allow read, list, create, update: if isAdmin();
       // No client-side delete for codes is needed.
       allow delete: if false; 
