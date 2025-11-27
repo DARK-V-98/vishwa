@@ -78,9 +78,13 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "About Us", path: "/about" },
-    { name: "Courses", path: "/esystemlk" },
-    { name: "Services", path: "/design-services" },
+    { name: "About Me", path: "/about" },
+    { name: "ESystemLK", path: "/esystemlk" },
+    { name: "Game Top-up", path: "/freefire-topup" },
+    { name: "Design Services", path: "/design-services" },
+    { name: "Get a Quote", path: "/quotation" },
+    { name: "Games", path: "/games" },
+    { name: "Tools", path: "/tools" },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -139,11 +143,11 @@ const Navbar = () => {
                 <NavigationMenuList>
                     {navLinks.map((link) => (
                         <NavigationMenuItem key={link.path}>
-                            <Link href={link.path} passHref>
+                             <Link href={link.path} legacyBehavior passHref>
                                 <NavigationMenuLink asChild>
-                                    <div className={cn(navigationMenuTriggerStyle(), isActive(link.path) ? "text-primary font-semibold bg-primary/10" : "text-muted-foreground")}>
+                                     <a className={cn(navigationMenuTriggerStyle(), isActive(link.path) ? "text-primary font-semibold bg-primary/10" : "text-muted-foreground")}>
                                         {link.name}
-                                    </div>
+                                    </a>
                                 </NavigationMenuLink>
                             </Link>
                         </NavigationMenuItem>
