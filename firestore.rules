@@ -14,16 +14,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Use a list and the `in` operator to check for primary admin emails.
-      // This is the correct and robust way to check for multiple values.
-      let primaryAdminEmails = ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
-      let isPrimaryAdmin = request.auth.token.email in primaryAdminEmails;
-      
-      // Check for 'admin' or 'developer' role in the user's document.
-      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
-                         
-      return isPrimaryAdmin || hasAdminRole;
+      // A user is an admin if their user document contains either 'admin' or 'developer' in the 'roles' array.
+      // This is the single source of truth for admin privileges.
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
     }
 
     // User profiles can be created by the user themselves.
