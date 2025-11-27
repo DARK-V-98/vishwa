@@ -14,8 +14,8 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Primary admin email has ultimate power.
-      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com';
+      // Primary admin emails have ultimate power.
+      let isPrimaryAdmin = request.auth.token.email in ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
       
       // Check for 'admin' or 'developer' role in the user's document.
       // Use exists() for a safe check before accessing .data
