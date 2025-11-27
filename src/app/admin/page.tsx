@@ -24,7 +24,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     const checkAdminRole = async () => {
-        if (isUserLoading || !firestore || !user) {
+        if (isUserLoading || !user) {
             if (!isUserLoading) {
                 setIsAdmin(false);
                 setIsCheckingRole(false);
@@ -41,6 +41,11 @@ export default function AdminPage() {
         }
 
         // Role-based check from Firestore document
+        if (!firestore) {
+            setIsCheckingRole(false);
+            return;
+        }
+
         const userDocRef = doc(firestore, "users", user.uid);
         try {
             const userDoc = await getDoc(userDocRef);
