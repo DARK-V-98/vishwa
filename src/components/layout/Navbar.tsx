@@ -139,9 +139,11 @@ const Navbar = () => {
                 <NavigationMenuList>
                     {navLinks.map((link) => (
                         <NavigationMenuItem key={link.path}>
-                            <Link href={link.path} legacyBehavior={false}>
-                                <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), isActive(link.path) ? "text-primary font-semibold bg-primary/10" : "text-muted-foreground")}>
-                                    {link.name}
+                            <Link href={link.path} passHref>
+                                <NavigationMenuLink asChild>
+                                    <div className={cn(navigationMenuTriggerStyle(), isActive(link.path) ? "text-primary font-semibold bg-primary/10" : "text-muted-foreground")}>
+                                        {link.name}
+                                    </div>
                                 </NavigationMenuLink>
                             </Link>
                         </NavigationMenuItem>
