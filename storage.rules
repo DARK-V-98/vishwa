@@ -9,7 +9,8 @@ service firebase.storage {
     // Helper function for admin check
     function isAdmin() {
       // Check if the user has an 'admin' or 'developer' role.
-      return request.auth != null && ('admin' in request.auth.token || 'developer' in request.auth.token);
+      let isPrimaryAdmin = request.auth.token.email in ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
+      return request.auth != null && (isPrimaryAdmin || ('admin' in request.auth.token || 'developer' in request.auth.token));
     }
     
     // Public read for general files, but not course notes

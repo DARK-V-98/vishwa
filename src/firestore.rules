@@ -76,7 +76,8 @@ service cloud.firestore {
     // Only admins can update/delete it.
     match /topupOrders/{orderId} {
       allow create: if true;
-      allow get, list: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow get: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow list: if isAdmin(); // Only admins should list all orders
       allow update, delete: if isAdmin();
     }
 
@@ -121,11 +122,10 @@ service cloud.firestore {
     }
 
     match /accessCodes/{codeId} {
-      // Only admins can create and view access codes.
-      allow read, list, create: if isAdmin();
-      // An access code can only be updated (e.g., to mark as used) by an admin.
-      // A specific rule will be needed for a function to update this.
-      allow update: if isAdmin();
+      // Admins have full control over access codes.
+      allow read, list, create, update: if isAdmin();
+      // No client-side delete for codes is needed.
+      allow delete: if false; 
     }
   }
 }
