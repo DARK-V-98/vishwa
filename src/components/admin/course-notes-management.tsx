@@ -23,6 +23,17 @@ import {
   DialogClose,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -255,7 +266,6 @@ export default function CourseNotesManagement() {
   };
 
   const handleDelete = async (note: CourseNote) => {
-    if (!window.confirm(`Delete "${note.unitName}"? This will also delete the file and all associated access codes.`)) return;
     if (!firestore || !storage) return;
     
     try {
@@ -371,9 +381,23 @@ export default function CourseNotesManagement() {
                                     <Button variant="outline" size="sm" onClick={() => handleOpenDialog(note)}>
                                         <Edit className="h-4 w-4"/>
                                     </Button>
-                                    <Button variant="destructive" size="sm" onClick={() => handleDelete(note)}>
-                                        <Trash2 className="h-4 w-4"/>
-                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            This will permanently delete the note for "{note.unitName}", its PDF file from storage, and all associated access codes. This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => handleDelete(note)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
                                 </TableCell>
                             </TableRow>
                         ))}
