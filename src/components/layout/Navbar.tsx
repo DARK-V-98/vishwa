@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LayoutDashboard, LogOut, ChevronDown, BookCopy } from "lucide-react";
+import { Menu, X, LayoutDashboard, LogOut, ChevronDown } from "lucide-react";
 import { useUser } from "@/firebase";
 import { getAuth, signOut } from "firebase/auth";
 import {
@@ -139,7 +139,7 @@ const Navbar = () => {
                 <NavigationMenuList>
                     {navLinks.map((link) => (
                         <NavigationMenuItem key={link.path}>
-                            <Link href={link.path} passHref legacyBehavior>
+                            <Link href={link.path} legacyBehavior passHref>
                                 <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), isActive(link.path) ? "text-primary font-semibold bg-primary/10" : "text-muted-foreground")}>
                                     {link.name}
                                 </NavigationMenuLink>
