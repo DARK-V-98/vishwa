@@ -14,6 +14,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import UserManagement from "@/components/admin/user-management";
 import TournamentManagement from "@/components/admin/tournament-management";
 import { doc, getDoc } from "firebase/firestore";
+import CourseNotesManagement from "@/components/admin/course-notes-management";
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
@@ -84,6 +85,7 @@ export default function AdminPage() {
             <div className="overflow-x-auto whitespace-nowrap">
                 <TabsList className="inline-flex">
                   <TabsTrigger value="chat">Chat</TabsTrigger>
+                  <TabsTrigger value="course-notes">Course Notes</TabsTrigger>
                   <TabsTrigger value="tournament-approvals">Tournament Approvals</TabsTrigger>
                   <TabsTrigger value="topup-orders">Top-up Orders</TabsTrigger>
                   <TabsTrigger value="topup-packages">Top-up Packages</TabsTrigger>
@@ -98,6 +100,9 @@ export default function AdminPage() {
         
         <TabsContent value="chat" className="mt-6 h-[75vh]">
           <AdminChat />
+        </TabsContent>
+        <TabsContent value="course-notes" className="mt-6">
+          <CourseNotesManagement />
         </TabsContent>
          <TabsContent value="tournament-approvals" className="mt-6">
           <TournamentManagement />
@@ -124,3 +129,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+    

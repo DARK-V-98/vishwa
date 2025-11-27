@@ -88,19 +88,11 @@ service cloud.firestore {
     }
 
     // CHAT RULES
-    // Rule for the entire /chats collection
     match /chats/{chatId} {
-        // Admins can list all chat documents to populate the admin panel.
         allow list: if isAdmin();
-
-        // A user can read/write their own chat document. An admin can access any.
         allow get, create, update: if (isSignedIn() && isOwner(chatId)) || isAdmin();
-
-        // Rules for the messages subcollection within each chat
         match /messages/{messageId} {
-          // The user who owns the chat or an admin can read the messages.
           allow read, list: if (isSignedIn() && isOwner(chatId)) || isAdmin();
-          // A message can only be created by the authenticated sender.
           allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
         }
     }
@@ -113,26 +105,30 @@ service cloud.firestore {
     
     // TOURNAMENT RULES
     match /tournaments/{tournamentId} {
-      // Allow public read for published tournaments or owners/admins to read any.
       allow get: if resource.data.status == 'published' || (isSignedIn() && (isOwner(resource.data.userId) || isAdmin()));
-      
-      // Allow public listing of ONLY published tournaments. Admins can list all.
       allow list: if request.query.where.size() == 1 && request.query.where[0] == ['status', '==', 'published'] || isAdmin();
-
-      // Allow authenticated users to create tournaments for themselves.
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-
-      // Allow owners and admins to update.
       allow update: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
-
-      // Only admins can delete.
       allow delete: if isAdmin();
-
-      // Rules for the teams subcollection
       match /teams/{teamId} {
-        // Owner of the tournament or admin can read and write teams.
         allow read, list, create, update, delete: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.userId)) || isAdmin();
       }
     }
+
+    // COURSE NOTES RULES
+    match /courseNotes/{noteId} {
+      // Only admins can create, update, or delete course notes.
+      allow read, list, create, update, delete: if isAdmin();
+    }
+
+    match /accessCodes/{codeId} {
+      // Only admins can create and view access codes.
+      allow read, list, create: if isAdmin();
+      // An access code can only be updated (e.g., to mark as used) by an admin.
+      // A specific rule will be needed for a function to update this.
+      allow update: if isAdmin();
+    }
   }
 }
+
+    

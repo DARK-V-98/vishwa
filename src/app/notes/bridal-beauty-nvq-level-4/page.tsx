@@ -5,7 +5,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -26,40 +26,68 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, BookOpen, Clock, Zap, GraduationCap, Lock, Download, KeyRound, Info } from "lucide-react";
+import { CheckCircle, BookOpen, Clock, Zap, GraduationCap, Lock, Download, KeyRound, Info, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-
+import { useUser } from "@/firebase";
+import { redeemAccessCode } from "@/ai/flows/secure-note-download";
 
 const units = [
-    { no: 'Unit 01', name: 'Client Consultation – ගනුදෙනුකරු සමඟ සාකච්ඡා', models: '1–2' },
-    { no: 'Unit 02', name: 'Salon Management – සැලෝන් කළමනාකරණය', models: '1–2' },
-    { no: 'Unit 03', name: 'Manicure & Pedicure – නිය සත්කාර සිදු කිරීම', models: '2–3' },
-    { no: 'Unit 04', name: 'Facial – සම සදහා සත්කාර කිරීම', models: '2–3' },
-    { no: 'Unit 05', name: 'Makeup (Bridal & Special) – වේෂ නිරෑපණ කටයුතු සිදු කිරීම', models: '5–10' },
-    { no: 'Unit 06', name: 'Skin Analysis – සම විශ්ලේෂණය', models: '1–2' },
-    { no: 'Unit 07', name: 'Tools & Environment Maintenance – උපකරණ සහ පරිසර නඩත්තුව', models: '1' },
-    { no: 'Unit 08', name: 'Reception Duties – පිළිගැනීමේ රාජකාරිය', models: '1' },
-    { no: 'Unit 09', name: 'Hair Removal – අනවශ්‍ය රෝම් ඉවත් කිරීම', models: '1–2' },
-    { no: 'Unit 10', name: 'Etiquette – ආචාර ධර්ම', models: '1' },
-    { no: 'Health/Safety', name: 'සෞඛ්‍ය සුරක්ෂිතභාවය', models: '1' },
+    { no: 'Unit 01', name: 'Client Consultation – ගනුදෙනුකරු සමඟ සාකච්ඡා', models: '1–2', id: 'unit_01' },
+    { no: 'Unit 02', name: 'Salon Management – සැලෝන් කළමනාකරණය', models: '1–2', id: 'unit_02' },
+    { no: 'Unit 03', name: 'Manicure & Pedicure – නිය සත්කාර සිදු කිරීම', models: '2–3', id: 'unit_03' },
+    { no: 'Unit 04', name: 'Facial – සම සදහා සත්කාර කිරීම', models: '2–3', id: 'unit_04' },
+    { no: 'Unit 05', name: 'Makeup (Bridal & Special) – වේෂ නිරෑපණ කටයුතු සිදු කිරීම', models: '5–10', id: 'unit_05' },
+    { no: 'Unit 06', name: 'Skin Analysis – සම විශ්ලේෂණය', models: '1–2', id: 'unit_06' },
+    { no: 'Unit 07', name: 'Tools & Environment Maintenance – උපකරණ සහ පරිසර නඩත්තුව', models: '1', id: 'unit_07' },
+    { no: 'Unit 08', name: 'Reception Duties – පිළිගැනීමේ රාජකාරිය', models: '1', id: 'unit_08' },
+    { no: 'Unit 09', name: 'Hair Removal – අනවශ්‍ය රෝම් ඉවත් කිරීම', models: '1–2', id: 'unit_09' },
+    { no: 'Unit 10', name: 'Etiquette – ආචාර ධර්ම', models: '1', id: 'unit_10' },
+    { no: 'Health/Safety', name: 'සෞඛ්‍ය සුරක්ෂිතභාවය', models: '1', id: 'unit_hs' },
 ];
 
-const UnlockPdfDialog = ({ unitName }: { unitName: string }) => {
+const UnlockPdfDialog = ({ unitName, noteId }: { unitName: string, noteId: string }) => {
+    const { user } = useUser();
     const [accessCode, setAccessCode] = useState('');
+    const [isUnlocking, setIsUnlocking] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
 
-    const handleUnlock = () => {
-        // Placeholder logic
-        if (accessCode === "test-code") {
-            toast.success(`Unlocking ${unitName}...`);
-            // In phase 2, this will trigger the secure download.
-        } else {
-            toast.error("Invalid access code. Please try again.");
+    const handleUnlock = async () => {
+        if (!user) {
+            toast.error("You must be logged in to unlock a file.");
+            return;
+        }
+        if (!accessCode) {
+            toast.error("Please enter an access code.");
+            return;
+        }
+        setIsUnlocking(true);
+        try {
+            const result = await redeemAccessCode({ 
+                code: accessCode, 
+                noteId: noteId, 
+                userId: user.uid,
+                userEmail: user.email || 'unknown',
+            });
+            
+            if (result.success && result.downloadUrl) {
+                toast.success("Code accepted! Your download will begin shortly.");
+                // Trigger download
+                window.open(result.downloadUrl, '_blank');
+                setIsOpen(false);
+            } else {
+                toast.error(result.message || "Failed to validate code. Please try again.");
+            }
+        } catch (error: any) {
+            toast.error("An error occurred while trying to unlock the file.");
+            console.error(error);
+        } finally {
+            setIsUnlocking(false);
         }
     }
 
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm"><KeyRound className="mr-2 h-4 w-4" /> View / Unlock PDF</Button>
             </DialogTrigger>
@@ -71,12 +99,15 @@ const UnlockPdfDialog = ({ unitName }: { unitName: string }) => {
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="access-code">Access Code</Label>
-                        <Input id="access-code" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} placeholder="Enter your code"/>
+                        <Input id="access-code" value={accessCode} onChange={(e) => setAccessCode(e.target.value)} placeholder="Enter your code" disabled={isUnlocking}/>
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                    <Button onClick={handleUnlock}><Download className="mr-2 h-4 w-4" /> Unlock & Download</Button>
+                    <DialogClose asChild><Button variant="outline" disabled={isUnlocking}>Cancel</Button></DialogClose>
+                    <Button onClick={handleUnlock} disabled={isUnlocking}>
+                        {isUnlocking ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Download className="mr-2 h-4 w-4" />}
+                         Unlock & Download
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -230,7 +261,7 @@ export default function BridalNotesPage() {
                             <TableCell>{unit.name}</TableCell>
                             <TableCell>{unit.models}</TableCell>
                             <TableCell className="text-right">
-                                <UnlockPdfDialog unitName={unit.name.split('–')[0].trim()} />
+                                <UnlockPdfDialog unitName={unit.name.split('–')[0].trim()} noteId={unit.id} />
                             </TableCell>
                             </TableRow>
                         ))}
@@ -292,3 +323,5 @@ export default function BridalNotesPage() {
     </div>
   );
 }
+
+    

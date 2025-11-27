@@ -1,12 +1,21 @@
+
 rules_version = '2';
 
 // NOTE: To fix CORS errors during development, you may need to apply a cors.json file
 // to your bucket. Run `npm run update:cors` from your terminal to do this.
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow read for all
+    // Allow public read for all files
     match /{allPaths=**} {
       allow read;
+    }
+
+    // Helper function for admin check (replace with your actual logic)
+    function isAdmin() {
+      // Example: check for a custom claim.
+      // return request.auth.token.admin == true;
+      // Or check against a specific UID list. For now, allow any authenticated user.
+      return request.auth != null;
     }
 
     // Allow write only for authenticated users on specific paths
@@ -19,5 +28,11 @@ service firebase.storage {
      match /topup-packages/{fileName} {
       allow write: if request.auth != null;
     }
+    // New rule for course notes
+    match /course-notes/{fileName} {
+      allow write: if isAdmin(); // Only admins can upload notes
+    }
   }
 }
+
+    

@@ -1,6 +1,35 @@
 
 {
   "entities": {
+    "CourseNote": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CourseNote",
+      "type": "object",
+      "description": "Represents a single PDF note for a course unit.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the note." },
+        "unitNumber": { "type": "string", "description": "The unit number (e.g., 'Unit 01')." },
+        "unitName": { "type": "string", "description": "The name of the unit." },
+        "storagePath": { "type": "string", "description": "The path to the PDF file in Firebase Storage." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "unitName", "storagePath", "createdAt"]
+    },
+    "AccessCode": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AccessCode",
+      "type": "object",
+      "description": "Represents a one-time access code for a course note.",
+      "properties": {
+        "id": { "type": "string", "description": "The unique access code itself." },
+        "noteId": { "type": "string", "description": "The ID of the CourseNote this code unlocks." },
+        "isUsed": { "type": "boolean", "description": "Whether the code has been used." },
+        "usedBy": { "type": "string", "description": "The email of the user who used the code." },
+        "usedAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the code was used." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "noteId", "isUsed", "createdAt"]
+    },
     "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
@@ -295,17 +324,24 @@
           "type": "string",
           "description": "The in-game Player ID for the top-up."
         },
-        "packageId": {
-          "type": "string",
-          "description": "The ID of the selected top-up package."
+        "items": {
+          "type": "array",
+          "description": "A list of items purchased in this order.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "packageId": { "type": "string" },
+              "packageName": { "type": "string" },
+              "packagePrice": { "type": "number" },
+              "quantity": { "type": "number" },
+              "profit": { "type": "number" }
+            },
+            "required": ["packageId", "packageName", "packagePrice", "quantity"]
+          }
         },
-        "packageName": {
-          "type": "string",
-          "description": "The name of the selected top-up package."
-        },
-        "packagePrice": {
+        "totalPrice": {
           "type": "number",
-          "description": "The price of the package at the time of order."
+          "description": "The total price for the entire order."
         },
         "paymentMethod": {
           "type": "string",
@@ -338,15 +374,14 @@
         },
         "profit": {
             "type": "number",
-            "description": "The calculated profit for this order (price - realPrice)."
+            "description": "The calculated total profit for this order."
         }
       },
       "required": [
         "id",
         "playerId",
-        "packageId",
-        "packageName",
-        "packagePrice",
+        "items",
+        "totalPrice",
         "paymentMethod",
         "status",
         "createdAt"
@@ -742,8 +777,28 @@
             { "name": "teamId", "description": "The unique ID for the team." }
           ]
         }
+      },
+      {
+        "path": "/courseNotes/{noteId}",
+        "definition": {
+          "entityName": "CourseNote",
+          "schema": { "$ref": "#/backend/entities/CourseNote" },
+          "description": "Stores information about each course note PDF.",
+          "params": [{ "name": "noteId", "description": "The unique ID for the note." }]
+        }
+      },
+      {
+        "path": "/accessCodes/{codeId}",
+        "definition": {
+          "entityName": "AccessCode",
+          "schema": { "$ref": "#/backend/entities/AccessCode" },
+          "description": "Stores one-time access codes for course notes.",
+          "params": [{ "name": "codeId", "description": "The unique code string." }]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have 'sellerId', so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality. A `teams` subcollection is added under each tournament to store participant data."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have 'sellerId', so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality. A `teams` subcollection is added under each tournament to store participant data. Added `courseNotes` and `accessCodes` collections to support the secure note download feature."
   }
 }
+
+    
