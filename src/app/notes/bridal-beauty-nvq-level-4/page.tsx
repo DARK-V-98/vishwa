@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, BookOpen, Clock, Zap, GraduationCap, Lock, Download, KeyRound, Info } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 
 const units = [
@@ -291,3 +292,5 @@ export default function BridalNotesPage() {
     </div>
   );
 }
+
+    
