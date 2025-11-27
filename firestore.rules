@@ -122,13 +122,10 @@ service cloud.firestore {
     }
 
     match /accessCodes/{codeId} {
-      // Only admins can create and view access codes.
-      allow read, list, create: if isAdmin();
-      // An access code can only be updated (e.g., to mark as used) by an admin.
-      // A specific rule will be needed for a function to update this.
-      allow update: if isAdmin();
+      // Admins have full control over access codes.
+      allow read, list, create, update: if isAdmin();
+      // No client-side delete for codes is needed.
+      allow delete: if false; 
     }
   }
 }
-
-    
