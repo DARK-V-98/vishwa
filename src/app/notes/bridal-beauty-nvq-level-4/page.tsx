@@ -149,7 +149,7 @@ export default function BridalNotesPage() {
                         />
                     </div>
                     <div className="text-center md:text-left">
-                        <h2 className="text-2xl font-bold mb-2">Meet Your Instructor</h2>
+                        <h2 className="text-2xl font-bold mb-2">Content Developer</h2>
                         <h3 className="text-xl font-semibold text-primary mb-4">M.K.D Oshadi Vidarshana Perera</h3>
                         <p className="text-muted-foreground leading-relaxed">
                             Welcome! I’m a qualified Bridal Dresser (NVQ Level 4). If you are studying NVQ Level 4 in Bridal & Beauty, මේ notes collection එක specially create කරපු එකක්.
@@ -292,5 +292,3 @@ export default function BridalNotesPage() {
     </div>
   );
 }
-
-    
