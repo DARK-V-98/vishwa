@@ -10,10 +10,10 @@
         "id": { "type": "string", "description": "Unique identifier for the note." },
         "unitNumber": { "type": "string", "description": "The unit number (e.g., 'Unit 01')." },
         "unitName": { "type": "string", "description": "The name of the unit." },
-        "fileUrl": { "type": "string", "format": "uri", "description": "The secure URL to the PDF file in Firebase Storage." },
+        "storagePath": { "type": "string", "description": "The path to the PDF file in Firebase Storage." },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "unitName", "fileUrl", "createdAt"]
+      "required": ["id", "unitName", "storagePath", "createdAt"]
     },
     "AccessCode": {
       "$schema": "http://json-schema.org/draft-07/schema#",
