@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListingManagement } from "@/components/admin/listing-management";
 import TopupManagement from "@/components/admin/topup-management";
@@ -18,17 +18,15 @@ import CourseNotesManagement from "@/components/admin/course-notes-management";
 export default function AdminPage() {
   const { user, roles, isUserLoading } = useUser();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isCheckingRole, setIsCheckingRole] = useState(true);
 
-  useState(() => {
+  useEffect(() => {
     if (!isUserLoading) {
       const userIsAdmin = roles.includes('admin') || roles.includes('developer');
       setIsAdmin(userIsAdmin);
-      setIsCheckingRole(false);
     }
   }, [isUserLoading, roles]);
 
-  if (isUserLoading || isCheckingRole) {
+  if (isUserLoading) {
     return <div className="container py-12 pt-24">Loading Admin Panel...</div>
   }
 
