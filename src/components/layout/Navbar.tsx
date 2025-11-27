@@ -81,7 +81,6 @@ const Navbar = () => {
     { name: "About Us", path: "/about" },
     { name: "Courses", path: "/esystemlk" },
     { name: "Services", path: "/design-services" },
-    // { name: "Notes", path: "/notes/bridal-beauty-nvq-level-4" },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -140,7 +139,7 @@ const Navbar = () => {
                 <NavigationMenuList>
                     {navLinks.map((link) => (
                         <NavigationMenuItem key={link.path}>
-                            <Link href={link.path} passHref>
+                            <Link href={link.path} passHref legacyBehavior>
                                 <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), isActive(link.path) ? "text-primary font-semibold bg-primary/10" : "text-muted-foreground")}>
                                     {link.name}
                                 </NavigationMenuLink>
@@ -287,5 +286,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-    
