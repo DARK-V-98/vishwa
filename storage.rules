@@ -8,9 +8,15 @@ service firebase.storage {
     
     // Helper function for admin check
     function isAdmin() {
-      // Check if the user has an 'admin' or 'developer' role.
-      let isPrimaryAdmin = request.auth.token.email in ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
-      return request.auth != null && (isPrimaryAdmin || ('admin' in request.auth.token || 'developer' in request.auth.token));
+      // A user is an admin if their email is one of the primary admins,
+      // OR if their auth token contains an 'admin' or 'developer' custom claim.
+      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com';
+      
+      // Checking for custom claims is more secure than reading from Firestore for storage rules.
+      // We assume claims are set by a trusted backend process.
+      let hasAdminClaim = 'admin' in request.auth.token || 'developer' in request.auth.token;
+                         
+      return request.auth != null && (isPrimaryAdmin || hasAdminClaim);
     }
     
     // Public read for general files, but not course notes
