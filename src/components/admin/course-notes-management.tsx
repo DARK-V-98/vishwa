@@ -26,7 +26,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BookOpen, PlusCircle, Edit, Trash2, KeyRound, Copy, Loader2 } from 'lucide-react';
+import { BookOpen, PlusCircle, Edit, Trash2, KeyRound, Copy, Loader2, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { format } from 'date-fns';
@@ -52,6 +52,21 @@ interface AccessCode {
 const generateRandomCode = () => {
     return 'NVQ' + Math.random().toString(36).substring(2, 10).toUpperCase();
 }
+
+const initialUnits = [
+    { no: 'Unit 01', name: 'Client Consultation – ගනුදෙනුකරු සමඟ සාකච්ඡා', models: '1–2' },
+    { no: 'Unit 02', name: 'Salon Management – සැලෝන් කළමනාකරණය', models: '1–2' },
+    { no: 'Unit 03', name: 'Manicure & Pedicure – නිය සත්කාර සිදු කිරීම', models: '2–3' },
+    { no: 'Unit 04', name: 'Facial – සම සදහා සත්කාර කිරීම', models: '2–3' },
+    { no: 'Unit 05', name: 'Makeup (Bridal & Special) – වේෂ නිරෑපණ කටයුතු සිදු කිරීම', models: '5–10' },
+    { no: 'Unit 06', name: 'Skin Analysis – සම විශ්ලේෂණය', models: '1–2' },
+    { no: 'Unit 07', name: 'Tools & Environment Maintenance – උපකරණ සහ පරිසර නඩත්තුව', models: '1' },
+    { no: 'Unit 08', name: 'Reception Duties – පිළිගැනීමේ රාජකාරිය', models: '1' },
+    { no: 'Unit 09', name: 'Hair Removal – අනවශ්‍ය රෝම් ඉවත් කිරීම', models: '1–2' },
+    { no: 'Unit 10', name: 'Etiquette – ආචාර ධර්ම', models: '1' },
+    { no: 'Health/Safety', name: 'සෞඛ්‍ය සුරක්ෂිතභාවය', models: '1' },
+];
+
 
 function ManageCodesDialog({ note, open, onOpenChange }: { note: CourseNote | null, open: boolean, onOpenChange: (open: boolean) => void }) {
     const firestore = useFirestore();
@@ -154,6 +169,7 @@ export default function CourseNotesManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCodesDialogOpen, setIsCodesDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [editingNote, setEditingNote] = useState<CourseNote | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -243,9 +259,11 @@ export default function CourseNotesManagement() {
     if (!firestore || !storage) return;
     
     try {
-        // Delete file from storage
-        const fileRef = ref(storage, note.storagePath);
-        await deleteObject(fileRef).catch(e => console.warn("Could not delete file, it might already be gone:", e));
+        if (note.storagePath) {
+            // Delete file from storage
+            const fileRef = ref(storage, note.storagePath);
+            await deleteObject(fileRef).catch(e => console.warn("Could not delete file, it might already be gone:", e));
+        }
         
         // Delete all access codes for this note
         const codesRef = collection(firestore, 'accessCodes');
@@ -266,17 +284,60 @@ export default function CourseNotesManagement() {
     }
   }
 
+  const handleSeedData = async () => {
+    if (!firestore) return;
+    setIsSeeding(true);
+    try {
+        const batch = writeBatch(firestore);
+        const existingNotesSnapshot = await getDocs(notesCollection);
+        const existingNoteNames = new Set(existingNotesSnapshot.docs.map(doc => doc.data().unitName));
+        let seededCount = 0;
+
+        initialUnits.forEach(unit => {
+            if (!existingNoteNames.has(unit.name)) {
+                const newNoteRef = doc(notesCollection);
+                batch.set(newNoteRef, {
+                    unitNumber: unit.no,
+                    unitName: unit.name,
+                    modelCount: unit.models,
+                    storagePath: '', // Placeholder, to be updated by admin
+                    createdAt: serverTimestamp(),
+                });
+                seededCount++;
+            }
+        });
+
+        if (seededCount > 0) {
+            await batch.commit();
+            toast.success(`${seededCount} new units have been seeded successfully.`);
+        } else {
+            toast.info("All initial units already exist in the database.");
+        }
+    } catch (e: any) {
+        toast.error(`Failed to seed data: ${e.message}`);
+    } finally {
+        setIsSeeding(false);
+    }
+  };
+
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold">Manage Course Notes</h2>
           <p className="text-muted-foreground">Add, edit, or remove course note PDFs and manage access codes.</p>
         </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Course Note
-        </Button>
+        <div className="flex gap-2">
+            <Button variant="outline" onClick={handleSeedData} disabled={isSeeding}>
+                <Database className="mr-2 h-4 w-4" />
+                {isSeeding ? "Seeding..." : "Seed Initial Data"}
+            </Button>
+            <Button onClick={() => handleOpenDialog()}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Course Note
+            </Button>
+        </div>
       </div>
 
       <Card>
@@ -316,7 +377,7 @@ export default function CourseNotesManagement() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                         {!isLoading && notes?.length === 0 && <TableRow><TableCell colSpan={4} className="text-center h-24">No notes found. Click "Add Course Note" to begin.</TableCell></TableRow>}
+                         {!isLoading && notes?.length === 0 && <TableRow><TableCell colSpan={4} className="text-center h-24">No notes found. Click "Add Course Note" or "Seed Initial Data" to begin.</TableCell></TableRow>}
                     </TableBody>
                 </Table>
              </div>

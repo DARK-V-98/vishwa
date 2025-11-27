@@ -29,22 +29,18 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle, BookOpen, Clock, Zap, GraduationCap, Lock, Download, KeyRound, Info, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { redeemAccessCode } from "@/ai/flows/secure-note-download";
+import { collection, query, orderBy } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const units = [
-    { no: 'Unit 01', name: 'Client Consultation – ගනුදෙනුකරු සමඟ සාකච්ඡා', models: '1–2', id: 'unit_01' },
-    { no: 'Unit 02', name: 'Salon Management – සැලෝන් කළමනාකරණය', models: '1–2', id: 'unit_02' },
-    { no: 'Unit 03', name: 'Manicure & Pedicure – නිය සත්කාර සිදු කිරීම', models: '2–3', id: 'unit_03' },
-    { no: 'Unit 04', name: 'Facial – සම සදහා සත්කාර කිරීම', models: '2–3', id: 'unit_04' },
-    { no: 'Unit 05', name: 'Makeup (Bridal & Special) – වේෂ නිරෑපණ කටයුතු සිදු කිරීම', models: '5–10', id: 'unit_05' },
-    { no: 'Unit 06', name: 'Skin Analysis – සම විශ්ලේෂණය', models: '1–2', id: 'unit_06' },
-    { no: 'Unit 07', name: 'Tools & Environment Maintenance – උපකරණ සහ පරිසර නඩත්තුව', models: '1', id: 'unit_07' },
-    { no: 'Unit 08', name: 'Reception Duties – පිළිගැනීමේ රාජකාරිය', models: '1', id: 'unit_08' },
-    { no: 'Unit 09', name: 'Hair Removal – අනවශ්‍ය රෝම් ඉවත් කිරීම', models: '1–2', id: 'unit_09' },
-    { no: 'Unit 10', name: 'Etiquette – ආචාර ධර්ම', models: '1', id: 'unit_10' },
-    { no: 'Health/Safety', name: 'සෞඛ්‍ය සුරක්ෂිතභාවය', models: '1', id: 'unit_hs' },
-];
+
+interface CourseNote {
+    id: string;
+    unitNumber: string;
+    unitName: string;
+    modelCount: string;
+}
 
 const UnlockPdfDialog = ({ unitName, noteId }: { unitName: string, noteId: string }) => {
     const { user } = useUser();
@@ -115,6 +111,12 @@ const UnlockPdfDialog = ({ unitName, noteId }: { unitName: string, noteId: strin
 }
 
 export default function BridalNotesPage() {
+    const firestore = useFirestore();
+    const notesQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'courseNotes'), orderBy('unitNumber', 'asc'));
+    }, [firestore]);
+    const { data: units, isLoading: unitsLoading } = useCollection<CourseNote>(notesQuery);
 
     const scrollTo = (id: string) => {
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -255,14 +257,22 @@ export default function BridalNotesPage() {
                         </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {units.map((unit) => (
-                            <TableRow key={unit.no}>
-                            <TableCell className="font-medium">{unit.no}</TableCell>
-                            <TableCell>{unit.name}</TableCell>
-                            <TableCell>{unit.models}</TableCell>
-                            <TableCell className="text-right">
-                                <UnlockPdfDialog unitName={unit.name.split('–')[0].trim()} noteId={unit.id} />
-                            </TableCell>
+                        {unitsLoading && [...Array(5)].map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                                <TableCell className="text-right"><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
+                            </TableRow>
+                        ))}
+                        {!unitsLoading && units?.map((unit) => (
+                            <TableRow key={unit.id}>
+                                <TableCell className="font-medium">{unit.unitNumber}</TableCell>
+                                <TableCell>{unit.unitName}</TableCell>
+                                <TableCell>{unit.modelCount}</TableCell>
+                                <TableCell className="text-right">
+                                    <UnlockPdfDialog unitName={unit.unitName.split('–')[0].trim()} noteId={unit.id} />
+                                </TableCell>
                             </TableRow>
                         ))}
                         </TableBody>
@@ -323,5 +333,3 @@ export default function BridalNotesPage() {
     </div>
   );
 }
-
-    
