@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useStorage, useUser } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useStorage } from '@/firebase';
 import { collection, query, orderBy, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, getDocs, where, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,6 @@ import {
   DialogFooter,
   DialogClose,
   DialogDescription,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +35,7 @@ interface CourseNote {
   id: string;
   unitNumber: string;
   unitName: string;
+  modelCount: string;
   storagePath: string;
   createdAt: { seconds: number };
 }
@@ -61,7 +61,7 @@ function ManageCodesDialog({ note, open, onOpenChange }: { note: CourseNote | nu
     const codesQuery = useMemoFirebase(() => {
         if (!firestore || !note) return null;
         return query(collection(firestore, 'accessCodes'), where('noteId', '==', note.id), orderBy('createdAt', 'desc'));
-    }, [firestore, note]);
+    }, [firestore, note, open]); // re-run when dialog opens
     
     const { data: codes, isLoading, forceRefresh } = useCollection<AccessCode>(codesQuery);
 
@@ -147,7 +147,6 @@ function ManageCodesDialog({ note, open, onOpenChange }: { note: CourseNote | nu
 export default function CourseNotesManagement() {
   const firestore = useFirestore();
   const storage = useStorage();
-  const { user } = useUser();
   const notesCollection = useMemoFirebase(() => collection(firestore, 'courseNotes'), [firestore]);
   const notesQuery = useMemoFirebase(() => query(notesCollection, orderBy('unitNumber', 'asc')), [notesCollection]);
   const { data: notes, isLoading, error } = useCollection<CourseNote>(notesQuery);
@@ -161,6 +160,7 @@ export default function CourseNotesManagement() {
   const [formData, setFormData] = useState({
     unitNumber: '',
     unitName: '',
+    modelCount: '',
   });
 
   const handleOpenDialog = (note: CourseNote | null = null) => {
@@ -170,9 +170,10 @@ export default function CourseNotesManagement() {
       setFormData({
         unitNumber: note.unitNumber,
         unitName: note.unitName,
+        modelCount: note.modelCount,
       });
     } else {
-      setFormData({ unitNumber: '', unitName: '' });
+      setFormData({ unitNumber: '', unitName: '', modelCount: '' });
     }
     setIsDialogOpen(true);
   };
@@ -203,16 +204,24 @@ export default function CourseNotesManagement() {
     try {
       let storagePath = editingNote?.storagePath;
       if (selectedFile) {
+        if (editingNote?.storagePath) {
+            // Delete old file if it exists
+            const oldFileRef = ref(storage, editingNote.storagePath);
+            await deleteObject(oldFileRef).catch(e => console.warn("Old file not found, may have been deleted already."));
+        }
         storagePath = await uploadFile(selectedFile);
       }
       
-      if (!storagePath) {
-        toast.error("A PDF file is required.");
+      if (!storagePath && !editingNote) {
+        toast.error("A PDF file is required when adding a new note.");
         setIsSubmitting(false);
         return;
       }
 
-      const dataToSave = { ...formData, storagePath };
+      const dataToSave = { 
+        ...formData, 
+        ...(storagePath && { storagePath }) // only include storagePath if it's defined
+      };
 
       if (editingNote) {
         await updateDoc(doc(firestore, 'courseNotes', editingNote.id), { ...dataToSave, updatedAt: serverTimestamp() });
@@ -271,39 +280,46 @@ export default function CourseNotesManagement() {
       </div>
 
       <Card>
+          <CardHeader>
+            <CardTitle>Unit List & Model Count</CardTitle>
+            <CardDescription>A complete overview of the NVQ Level 4 syllabus covered in these notes.</CardDescription>
+          </CardHeader>
           <CardContent className="p-0">
-             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Unit #</TableHead>
-                        <TableHead>Unit Name</TableHead>
-                        <TableHead>Date Added</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {isLoading && [...Array(3)].map((_,i) => <TableRow key={i}><TableCell colSpan={4}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                    {error && <TableRow><TableCell colSpan={4} className="text-center text-destructive">Error: {error.message}</TableCell></TableRow>}
-                    {!isLoading && notes?.map(note => (
-                        <TableRow key={note.id}>
-                            <TableCell className="font-medium">{note.unitNumber}</TableCell>
-                            <TableCell>{note.unitName}</TableCell>
-                            <TableCell>{format(new Date(note.createdAt.seconds * 1000), 'PP')}</TableCell>
-                            <TableCell className="text-right space-x-2">
-                                <Button variant="outline" size="sm" onClick={() => { setEditingNote(note); setIsCodesDialogOpen(true); }}>
-                                    <KeyRound className="h-4 w-4"/>
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleOpenDialog(note)}>
-                                    <Edit className="h-4 w-4"/>
-                                </Button>
-                                <Button variant="destructive" size="sm" onClick={() => handleDelete(note)}>
-                                    <Trash2 className="h-4 w-4"/>
-                                </Button>
-                            </TableCell>
+             <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Unit #</TableHead>
+                            <TableHead>Unit Name (EN/SIN)</TableHead>
+                            <TableHead>Model Count</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-             </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading && [...Array(3)].map((_,i) => <TableRow key={i}><TableCell colSpan={4}><Skeleton className="h-8"/></TableCell></TableRow>)}
+                        {error && <TableRow><TableCell colSpan={4} className="text-center text-destructive">Error: {error.message}</TableCell></TableRow>}
+                        {!isLoading && notes?.map(note => (
+                            <TableRow key={note.id}>
+                                <TableCell className="font-medium">{note.unitNumber}</TableCell>
+                                <TableCell>{note.unitName}</TableCell>
+                                <TableCell>{note.modelCount}</TableCell>
+                                <TableCell className="text-right space-x-2">
+                                    <Button variant="outline" size="sm" onClick={() => { setEditingNote(note); setIsCodesDialogOpen(true); }}>
+                                        <KeyRound className="h-4 w-4"/>
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleOpenDialog(note)}>
+                                        <Edit className="h-4 w-4"/>
+                                    </Button>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDelete(note)}>
+                                        <Trash2 className="h-4 w-4"/>
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                         {!isLoading && notes?.length === 0 && <TableRow><TableCell colSpan={4} className="text-center h-24">No notes found. Click "Add Course Note" to begin.</TableCell></TableRow>}
+                    </TableBody>
+                </Table>
+             </div>
           </CardContent>
       </Card>
       
@@ -320,8 +336,12 @@ export default function CourseNotesManagement() {
               <Input id="unitNumber" name="unitNumber" value={formData.unitNumber} onChange={handleFormChange} required placeholder="e.g., Unit 01" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unitName">Unit Name</Label>
-              <Input id="unitName" name="unitName" value={formData.unitName} onChange={handleFormChange} required placeholder="e.g., Client Consultation" />
+              <Label htmlFor="unitName">Unit Name (EN/SIN)</Label>
+              <Input id="unitName" name="unitName" value={formData.unitName} onChange={handleFormChange} required placeholder="e.g., Client Consultation – ගනුදෙනුකරු සමඟ සාකච්ඡා" />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="modelCount">Model Count (මොඩල් ගණන)</Label>
+              <Input id="modelCount" name="modelCount" value={formData.modelCount} onChange={handleFormChange} required placeholder="e.g., 1-2" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="file">PDF File</Label>
@@ -338,5 +358,3 @@ export default function CourseNotesManagement() {
     </div>
   );
 }
-
-    
