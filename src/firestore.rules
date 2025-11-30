@@ -14,15 +14,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Use a list and the `in` operator to check for primary admin emails.
-      // This is the correct and robust way to check for multiple values.
-      let isPrimaryAdmin = request.auth.token.email in ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
-      
-      // Check for 'admin' or 'developer' role in the user's document.
-      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
-                         
-      return isPrimaryAdmin || hasAdminRole;
+      // Check for primary admin emails OR for roles in the user's document.
+      // This provides a fallback and allows for role-based permissions.
+      return (request.auth.token.email == 'tikfese@gmail.com' || request.auth.token.email == 'nelumjayakody2005@gmail.com') ||
+             (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']));
     }
 
     // User profiles can be created by the user themselves.
@@ -129,7 +125,7 @@ service cloud.firestore {
     // TOURNAMENT RULES
     match /tournaments/{tournamentId} {
       allow get: if resource.data.status == 'published' || (isSignedIn() && (isOwner(resource.data.userId) || isAdmin()));
-      allow list: if request.query.where.size() == 1 && request.query.where[0] == ['status', '==', 'published'] || isAdmin();
+      allow list: if (request.query.where.size() == 1 && request.query.where[0] == ['status', '==', 'published']) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
       allow delete: if isAdmin();
