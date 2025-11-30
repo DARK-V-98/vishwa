@@ -62,7 +62,7 @@ function NewOrderDialog() {
             
             await addDoc(collection(firestore, 'webOrders'), orderData);
             
-            const orderLink = `${window.location.origin}/order/${newOrderId}`;
+            const orderLink = `https://www.vishwavidarshana.com/order/${newOrderId}`;
             navigator.clipboard.writeText(orderLink);
             toast.success("Order created and link copied to clipboard!", {
                 description: `Order ID: ${newOrderId}`,
@@ -133,7 +133,7 @@ export default function WebOrderManagement() {
     const { data: orders, isLoading, error } = useCollection<WebOrder>(ordersQuery);
     
     const copyLink = (orderId: string) => {
-        const orderLink = `${window.location.origin}/order/${orderId}`;
+        const orderLink = `https://www.vishwavidarshana.com/order/${orderId}`;
         navigator.clipboard.writeText(orderLink);
         toast.success("Order link copied to clipboard!");
     }
