@@ -43,6 +43,19 @@ const notesComponents: { title: string; href: string; description: string }[] = 
   },
 ];
 
+const esystemlkComponents: { title: string; href: string; description: string }[] = [
+  {
+    title: "ESystemLK Home",
+    href: "/esystemlk",
+    description: "Learn about our software company and enterprise solutions.",
+  },
+   {
+    title: "Web Orders",
+    href: "/admin#web-orders",
+    description: "Manage client website orders and project progress.",
+  },
+];
+
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a">
@@ -79,7 +92,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "About Me", path: "/about" },
-    { name: "ESystemLK", path: "/esystemlk" },
+    // { name: "ESystemLK", path: "/esystemlk" },
     { name: "Game Top-up", path: "/freefire-topup" },
     { name: "Design Services", path: "/design-services" },
     { name: "Get a Quote", path: "/quotation" },
@@ -152,6 +165,22 @@ const Navbar = () => {
                             </Link>
                         </NavigationMenuItem>
                     ))}
+                     <NavigationMenuItem>
+                        <NavigationMenuTrigger className={cn(isActive('/esystemlk') && "text-primary font-semibold bg-primary/10")}>ESystemLK</NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                            {esystemlkComponents.map((component) => (
+                            <ListItem
+                                key={component.title}
+                                title={component.title}
+                                href={component.href}
+                            >
+                                {component.description}
+                            </ListItem>
+                            ))}
+                        </ul>
+                        </NavigationMenuContent>
+                    </NavigationMenuItem>
                     <NavigationMenuItem>
                         <NavigationMenuTrigger className={cn(isActive('/notes') && "text-primary font-semibold bg-primary/10")}>Notes</NavigationMenuTrigger>
                         <NavigationMenuContent>
@@ -246,6 +275,22 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between">
+                  ESystemLK <ChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[calc(100vw-2rem)]">
+                {esystemlkComponents.map((component) => (
+                   <DropdownMenuItem key={component.title} asChild>
+                     <Link href={component.href} onClick={() => setIsOpen(false)}>
+                        {component.title}
+                     </Link>
+                   </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="w-full justify-between">
