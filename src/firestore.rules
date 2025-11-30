@@ -16,7 +16,7 @@ service cloud.firestore {
     function isAdmin() {
       // Use a list and the `in` operator to check for primary admin emails.
       // This is the correct and robust way to check for multiple values.
-      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com' || request.auth.token.email == 'nelumjayakody2005@gmail.com';
+      let isPrimaryAdmin = request.auth.token.email in ['tikfese@gmail.com', 'nelumjayakody2005@gmail.com'];
       
       // Check for 'admin' or 'developer' role in the user's document.
       let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
@@ -53,23 +53,23 @@ service cloud.firestore {
     
     // WEB ORDERS RULES
     match /webOrders/{orderId} {
-      // Only Admins can create and manage all orders.
+      // Admins can manage all orders. Public can read a specific order.
       allow list, create, update, delete: if isAdmin();
-      // A user can read an order if it's assigned to them.
-      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow get: if true; 
       
       match /details/{docId} {
         // The assigned user or an admin can write the details once.
         allow create: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
-        // The assigned user or an admin can read the details.
-        allow read, update: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+        // The assigned user or an admin can read the details. Public can read.
+        allow read: if true;
+        allow update: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
       }
       
       match /updates/{updateId} {
         // Only admins can post updates.
         allow create, update, delete: if isAdmin();
-        // The assigned user and admins can read updates.
-        allow read, list: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+        // Public can read updates.
+        allow read, list: if true;
       }
     }
 

@@ -54,6 +54,11 @@ const esystemlkComponents: { title: string; href: string; description: string }[
     href: "/admin#web-orders",
     description: "Manage client website orders and project progress.",
   },
+  {
+    title: "Track Your Order",
+    href: "/track-order",
+    description: "Check the status of your website project with your Order ID.",
+  }
 ];
 
 const ListItem = React.forwardRef<
