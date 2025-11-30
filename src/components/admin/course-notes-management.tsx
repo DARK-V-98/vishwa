@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useStorage } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useStorage, useUser } from '@/firebase';
 import { collection, query, orderBy, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, getDocs, where, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
@@ -74,20 +74,22 @@ const initialUnits = [
     { no: 'Unit 07', name: 'Tools & Environment Maintenance – උපකරණ සහ පරිසර නඩත්තුව', models: '1' },
     { no: 'Unit 08', name: 'Reception Duties – පිළිගැනීමේ රාජකාරිය', models: '1' },
     { no: 'Unit 09', name: 'Hair Removal – අනවශ්‍ය රෝම් ඉවත් කිරීම', models: '1–2' },
-    { no: 'Unit 10', name: 'Etiquette – ආචාර ධර්ම', models: '1' },
+    { no: 'Unit 10', name: 'Etiquette – ආචାର ධර්ම', models: '1' },
     { no: 'Health/Safety', name: 'සෞඛ්‍ය සුරක්ෂිතභාවය', models: '1' },
 ];
 
 
 function ManageCodesDialog({ note, open, onOpenChange }: { note: CourseNote | null, open: boolean, onOpenChange: (open: boolean) => void }) {
     const firestore = useFirestore();
+    const { roles } = useUser();
+    const isAdmin = roles.includes('admin') || roles.includes('developer');
     const [numCodes, setNumCodes] = useState(1);
     const [isGenerating, setIsGenerating] = useState(false);
     
     const codesQuery = useMemoFirebase(() => {
-        if (!firestore || !note) return null;
+        if (!firestore || !note || !isAdmin) return null;
         return query(collection(firestore, 'accessCodes'), where('noteId', '==', note.id), orderBy('createdAt', 'desc'));
-    }, [firestore, note, open]); // re-run when dialog opens
+    }, [firestore, note, open, isAdmin]);
     
     const { data: codes, isLoading, forceRefresh } = useCollection<AccessCode>(codesQuery);
 
