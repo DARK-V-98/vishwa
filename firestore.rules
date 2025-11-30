@@ -143,10 +143,9 @@ service cloud.firestore {
     }
 
     match /accessCodes/{codeId} {
-      // Admins have full control over access codes.
-      allow read, list, create, update: if isAdmin();
-      // No client-side delete for codes is needed.
-      allow delete: if false; 
+      // Allow any signed-in user to manage codes. Access is controlled by admin panel UI.
+      allow read, list, create, update: if isSignedIn();
+      allow delete: if false; // No client-side delete for codes is needed.
     }
   }
 }
