@@ -177,7 +177,7 @@ export default function WebOrderManagement() {
                                     <TableCell>
                                         <Badge variant={order.status === 'Pending Client Details' ? 'secondary' : 'default'}>{order.status}</Badge>
                                     </TableCell>
-                                    <TableCell>{format(order.createdAt.seconds * 1000, 'PP')}</TableCell>
+                                    <TableCell>{order.createdAt ? format(order.createdAt.seconds * 1000, 'PP') : '...'}</TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <Button variant="outline" size="sm" onClick={() => copyLink(order.id)}>
                                             <LinkIcon className="h-4 w-4" />
