@@ -14,6 +14,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import UserManagement from "@/components/admin/user-management";
 import TournamentManagement from "@/components/admin/tournament-management";
 import CourseNotesManagement from "@/components/admin/course-notes-management";
+import WebOrderManagement from "@/components/admin/web-order-management";
 
 export default function AdminPage() {
   const { user, roles, isUserLoading } = useUser();
@@ -51,6 +52,7 @@ export default function AdminPage() {
         <ScrollArea className="w-full pb-2">
             <div className="overflow-x-auto whitespace-nowrap">
                 <TabsList className="inline-flex">
+                  <TabsTrigger value="web-orders">Web Orders</TabsTrigger>
                   <TabsTrigger value="chat">Chat</TabsTrigger>
                   <TabsTrigger value="course-notes">Course Notes</TabsTrigger>
                   <TabsTrigger value="tournament-approvals">Tournament Approvals</TabsTrigger>
@@ -65,6 +67,9 @@ export default function AdminPage() {
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
         
+        <TabsContent value="web-orders" className="mt-6">
+          <WebOrderManagement />
+        </TabsContent>
         <TabsContent value="chat" className="mt-6 h-[75vh]">
           <AdminChat />
         </TabsContent>

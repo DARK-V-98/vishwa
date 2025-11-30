@@ -50,6 +50,29 @@ service cloud.firestore {
         allow create: if isSignedIn();
         allow read, list, update: if isAdmin();
     }
+    
+    // WEB ORDERS RULES
+    match /webOrders/{orderId} {
+      // Only Admins can create and manage all orders.
+      allow list, create, update, delete: if isAdmin();
+      // A user can read an order if it's assigned to them.
+      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
+      
+      match /details/{docId} {
+        // The assigned user or an admin can write the details once.
+        allow create: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+        // The assigned user or an admin can read the details.
+        allow read, update: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+      }
+      
+      match /updates/{updateId} {
+        // Only admins can post updates.
+        allow create, update, delete: if isAdmin();
+        // The assigned user and admins can read updates.
+        allow read, list: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+      }
+    }
+
 
     // Services are public to read, but only admins can write.
     match /services/{serviceId} {

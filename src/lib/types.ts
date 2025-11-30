@@ -102,3 +102,39 @@ export interface TournamentBudget {
     totalExpenses: number;
     profitOrLoss: number;
 }
+
+export interface WebOrder {
+  id: string; // The unique order ID (e.g., 4829A)
+  createdByAdmin: boolean;
+  userId: string | null; // The client's UID, null until bound
+  clientPhone: string;
+  websiteType: string;
+  totalCost: number;
+  monthsAllowed: number;
+  monthlyAmount: number;
+  status: 'Pending Client Details' | 'In Progress' | 'Completed';
+  currentStage: 'Designing' | 'Developing' | 'Testing' | 'Completed';
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface WebOrderDetail {
+  orderId: string; // Foreign key to WebOrder
+  fullName: string;
+  businessName: string;
+  features: string;
+  hostingOption: 'provide' | 'existing';
+  domainOption: 'new' | 'existing';
+  paymentPlanType: 'full' | 'monthly';
+  selectedMonths?: number;
+  submittedAt: Timestamp;
+}
+
+export interface WebOrderUpdate {
+  id: string;
+  orderId: string; // Foreign key to WebOrder
+  stage: 'Designing' | 'Developing' | 'Testing' | 'Completed';
+  note: string;
+  attachmentUrl?: string;
+  timestamp: Timestamp;
+}

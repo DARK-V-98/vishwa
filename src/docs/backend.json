@@ -81,6 +81,60 @@
         "email"
       ]
     },
+    "WebOrder": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WebOrder",
+      "type": "object",
+      "description": "Represents a website design order created by an admin.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique Order ID (e.g., 4829A)." },
+        "createdByAdmin": { "type": "boolean" },
+        "userId": { "type": "string", "description": "Client's UID, null until bound." },
+        "clientPhone": { "type": "string" },
+        "websiteType": { "type": "string" },
+        "totalCost": { "type": "number" },
+        "monthsAllowed": { "type": "number" },
+        "monthlyAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending Client Details", "In Progress", "Completed"] },
+        "currentStage": { "type": "string", "enum": ["Designing", "Developing", "Testing", "Completed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "createdByAdmin", "clientPhone", "websiteType", "totalCost", "status", "createdAt"]
+    },
+    "WebOrderDetail": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WebOrderDetail",
+      "type": "object",
+      "description": "Stores details submitted by the client for a web order.",
+      "properties": {
+        "orderId": { "type": "string", "description": "Corresponds to WebOrder ID." },
+        "fullName": { "type": "string" },
+        "businessName": { "type": "string" },
+        "features": { "type": "string" },
+        "hostingOption": { "type": "string", "enum": ["provide", "existing"] },
+        "domainOption": { "type": "string", "enum": ["new", "existing"] },
+        "paymentPlanType": { "type": "string", "enum": ["full", "monthly"] },
+        "selectedMonths": { "type": "number" },
+        "submittedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["orderId", "fullName", "features", "paymentPlanType", "submittedAt"]
+    },
+    "WebOrderUpdate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WebOrderUpdate",
+      "type": "object",
+      "description": "Represents a progress update from an admin for a web order.",
+      "properties": {
+        "id": { "type": "string" },
+        "orderId": { "type": "string" },
+        "stage": { "type": "string", "enum": ["Designing", "Developing", "Testing", "Completed"] },
+        "note": { "type": "string" },
+        "attachmentUrl": { "type": "string", "format": "uri" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "orderId", "stage", "note", "timestamp"]
+    },
     "Service": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Service",
@@ -585,6 +639,36 @@
         }
       },
       {
+        "path": "/webOrders/{orderId}",
+        "definition": {
+          "entityName": "WebOrder",
+          "schema": { "$ref": "#/backend/entities/WebOrder" },
+          "description": "Top-level collection for website orders created by admins.",
+          "params": [{ "name": "orderId", "description": "The unique order ID." }]
+        }
+      },
+      {
+        "path": "/webOrders/{orderId}/details/client",
+        "definition": {
+          "entityName": "WebOrderDetail",
+          "schema": { "$ref": "#/backend/entities/WebOrderDetail" },
+          "description": "A singleton document containing client-submitted details for an order.",
+          "params": [{ "name": "orderId", "description": "The unique order ID." }]
+        }
+      },
+      {
+        "path": "/webOrders/{orderId}/updates/{updateId}",
+        "definition": {
+          "entityName": "WebOrderUpdate",
+          "schema": { "$ref": "#/backend/entities/WebOrderUpdate" },
+          "description": "Subcollection for admin-posted progress updates on an order.",
+          "params": [
+            { "name": "orderId", "description": "The unique order ID." },
+            { "name": "updateId", "description": "The unique ID for the update." }
+          ]
+        }
+      },
+      {
         "path": "/users/{userId}/designOrders/{designOrderId}",
         "definition": {
           "entityName": "DesignOrder",
@@ -798,6 +882,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have 'sellerId', so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality. A `teams` subcollection is added under each tournament to store participant data. Added `courseNotes` and `accessCodes` collections to support the secure note download feature."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability. User profiles, services, products, and top-up packages are stored in top-level collections. User-specific data like design orders, appointments, and quotation requests are stored in subcollections under the user's profile document. This approach leverages path-based ownership for private user data, simplifying security rules and enabling efficient data retrieval. The structure supports required QAPs via structural segregation. Products have 'sellerId', so product listings are secure. User-owned resources are namespaced under `/users/{userId}` to support listing only the data owned by a specific user. New top-level collections for `topupOrders`, `settings`, `testimonials`, and `tournaments` are added to handle the new functionality. A `teams` subcollection is added under each tournament to store participant data. Added `courseNotes` and `accessCodes` collections to support the secure note download feature. Added `webOrders` collection and its subcollections to manage the new web design service module."
   }
 }
