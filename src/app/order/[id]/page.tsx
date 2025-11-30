@@ -7,12 +7,13 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, getDoc, updateDoc, setDoc, serverTimestamp, collection, where, query } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { LogIn, Loader2, Frown, CheckCircle, ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import type { WebOrder, WebOrderDetail } from '@/lib/types';
 import OrderDetailForm from '@/components/forms/OrderDetailForm';
+import Link from 'next/link';
 
 function OrderClaimPage() {
     const { id } = useParams();
@@ -29,7 +30,7 @@ function OrderClaimPage() {
     const [isBound, setIsBound] = useState(false);
     
     useEffect(() => {
-        if (isUserLoading || !firestore) return;
+        if (isUserLoading || !firestore || !orderId) return;
 
         if (!user) {
             // User not logged in, stop loading and show login prompt.
@@ -49,7 +50,7 @@ function OrderClaimPage() {
                 return;
             }
 
-            const orderData = { ...orderDocSnap.data(), docId: orderDocSnap.id } as WebOrder;
+            const orderData = { ...orderDocSnap.data(), id: orderDocSnap.id } as WebOrder;
 
             // Check if another user has already claimed this order.
             if (orderData.userId && orderData.userId !== user.uid) {
