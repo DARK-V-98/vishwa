@@ -14,21 +14,17 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // A user is an admin if their email is one of the primary admins,
-      // OR if their user document contains an 'admin' or 'developer' role.
-      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com';
-      
-      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
-                         
-      return isPrimaryAdmin || hasAdminRole;
+      // A user is an admin if their user document contains an 'admin' or 'developer' role.
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
     }
 
     // User profiles can be created by the user themselves.
-    // They can only be read/updated by their owner or an admin.
+    // Any signed-in user can read profiles (needed for role checks), but only owner/admin can update.
     match /users/{userId} {
       allow create: if isSignedIn() && isOwner(userId);
-      allow get, update: if (isSignedIn() && isOwner(userId)) || isAdmin();
+      allow get: if isSignedIn();
+      allow update: if (isSignedIn() && isOwner(userId)) || isAdmin();
       // Only admins can list all users or delete a user.
       allow list, delete: if isAdmin();
     }
@@ -49,6 +45,29 @@ service cloud.firestore {
         allow create: if isSignedIn();
         allow read, list, update: if isAdmin();
     }
+    
+    // WEB ORDERS RULES
+    match /webOrders/{orderId} {
+      // Admins can manage all orders. Public can read a specific order.
+      allow list, create, update, delete: if isAdmin();
+      allow get: if true; 
+      
+      match /details/{docId} {
+        // The assigned user or an admin can write the details once.
+        allow create: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+        // The assigned user or an admin can read the details. Public can read.
+        allow read: if true;
+        allow update: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+      }
+      
+      match /updates/{updateId} {
+        // Only admins can post updates.
+        allow create, update, delete: if isAdmin();
+        // Public can read updates.
+        allow read, list: if true;
+      }
+    }
+
 
     // Services are public to read, but only admins can write.
     match /services/{serviceId} {
@@ -61,7 +80,7 @@ service cloud.firestore {
     match /products/{productId} {
       allow get, list: if true;
       allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && (isOwner(resource.data.sellerId) || isAdmin());
+      allow update, delete: if isSignedIn() && (resource.data.sellerId == request.auth.uid || isAdmin());
     }
 
     // Top-up packages are public to read, but only admins can write.
@@ -75,7 +94,7 @@ service cloud.firestore {
     // Only admins can update/delete it.
     match /topupOrders/{orderId} {
       allow create: if true;
-      allow get: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
       allow list: if isAdmin(); // Only admins should list all orders
       allow update, delete: if isAdmin();
     }
@@ -104,13 +123,13 @@ service cloud.firestore {
     
     // TOURNAMENT RULES
     match /tournaments/{tournamentId} {
-      allow get: if resource.data.status == 'published' || (isSignedIn() && (isOwner(resource.data.userId) || isAdmin()));
-      allow list: if request.query.where.size() == 1 && request.query.where[0] == ['status', '==', 'published'] || isAdmin();
+      allow get: if resource.data.status == 'published' || (isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin()));
+      allow list: if (request.query.where.size() == 1 && request.query.where[0] == ['status', '==', 'published']) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if (isSignedIn() && isOwner(resource.data.userId)) || isAdmin();
+      allow update: if (isSignedIn() && get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.userId == request.auth.uid) || isAdmin();
       allow delete: if isAdmin();
       match /teams/{teamId} {
-        allow read, list, create, update, delete: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.userId)) || isAdmin();
+        allow read, list, create, update, delete: if (isSignedIn() && get(/databases/$(database)/documents/tournaments/$(tournamentId)).data.userId == request.auth.uid) || isAdmin();
       }
     }
 
