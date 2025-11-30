@@ -52,15 +52,13 @@ service cloud.firestore {
     // WEB ORDERS RULES
     match /webOrders/{orderId} {
       // Admins can manage all orders. Public can read a specific order.
-      allow list, create, update, delete: if isAdmin();
+      allow list, create, delete: if isAdmin();
       allow get: if true; 
+      allow update: if (isSignedIn() && (isOwner(resource.data.userId) || resource.data.userId == null)) || isAdmin();
       
       match /details/{docId} {
-        // The assigned user or an admin can write the details once.
-        allow create: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
-        // The assigned user or an admin can read the details. Public can read.
-        allow read: if true;
-        allow update: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+        allow create, update: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin();
+        allow read: if (isSignedIn() && isOwner(get(/databases/$(database)/documents/webOrders/$(orderId)).data.userId)) || isAdmin() || true;
       }
       
       match /updates/{updateId} {
