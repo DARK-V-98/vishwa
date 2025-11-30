@@ -14,12 +14,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // A user is an admin if their email is one of the primary admins,
-      // OR if their user document contains an 'admin' or 'developer' role.
-      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com' || request.auth.token.email == 'nelumjayakody2005@gmail.com';
-      let hasAdminRole = exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin', 'developer']);
-      return isPrimaryAdmin || hasAdminRole;
+      // A user is an admin if their email is one of the primary admins.
+      // This is the most reliable check for superuser access.
+      return request.auth != null && (request.auth.token.email == 'tikfese@gmail.com' || request.auth.token.email == 'nelumjayakody2005@gmail.com');
     }
 
     // User profiles can be created by the user themselves.
