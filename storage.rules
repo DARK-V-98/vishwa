@@ -10,7 +10,7 @@ service firebase.storage {
     function isAdmin() {
       // A user is an admin if their email is one of the primary admins,
       // OR if their auth token contains an 'admin' or 'developer' custom claim.
-      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com';
+      let isPrimaryAdmin = request.auth.token.email == 'tikfese@gmail.com' || request.auth.token.email == 'nelumjayakody2005@gmail.com';
       
       // Checking for custom claims is more secure than reading from Firestore for storage rules.
       // We assume claims are set by a trusted backend process.
