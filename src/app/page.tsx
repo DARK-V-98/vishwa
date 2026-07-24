@@ -8,10 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Code, Palette, Building2, ArrowRight, Star, Zap, Shield, Users, Gamepad2, Briefcase,
   FileKey2, ListTree, Regex, FileJson, QrCode, Barcode, ScanLine, KeyRound, Server, Palette as PaletteIcon,
-  Cpu, FileCode2, Fingerprint, Award, Tv, Bot, Settings, MessageSquare, Download, Crop, FileLock, Maximize
+  Cpu, FileCode2, Fingerprint, Award, Tv, Bot, Settings, MessageSquare, Download, Crop, FileLock, Maximize,
+  Sparkles, CheckCircle2, MapPin, Rocket, Terminal, TrendingUp, Layers
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from 'next/dynamic';
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -158,7 +159,55 @@ const TestimonialCarousel = dynamic(() => import('@/components/sections/testimon
     )
 });
 
+function AnimatedCounter({ value, suffix = "", duration = 1600 }: { value: number; suffix?: string; duration?: number }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !started.current) {
+          started.current = true;
+          const start = performance.now();
+          const tick = (now: number) => {
+            const p = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 3);
+            setDisplay(Math.round(eased * value));
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [value, duration]);
+
+  return (
+    <span ref={ref}>
+      {display}
+      {suffix}
+    </span>
+  );
+}
+
 const Home = () => {
+  const stats = [
+    { value: 50, suffix: "+", label: "Projects Delivered" },
+    { value: 25, suffix: "+", label: "Free Dev Tools" },
+    { value: 100, suffix: "%", label: "Client-Side & Secure" },
+    { value: 24, suffix: "/7", label: "Support" },
+  ];
+
+  const techStack = [
+    "Next.js", "React", "TypeScript", "Node.js", "Firebase", "Tailwind CSS",
+    "PostgreSQL", "Framer Motion", "Genkit AI", "Vercel",
+  ];
+
   const services = [
     { icon: Code, title: "Web Development & Software", description: "Custom web apps, mobile apps, with a focus on security and fast delivery.", link: "/esystemlk" },
     { icon: Palette, title: "Design Services", description: "Professional logo and post designs with clear packages and a simple process.", link: "/design-services" },
@@ -186,29 +235,92 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
-        <div className="absolute inset-0 bg-background opacity-50 z-0">
-           <Image src="/bac.png" alt="Abstract background" layout="fill" objectFit="cover" quality={80} priority />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80 z-0"></div>
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
+        {/* techy layered background */}
+        <div className="absolute inset-0 z-0 bg-grid bg-grid-fade opacity-70" aria-hidden="true" />
+        <div className="glow-blob left-[8%] top-24 h-72 w-72 animate-glow-pulse bg-primary/30" aria-hidden="true" />
+        <div className="glow-blob right-[6%] top-40 h-80 w-80 animate-glow-pulse bg-secondary/25 [animation-delay:1.5s]" aria-hidden="true" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-background/90" aria-hidden="true" />
+
+        <div className="container relative z-10 mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-4xl mx-auto text-center space-y-8"
+            transition={{ duration: 0.7 }}
+            className="mx-auto max-w-4xl space-y-8 text-center"
           >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight bg-gradient-hero bg-clip-text text-transparent">
-              Vishwa Vidarshana
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur">
+              <MapPin className="h-4 w-4" />
+              Based in Sri Lanka
+              <span className="mx-1 h-1 w-1 rounded-full bg-primary/50" />
+              <Sparkles className="h-4 w-4" />
+              Web · Design · E-Sports
+            </div>
+
+            <h1 className="text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
+              <span className="text-gradient">Vishwa Vidarshana</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Web Developer, Designer & E-Sports Innovator. Delivering high-quality web solutions, design services, Free Fire top-ups, and a suite of free developer tools.
+            <p className="mx-auto max-w-3xl text-lg text-muted-foreground md:text-xl">
+              Web Developer, Designer &amp; E-Sports Innovator. Delivering high-quality web solutions, design services, Free Fire top-ups, and a suite of free developer tools.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/contact"><Button variant="hero" size="lg">Start a Project</Button></Link>
-              <Link href="/tools"><Button variant="outline" size="lg">Explore Tools</Button></Link>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link href="/contact"><Button variant="hero" size="lg" className="gap-2"><Rocket className="h-4 w-4" />Start a Project</Button></Link>
+              <Link href="/tools"><Button variant="outline" size="lg" className="gap-2"><Terminal className="h-4 w-4" />Explore Tools</Button></Link>
+            </div>
+
+            {/* trust badges */}
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-sm text-muted-foreground">
+              {["100% Client-Side Tools", "Fast Delivery", "Secure by Design"].map((b) => (
+                <span key={b} className="inline-flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  {b}
+                </span>
+              ))}
             </div>
           </motion.div>
+
+          {/* Stats row */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="mx-auto mt-16 grid max-w-4xl grid-cols-2 gap-4 md:grid-cols-4"
+          >
+            {stats.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-2xl border border-border/60 bg-card/60 p-6 text-center backdrop-blur-sm transition-all hover:border-primary/40 hover:shadow-glow"
+              >
+                <div className="text-3xl font-bold text-gradient md:text-4xl">
+                  <AnimatedCounter value={s.value} suffix={s.suffix} />
+                </div>
+                <div className="mt-1 text-xs font-medium uppercase tracking-wide text-muted-foreground md:text-sm">
+                  {s.label}
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Tech stack marquee */}
+      <section className="border-y border-border/50 bg-muted/20 py-6">
+        <div className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Built With Modern Technology
+        </div>
+        <div className="marquee-pause relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_12%,#000_88%,transparent)]">
+          <div className="marquee gap-4 pr-4">
+            {[...techStack, ...techStack].map((t, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-card/70 px-5 py-2 text-sm font-medium text-foreground/80"
+              >
+                <Layers className="h-4 w-4 text-primary" />
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 

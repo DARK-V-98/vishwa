@@ -9,81 +9,92 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ESystemLK-family "techy" system: electric blue -> cyan on deep navy */
+    --background: 210 40% 99%;
+    --foreground: 222 47% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 47% 8%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 262 83% 68%;
+    --primary: 212 100% 47%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 195 100% 50%;
 
-    --secondary: 33 100% 50%;
+    --secondary: 195 100% 45%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 20% 42%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 205 90% 95%;
+    --accent-foreground: 212 100% 30%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262 83% 58%;
+    --border: 214 32% 90%;
+    --input: 214 32% 90%;
+    --ring: 212 100% 47%;
 
     --radius: 0.75rem;
 
     /* Custom design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 68%));
-    --gradient-hero: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(221 83% 53%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(33 100% 50%), hsl(33 100% 60%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 98%));
-    
-    --shadow-soft: 0 2px 20px -2px hsl(262 83% 53% / 0.1);
-    --shadow-medium: 0 8px 30px -8px hsl(262 83% 53% / 0.2);
-    --shadow-strong: 0 20px 50px -12px hsl(262 83% 53% / 0.3);
-    --shadow-glow: 0 0 40px hsl(262 83% 63% / 0.3);
-    
+    --gradient-primary: linear-gradient(135deg, hsl(212 100% 47%), hsl(195 100% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(212 100% 47%) 0%, hsl(195 100% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(195 100% 47%), hsl(185 100% 45%));
+    --gradient-subtle: linear-gradient(180deg, hsl(210 40% 99%), hsl(205 55% 96%));
+
+    --shadow-soft: 0 2px 20px -2px hsl(212 100% 47% / 0.12);
+    --shadow-medium: 0 8px 30px -8px hsl(212 100% 47% / 0.22);
+    --shadow-strong: 0 20px 50px -12px hsl(212 100% 47% / 0.32);
+    --shadow-glow: 0 0 40px hsl(195 100% 55% / 0.35);
+
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 222 47% 5%;
+    --foreground: 210 40% 98%;
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 222 44% 8%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 44% 8%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 262 83% 68%;
+    --primary: 205 100% 55%;
+    --primary-foreground: 222 47% 6%;
+    --primary-glow: 195 100% 55%;
 
-    --secondary: 33 100% 50%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 195 100% 50%;
+    --secondary-foreground: 222 47% 6%;
 
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 240 5% 15%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 217 40% 16%;
+    --accent-foreground: 195 100% 65%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 63% 41%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5% 25%;
-    --input: 240 5% 25%;
-    --ring: 262 83% 58%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 195 100% 55%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(212 100% 52%), hsl(195 100% 55%));
+    --gradient-hero: linear-gradient(135deg, hsl(212 100% 50%) 0%, hsl(195 100% 55%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(195 100% 50%), hsl(185 100% 48%));
+    --gradient-subtle: linear-gradient(180deg, hsl(222 47% 5%), hsl(222 44% 8%));
+
+    --shadow-soft: 0 2px 20px -2px hsl(195 100% 55% / 0.15);
+    --shadow-medium: 0 8px 30px -8px hsl(195 100% 55% / 0.25);
+    --shadow-strong: 0 20px 50px -12px hsl(195 100% 55% / 0.35);
+    --shadow-glow: 0 0 45px hsl(195 100% 55% / 0.45);
   }
 }
 
@@ -159,5 +170,70 @@ All colors MUST be HSL.
 
   .prose h1, .prose h2, .prose h3, .prose h4 {
     color: hsl(var(--primary));
+  }
+}
+
+/* ============================================================
+   ESystemLK-style "techy" utilities
+   ============================================================ */
+@layer utilities {
+  /* Gradient text (cyan -> blue) */
+  .text-gradient {
+    @apply bg-gradient-hero bg-clip-text text-transparent;
+  }
+
+  /* Subtle tech grid background */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, hsl(var(--primary) / 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--primary) / 0.07) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .bg-grid-fade {
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+            mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  /* Glowing radial blobs behind hero content */
+  .glow-blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* Card with a thin gradient ring on hover */
+  .tech-card {
+    position: relative;
+    border: 1px solid hsl(var(--border));
+    transition: var(--transition-smooth);
+  }
+  .tech-card:hover {
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: var(--shadow-medium);
+  }
+
+  /* Terminal window chrome */
+  .terminal {
+    font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, Consolas, monospace);
+    background: hsl(222 47% 7%);
+    color: hsl(210 40% 92%);
+    border: 1px solid hsl(217 33% 20%);
+  }
+
+  /* Animated conic gradient border */
+  .glow-ring {
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.25), var(--shadow-glow);
+  }
+
+  /* Marquee row (logos / tech stack) */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 32s linear infinite;
+  }
+  .marquee-pause:hover .marquee {
+    animation-play-state: paused;
   }
 }

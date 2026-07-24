@@ -136,7 +136,9 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border shadow-soft">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/70 bg-background/70 shadow-soft backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      {/* techy top hairline */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" aria-hidden="true" />
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -146,10 +148,10 @@ const Navbar = () => {
               alt="Vishwa Vidarshana Logo"
               width={40}
               height={40}
-              className="rounded-lg group-hover:shadow-glow transition-all"
+              className="rounded-lg ring-1 ring-primary/20 transition-all group-hover:shadow-glow group-hover:ring-primary/50"
             />
             <div className="hidden md:block">
-              <span className="text-lg font-bold bg-gradient-hero bg-clip-text text-transparent">
+              <span className="text-lg font-bold text-gradient">
                 Vishwa Vidarshana
               </span>
             </div>
